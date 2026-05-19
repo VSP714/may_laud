@@ -1,19 +1,20 @@
-// ignore_for_file: deprecated_member_use
-
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:may_laud/providers/auth_provider.dart';
 import 'package:may_laud/screens/sign_in/sign_in_screen.dart';
 import 'package:may_laud/screens/sign_up/registration_screen.dart';
+import 'package:may_laud/screens/home/main_app.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// ---------------- WELCOME SCREEN ---------------- ///
-class LoginScreen extends StatefulWidget {
+class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
 
   @override
-  State<LoginScreen> createState() => _LoginScreenState();
+  ConsumerState<LoginScreen> createState() => _LoginScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen> {
+class _LoginScreenState extends ConsumerState<LoginScreen> {
   void handleSignIn() {
     Navigator.push(
       context,
@@ -26,6 +27,17 @@ class _LoginScreenState extends State<LoginScreen> {
       context,
       MaterialPageRoute(builder: (_) => const RegisterScreen()),
     );
+  }
+
+  Future<void> handleGuestLogin() async {
+    final auth = ref.read(authProvider.notifier);
+    await auth.loginAsGuest();
+    if (mounted) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => const MainApp()),
+      );
+    }
   }
 
   @override
@@ -201,7 +213,9 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                   ),
 
-                  SizedBox(height: 230.h),
+                  SizedBox(height: 20.h),
+
+                  SizedBox(height: 180.h),
 
                   /// Footer
                   Text(

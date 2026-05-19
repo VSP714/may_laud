@@ -51,9 +51,9 @@ class IntroPage3 extends StatelessWidget {
 
                   /// DESCRIPTION
                   Text(
-                    "Access chatbot support, local information,\n"
-                    "public services, and comunity help with just\n"
-                    "a tap - design to make life in Milaor Easier.\n",
+                    "Access local information, public services,\n"
+                    "and community help with just a tap - designed\n"
+                    "to make life in Milaor easier.\n",
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       fontSize: 14.sp,

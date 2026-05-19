@@ -1,491 +1,432 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
-import 'package:may_laud/screens/app_features/chatbot/chatbot.dart';
-import 'package:may_laud/screens/app_features/announcement/announcement_details.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
+import '../app_features/flood_alert/flood_alert_screen.dart';
+
+// ===== BRAND PALETTE (shared across home screens) =====
+class HomeColors {
+  static const Color heritagePurple = Color(0xFF4C229C);
+  static const Color riverFlow = Color(0xFF643EB5);
+  static const Color deepAnchor = Color(0xFF24005B);
+  static const Color warmHearth = Color(0xFFF8F5FF);
+  static const Color cardWhite = Colors.white;
+
+  static const LinearGradient fabGradient = LinearGradient(
+    colors: [riverFlow, heritagePurple],
+  );
+
+  static const LinearGradient avatarGradient = LinearGradient(
+    colors: [riverFlow, heritagePurple],
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+  );
+}
+
+/// Pure content widget — no Scaffold, no bottom nav, no FAB.
+/// Those live in [MainApp] to avoid duplication.
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
 
-  static const Color primary = Color(0xFF6A3CC3);
-  static const Color background = Color(0xFFF8F9FC);
-  static const Color surface = Colors.white;
-  static const Color textPrimary = Color(0xFF1E1E1E);
-  static const Color textSecondary = Color(0xFF7A7A7A);
-
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: background,
-      floatingActionButton: FloatingActionButton(
-        backgroundColor: primary,
-        elevation: 4,
-        onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (_) => ChatBot(),
-            ),
-          );
-        },
-        child: SvgPicture.asset(
-          'assets/images/svg/chatbot.svg',
-          width: 24,
-          height: 24,
-          colorFilter: const ColorFilter.mode(
-            Colors.white,
-            BlendMode.srcIn,
-          ),
-        ),
-      ),
-      bottomNavigationBar: _buildBottomNav(context),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(
-            horizontal: 20,
-            vertical: 18,
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _buildHeader(),
-              const SizedBox(height: 28),
-              _buildWelcomeCard(),
-              const SizedBox(height: 28),
-              _buildQuickActions(context),
-              const SizedBox(height: 28),
-              _buildCommunityStatus(),
-              const SizedBox(height: 28),
-              _buildNearbyReports(),
-              const SizedBox(height: 28),
-              _buildAnnouncements(context),
-              const SizedBox(height: 28),
-              _buildPolls(),
-              const SizedBox(height: 100),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildHeader() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        const Row(
-          children: [
-            CircleAvatar(
-              radius: 22,
-              backgroundImage: AssetImage(
-                'assets/images/avatar.png',
-              ),
-            ),
-            SizedBox(width: 12),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  "May-Laud",
-                  style: TextStyle(
-                    fontSize: 22,
-                    fontWeight: FontWeight.w800,
-                    color: textPrimary,
-                  ),
-                ),
-                Text(
-                  "Smart City Milaor",
-                  style: TextStyle(
-                    fontSize: 13,
-                    color: textSecondary,
-                  ),
-                ),
-              ],
-            )
-          ],
-        ),
-        Container(
-          padding: const EdgeInsets.all(10),
-          decoration: BoxDecoration(
-            color: surface,
-            borderRadius: BorderRadius.circular(14),
-          ),
-          child: const Icon(
-            Icons.notifications_none,
-            color: primary,
-          ),
-        )
-      ],
-    );
-  }
-
-  Widget _buildWelcomeCard() {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(22),
-      decoration: BoxDecoration(
-        color: primary,
-        borderRadius: BorderRadius.circular(22),
-      ),
-      child: const Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            "Marhay na aga, Rafael!",
-            style: TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.w800,
-              color: Colors.white,
-            ),
-          ),
-          SizedBox(height: 10),
-          Row(
-            children: [
-              Icon(
-                Icons.location_on_outlined,
-                size: 16,
-                color: Colors.white70,
-              ),
-              SizedBox(width: 4),
-              Text(
-                "Brgy. Del Rosario, Milaor",
-                style: TextStyle(
-                  color: Colors.white70,
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildQuickActions(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text(
-          "Quick Services",
-          style: TextStyle(
-            fontSize: 20,
-            fontWeight: FontWeight.w800,
-          ),
-        ),
-        const SizedBox(height: 16),
-        GridView.count(
-          crossAxisCount: 2,
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          mainAxisSpacing: 14,
-          crossAxisSpacing: 14,
-          childAspectRatio: 1.15,
-          children: [
-            _ServiceCard(
-              icon: Icons.report_problem_outlined,
-              title: "Report Issue",
-            ),
-            _ServiceCard(
-              icon: Icons.water_drop_outlined,
-              title: "Flood Alert",
-            ),
-            _ServiceCard(
-              icon: Icons.how_to_vote_outlined,
-              title: "Vote / Poll",
-            ),
-            _ServiceCard(
-              icon: Icons.campaign_outlined,
-              title: "Announcements",
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => AnnouncementsFeedScreen(),
-                  ),
-                );
-              },
-            ),
-          ],
-        ),
-      ],
-    );
-  }
-
-  Widget _buildCommunityStatus() {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(22),
-      decoration: BoxDecoration(
-        color: surface,
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: const Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                "Community Impact",
-                style: TextStyle(
-                  color: textSecondary,
-                ),
-              ),
-              SizedBox(height: 8),
-              Text(
-                "12 Reports Submitted",
-                style: TextStyle(
-                  fontSize: 22,
-                  fontWeight: FontWeight.w800,
-                  color: textPrimary,
-                ),
-              ),
-            ],
-          ),
-          Icon(
-            Icons.bar_chart_rounded,
-            size: 38,
-            color: primary,
-          )
-        ],
-      ),
-    );
-  }
-
-  Widget _buildNearbyReports() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: const [
-        Text(
-          "Nearby Reports",
-          style: TextStyle(
-            fontSize: 20,
-            fontWeight: FontWeight.w800,
-          ),
-        ),
-        SizedBox(height: 16),
-        _ListTileCard(
-          icon: Icons.lightbulb_outline,
-          title: "Broken Streetlight",
-          subtitle: "200m away",
-        ),
-        SizedBox(height: 12),
-        _ListTileCard(
-          icon: Icons.warning_amber_rounded,
-          title: "Clogged Drainage",
-          subtitle: "450m away",
-          danger: true,
-        ),
-      ],
-    );
-  }
-
-  Widget _buildAnnouncements(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(22),
-      decoration: BoxDecoration(
-        color: surface,
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: const Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            "LGU Announcement",
-            style: TextStyle(
-              color: primary,
-              fontWeight: FontWeight.w700,
-            ),
-          ),
-          SizedBox(height: 10),
-          Text(
-            "Riverbank Restoration Begins Monday",
-            style: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.w800,
-            ),
-          ),
-          SizedBox(height: 8),
-          Text(
-            "Flood mitigation and green space improvement project.",
-            style: TextStyle(
-              color: textSecondary,
-              height: 1.5,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildPolls() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: const [
-        Text(
-          "Upcoming Town Polls",
-          style: TextStyle(
-            fontSize: 20,
-            fontWeight: FontWeight.w800,
-          ),
-        ),
-        SizedBox(height: 16),
-        _PollCard(
-          title: "Rename Community Park?",
-          subtitle: "154 votes",
-          progress: 0.75,
-        ),
-      ],
-    );
-  }
-
-  Widget _buildBottomNav(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.all(16),
-      padding: const EdgeInsets.symmetric(vertical: 14),
-      decoration: BoxDecoration(
-        color: surface,
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: const Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        children: [
-          Icon(Icons.home_filled, color: primary),
-          Icon(Icons.campaign_outlined, color: textSecondary),
-          Icon(Icons.warning_amber_rounded, color: textSecondary),
-          Icon(Icons.person_outline, color: textSecondary),
-        ],
-      ),
-    );
-  }
-}
-
-class _ServiceCard extends StatelessWidget {
-  final IconData icon;
-  final String title;
-  final VoidCallback? onTap;
-
-  const _ServiceCard({
-    required this.icon,
-    required this.title,
-    this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        decoration: BoxDecoration(
-          color: HomeScreen.surface,
-          borderRadius: BorderRadius.circular(18),
-        ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              icon,
-              color: HomeScreen.primary,
-              size: 30,
-            ),
-            const SizedBox(height: 12),
-            Text(
-              title,
-              style: const TextStyle(
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _ListTileCard extends StatelessWidget {
-  final IconData icon;
-  final String title;
-  final String subtitle;
-  final bool danger;
-
-  const _ListTileCard({
-    required this.icon,
-    required this.title,
-    required this.subtitle,
-    this.danger = false,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(
-        color: HomeScreen.surface,
-        borderRadius: BorderRadius.circular(18),
-      ),
-      child: Row(
-        children: [
-          Icon(
-            icon,
-            color: danger ? Colors.red : HomeScreen.primary,
-          ),
-          const SizedBox(width: 14),
-          Expanded(
-            child: Text(title),
-          ),
-          Text(
-            subtitle,
-            style: const TextStyle(
-              color: HomeScreen.textSecondary,
-            ),
-          )
-        ],
-      ),
-    );
-  }
-}
-
-class _PollCard extends StatelessWidget {
-  final String title;
-  final String subtitle;
-  final double progress;
-
-  const _PollCard({
-    required this.title,
-    required this.subtitle,
-    required this.progress,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(
-        color: HomeScreen.surface,
-        borderRadius: BorderRadius.circular(18),
+    return SingleChildScrollView(
+      physics: const BouncingScrollPhysics(),
+      padding: EdgeInsets.only(
+        left: 22.w,
+        right: 22.w,
+        top: 18.h,
+        bottom: 130.h,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(title),
-          const SizedBox(height: 8),
-          Text(
-            subtitle,
-            style: const TextStyle(
-              color: HomeScreen.textSecondary,
+          _buildHeader(),
+          SizedBox(height: 28.h),
+          _buildWelcomeCard(),
+          SizedBox(height: 28.h),
+          _buildFloodCard(context),
+          SizedBox(height: 34.h),
+          _buildAnnouncementSection(context),
+          SizedBox(height: 24.h),
+          _buildAnnouncementList(),
+        ],
+      ),
+    );
+  }
+
+  // ─── HEADER ───────────────────────────────────────────
+  static Widget _buildHeader() {
+    return Row(
+      children: [
+        // Avatar
+        Container(
+          width: 64.w,
+          height: 64.w,
+          decoration: const BoxDecoration(
+            shape: BoxShape.circle,
+            gradient: HomeColors.avatarGradient,
+            boxShadow: [
+              BoxShadow(
+                color: Color(0x4D4C229C),
+                blurRadius: 12,
+                offset: Offset(0, 4),
+              ),
+            ],
+          ),
+          child: Center(
+            child: Icon(Icons.person, color: Colors.white, size: 32.sp),
+          ),
+        ),
+        SizedBox(width: 16.w),
+        // Name / Location
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Good Morning',
+                style: TextStyle(
+                  fontSize: 14.sp,
+                  fontWeight: FontWeight.w500,
+                  color: Colors.grey[600],
+                ),
+              ),
+              SizedBox(height: 4.h),
+              Text(
+                'Juan Dela Cruz',
+                style: TextStyle(
+                  fontSize: 24.sp,
+                  fontWeight: FontWeight.w700,
+                  color: HomeColors.deepAnchor,
+                  height: 1.1,
+                ),
+              ),
+              SizedBox(height: 4.h),
+              Row(
+                children: [
+                  Icon(Icons.location_on,
+                      size: 14.sp, color: HomeColors.riverFlow),
+                  SizedBox(width: 4.w),
+                  Text(
+                    'Milaor, Camarines Sur',
+                    style: TextStyle(fontSize: 13.sp, color: Colors.grey[600]),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+        // Notification bell
+        Container(
+          width: 48.w,
+          height: 48.w,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: HomeColors.warmHearth,
+            border: Border.all(
+              color: HomeColors.riverFlow.withOpacity(0.1),
             ),
           ),
-          const SizedBox(height: 12),
-          ClipRRect(
-            borderRadius: BorderRadius.circular(8),
-            child: LinearProgressIndicator(
-              value: progress,
-              minHeight: 8,
-              backgroundColor: Color(0xFFE9E3F3),
-              valueColor: AlwaysStoppedAnimation(
-                HomeScreen.primary,
+          child: Center(
+            child: Icon(Icons.notifications_none,
+                size: 22.sp, color: HomeColors.heritagePurple),
+          ),
+        ),
+      ],
+    );
+  }
+
+  // ─── WELCOME CARD ─────────────────────────────────────
+  static Widget _buildWelcomeCard() {
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.all(28.w),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(38.r),
+        gradient: const LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            HomeColors.heritagePurple,
+            HomeColors.deepAnchor,
+          ],
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: HomeColors.heritagePurple.withOpacity(.18),
+            blurRadius: 24,
+            offset: const Offset(0, 14),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          SizedBox(height: 12.h),
+          Text(
+            'WELCOME BACK',
+            style: TextStyle(
+              color: Colors.white70,
+              letterSpacing: 4,
+              fontSize: 13.sp,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          SizedBox(height: 12.h),
+          Text(
+            'Magandang araw,\nJuan!',
+            style: TextStyle(
+              color: Colors.white,
+              height: 1.1,
+              fontWeight: FontWeight.w300,
+              fontSize: 42.sp,
+            ),
+          ),
+          SizedBox(height: 12.h),
+          Text(
+            'Your gateway to efficient local government\nservices and community updates in Milaor.',
+            style: TextStyle(
+              color: Colors.white70,
+              fontSize: 17.sp,
+              height: 1.6,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ─── FLOOD CARD ───────────────────────────────────────
+  static Widget _buildFloodCard(BuildContext context) {
+    return InkWell(
+      borderRadius: BorderRadius.circular(32.r),
+      onTap: () => Navigator.push(
+        context,
+        MaterialPageRoute(builder: (_) => const FloodAlertScreen()),
+      ),
+      child: Container(
+        width: double.infinity,
+        decoration: BoxDecoration(
+          color: HomeColors.cardWhite,
+          borderRadius: BorderRadius.circular(32.r),
+          border: Border.all(color: HomeColors.riverFlow.withOpacity(.10)),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(.03),
+              blurRadius: 16,
+              offset: const Offset(0, 10),
+            ),
+          ],
+        ),
+        child: Column(
+          children: [
+            Padding(
+              padding: EdgeInsets.all(24.w),
+              child: Row(
+                children: [
+                  Container(
+                    width: 58.w,
+                    height: 58.w,
+                    decoration: BoxDecoration(
+                      color: HomeColors.riverFlow.withOpacity(.08),
+                      borderRadius: BorderRadius.circular(18.r),
+                    ),
+                    child: Icon(Icons.waves_rounded,
+                        color: HomeColors.heritagePurple, size: 30.sp),
+                  ),
+                  SizedBox(width: 16.w),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Bicol River\nMonitoring',
+                          style: TextStyle(
+                            fontSize: 21.sp,
+                            fontWeight: FontWeight.w700,
+                            color: HomeColors.deepAnchor,
+                          ),
+                        ),
+                        SizedBox(height: 6.h),
+                        Text(
+                          'Updated 14 mins ago',
+                          style: TextStyle(fontSize: 14.sp, color: Colors.grey),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Container(
+                    padding:
+                        EdgeInsets.symmetric(horizontal: 18.w, vertical: 12.h),
+                    decoration: BoxDecoration(
+                      color: HomeColors.riverFlow.withOpacity(.10),
+                      borderRadius: BorderRadius.circular(20.r),
+                    ),
+                    child: Text(
+                      'NORMAL\nSTATUS',
+                      style: TextStyle(
+                        fontSize: 12.sp,
+                        fontWeight: FontWeight.bold,
+                        color: HomeColors.heritagePurple,
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
-          )
+            Divider(height: 1, color: HomeColors.riverFlow.withOpacity(.08)),
+            Padding(
+              padding: EdgeInsets.all(28.w),
+              child: Column(
+                children: [
+                  Container(
+                    width: 110.w,
+                    height: 110.w,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: HomeColors.riverFlow.withOpacity(.08),
+                    ),
+                    child: Icon(Icons.check_circle,
+                        color: HomeColors.heritagePurple, size: 64.sp),
+                  ),
+                  SizedBox(height: 24.h),
+                  Text(
+                    'No Immediate Threat',
+                    style: TextStyle(
+                      fontSize: 30.sp,
+                      fontWeight: FontWeight.w700,
+                      color: HomeColors.deepAnchor,
+                    ),
+                  ),
+                  SizedBox(height: 14.h),
+                  Text(
+                    'Water levels are currently within safe\nlimits. All evacuation routes remain open.',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                        fontSize: 17.sp, height: 1.6, color: Colors.grey),
+                  ),
+                  SizedBox(height: 22.h),
+                  TextButton(
+                    onPressed: () {},
+                    child: Text(
+                      'View Flood Map →',
+                      style: TextStyle(
+                        fontSize: 19.sp,
+                        fontWeight: FontWeight.w700,
+                        color: HomeColors.heritagePurple,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // ─── ANNOUNCEMENT HEADER ──────────────────────────────
+  Widget _buildAnnouncementSection(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Latest Announcements',
+          style: TextStyle(
+            fontSize: 34.sp,
+            fontWeight: FontWeight.w700,
+            color: HomeColors.deepAnchor,
+          ),
+        ),
+        SizedBox(height: 8.h),
+        Text(
+          'Keep up with the latest events in Milaor',
+          style: TextStyle(fontSize: 17.sp, color: Colors.grey),
+        ),
+      ],
+    );
+  }
+
+  // ─── ANNOUNCEMENT CARDS ───────────────────────────────
+  static Widget _buildAnnouncementList() {
+    return SizedBox(
+      height: 390.h,
+      child: ListView(
+        scrollDirection: Axis.horizontal,
+        physics: const BouncingScrollPhysics(),
+        children: [
+          _announcementCard(),
+          SizedBox(width: 18.w),
+          _announcementCard(),
+        ],
+      ),
+    );
+  }
+
+  static Widget _announcementCard() {
+    return Container(
+      width: 330.w,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(32.r),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(.04),
+            blurRadius: 14,
+            offset: const Offset(0, 10),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          ClipRRect(
+            borderRadius: BorderRadius.vertical(top: Radius.circular(32.r)),
+            child: Image.asset(
+              "assets/images/vaccine.jpg",
+              height: 210.h,
+              width: double.infinity,
+              fit: BoxFit.cover,
+            ),
+          ),
+          Padding(
+            padding: EdgeInsets.all(22.w),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'HEALTH & WELLNESS',
+                  style: TextStyle(
+                    letterSpacing: 2,
+                    fontSize: 12.sp,
+                    fontWeight: FontWeight.bold,
+                    color: HomeColors.heritagePurple,
+                  ),
+                ),
+                SizedBox(height: 18.h),
+                Text(
+                  'Barangay Vaccination Drive\nSchedule - Q4 2024',
+                  style: TextStyle(
+                    fontSize: 24.sp,
+                    height: 1.4,
+                    fontWeight: FontWeight.w700,
+                    color: HomeColors.deepAnchor,
+                  ),
+                ),
+                SizedBox(height: 14.h),
+                Text(
+                  'Starting Monday, teams will visit San Roque and Capucnasan.',
+                  style: TextStyle(
+                    fontSize: 16.sp,
+                    height: 1.5,
+                    color: Colors.grey,
+                  ),
+                ),
+              ],
+            ),
+          ),
         ],
       ),
     );

@@ -1,11 +1,9 @@
-// ignore_for_file: deprecated_member_use
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:may_laud/screens/password/forgot_password_screen.dart';
 import 'package:may_laud/screens/sign_up/registration_screen.dart';
+import 'package:may_laud/screens/home/main_app.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import '../home/home.dart';
 
 class WelcomeBackScreen extends StatefulWidget {
   const WelcomeBackScreen({super.key});
@@ -363,7 +361,7 @@ class _WelcomeBackScreenState extends State<WelcomeBackScreen> {
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (_) => const HomeScreen(),
+                                builder: (_) => const MainApp(),
                               ),
                             );
                           },
@@ -407,12 +405,12 @@ class _WelcomeBackScreenState extends State<WelcomeBackScreen> {
 
                         /// GUEST BUTTON
                         _buildSecondaryButton(
-                          text: "Continue as Resident",
+                          text: "Continue as User",
                           onTap: () {
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (_) => const HomeScreen(),
+                                builder: (_) => const MainApp(),
                               ),
                             );
                           },
