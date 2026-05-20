@@ -200,231 +200,234 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
           ),
 
           SafeArea(
-            child: Padding(
-              padding: EdgeInsets.symmetric(horizontal: 24.w),
-              child: Column(
-                children: [
-                  SizedBox(height: 16.h),
+            child: SingleChildScrollView(
+              child: Padding(
+                padding: EdgeInsets.symmetric(horizontal: 24.w),
+                child: Column(
+                  children: [
+                    SizedBox(height: 16.h),
 
-                  /// Back + Title (centered like verification screen)
-                  Stack(
-                    alignment: Alignment.center,
-                    children: [
-                      Align(
-                        alignment: Alignment.centerLeft,
-                        child: IconButton(
-                          icon: const Icon(Icons.arrow_back,
-                              color: Color(0xFF6A4FB6)),
-                          onPressed: () => Navigator.pop(context),
+                    /// Back + Title (centered like verification screen)
+                    Stack(
+                      alignment: Alignment.center,
+                      children: [
+                        Align(
+                          alignment: Alignment.centerLeft,
+                          child: IconButton(
+                            icon: const Icon(Icons.arrow_back,
+                                color: Color(0xFF6A4FB6)),
+                            onPressed: () => Navigator.pop(context),
+                          ),
                         ),
-                      ),
-                      Text(
-                        "Reset Password",
-                        style: TextStyle(
-                          fontSize: 20.sp,
-                          fontWeight: FontWeight.w600,
-                          color: const Color(0xFF6A4FB6),
+                        Text(
+                          "Reset Password",
+                          style: TextStyle(
+                            fontSize: 20.sp,
+                            fontWeight: FontWeight.w600,
+                            color: const Color(0xFF6A4FB6),
+                          ),
                         ),
-                      ),
-                    ],
-                  ),
-
-                  SizedBox(height: 48.h),
-
-                  /// Icon (lock with gradient circle)
-                  Container(
-                    width: 100.w,
-                    height: 100.w,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      gradient: const LinearGradient(
-                        colors: [Color(0xFF4C229C), Color(0xFF643EB5)],
-                      ),
-                      boxShadow: [
-                        BoxShadow(
-                          color: const Color(0xFF643EB5).withOpacity(0.4),
-                          blurRadius: 20,
-                          offset: const Offset(0, 8),
-                        )
                       ],
                     ),
-                    child: Icon(
-                      Icons.lock_open_outlined,
-                      size: 50.sp,
-                      color: Colors.white,
-                    ),
-                  ),
 
-                  SizedBox(height: 32.h),
+                    SizedBox(height: 48.h),
 
-                  /// Title
-                  Text(
-                    "Enter Verification Code",
-                    style: TextStyle(
-                      fontSize: 28.sp,
-                      fontWeight: FontWeight.w700,
-                      color: const Color(0xFF333333),
-                    ),
-                  ),
-
-                  SizedBox(height: 12.h),
-
-                  /// Subtitle
-                  Text(
-                    "We've sent a 6‑digit code to your\n"
-                    "phone number for security verification.",
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: 16.sp,
-                      color: const Color(0xFF666666),
-                      height: 1.5,
-                    ),
-                  ),
-
-                  SizedBox(height: 45.h),
-
-                  /// OTP Fields
-                  SingleChildScrollView(
-                    scrollDirection: Axis.horizontal,
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: List.generate(6, otpBox),
-                    ),
-                  ),
-
-                  SizedBox(height: 40.h),
-
-                  /// Verify Button
-                  SizedBox(
-                    width: double.infinity,
-                    height: 56.h,
-                    child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        padding: EdgeInsets.zero,
-                        backgroundColor: Colors.transparent,
-                        shadowColor: Colors.transparent,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(40.r),
+                    /// Icon (lock with gradient circle)
+                    Container(
+                      width: 100.w,
+                      height: 100.w,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        gradient: const LinearGradient(
+                          colors: [Color(0xFF4C229C), Color(0xFF643EB5)],
                         ),
-                        elevation: 0,
+                        boxShadow: [
+                          BoxShadow(
+                            color: const Color(0xFF643EB5).withOpacity(0.4),
+                            blurRadius: 20,
+                            offset: const Offset(0, 8),
+                          )
+                        ],
                       ),
-                      onPressed: () {
-                        String code = controllers.map((e) => e.text).join();
+                      child: Icon(
+                        Icons.lock_open_outlined,
+                        size: 50.sp,
+                        color: Colors.white,
+                      ),
+                    ),
 
-                        if (code.length == 6) {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) => const CreateNewPasswordScreen(),
-                            ),
-                          );
-                        } else {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content:
-                                  Text("Please enter complete 6-digit code"),
-                            ),
-                          );
-                        }
-                      },
-                      child: Container(
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(40.r),
-                          gradient: const LinearGradient(
-                            colors: [Color(0xFF4C229C), Color(0xFF643EB5)],
+                    SizedBox(height: 32.h),
+
+                    /// Title
+                    Text(
+                      "Enter Verification Code",
+                      style: TextStyle(
+                        fontSize: 28.sp,
+                        fontWeight: FontWeight.w700,
+                        color: const Color(0xFF333333),
+                      ),
+                    ),
+
+                    SizedBox(height: 12.h),
+
+                    /// Subtitle
+                    Text(
+                      "We've sent a 6‑digit code to your\n"
+                      "phone number for security verification.",
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 16.sp,
+                        color: const Color(0xFF666666),
+                        height: 1.5,
+                      ),
+                    ),
+
+                    SizedBox(height: 45.h),
+
+                    /// OTP Fields
+                    SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: List.generate(6, otpBox),
+                      ),
+                    ),
+
+                    SizedBox(height: 40.h),
+
+                    /// Verify Button
+                    SizedBox(
+                      width: double.infinity,
+                      height: 56.h,
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          padding: EdgeInsets.zero,
+                          backgroundColor: Colors.transparent,
+                          shadowColor: Colors.transparent,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(40.r),
                           ),
-                          boxShadow: [
-                            BoxShadow(
-                              color: const Color(0xFF643EB5),
-                              blurRadius: 12,
-                              offset: const Offset(0, 6),
-                            )
-                          ],
+                          elevation: 0,
                         ),
+                        onPressed: () {
+                          String code = controllers.map((e) => e.text).join();
+
+                          if (code.length == 6) {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => const CreateNewPasswordScreen(),
+                              ),
+                            );
+                          } else {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content:
+                                    Text("Please enter complete 6-digit code"),
+                              ),
+                            );
+                          }
+                        },
                         child: Container(
-                          alignment: Alignment.center,
-                          child: Text(
-                            "Verify & Continue",
-                            style: TextStyle(
-                              fontSize: 18.sp,
-                              fontWeight: FontWeight.w700,
-                              color: Colors.white,
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(40.r),
+                            gradient: const LinearGradient(
+                              colors: [Color(0xFF4C229C), Color(0xFF643EB5)],
+                            ),
+                            boxShadow: [
+                              BoxShadow(
+                                color: const Color(0xFF643EB5),
+                                blurRadius: 12,
+                                offset: const Offset(0, 6),
+                              )
+                            ],
+                          ),
+                          child: Container(
+                            alignment: Alignment.center,
+                            child: Text(
+                              "Verify & Continue",
+                              style: TextStyle(
+                                fontSize: 18.sp,
+                                fontWeight: FontWeight.w700,
+                                color: Colors.white,
+                              ),
                             ),
                           ),
                         ),
                       ),
                     ),
-                  ),
 
-                  SizedBox(height: 24.h),
+                    SizedBox(height: 24.h),
 
-                  /// Resend Row
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        "Didn't receive the code?",
-                        style: TextStyle(
-                          color: const Color(0xFF6E6A75),
-                          fontSize: 15.sp,
+                    /// Resend Row
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          "Didn't receive the code?",
+                          style: TextStyle(
+                            color: const Color(0xFF6E6A75),
+                            fontSize: 15.sp,
+                          ),
                         ),
-                      ),
-                      SizedBox(width: 6.w),
-                      secondsRemaining > 0
-                          ? Text(
-                              "Resend in 00:${secondsRemaining.toString().padLeft(2, '0')}",
-                              style: TextStyle(
-                                color: const Color(0xFF6A4FB6),
-                                fontWeight: FontWeight.w700,
-                                fontSize: 15.sp,
-                              ),
-                            )
-                          : TextButton(
-                              onPressed: _resendCode,
-                              style: TextButton.styleFrom(
-                                padding: EdgeInsets.zero,
-                                minimumSize: Size.zero,
-                                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                              ),
-                              child: Text(
-                                "Resend now",
+                        SizedBox(width: 6.w),
+                        secondsRemaining > 0
+                            ? Text(
+                                "Resend in 00:${secondsRemaining.toString().padLeft(2, '0')}",
                                 style: TextStyle(
                                   color: const Color(0xFF6A4FB6),
                                   fontWeight: FontWeight.w700,
                                   fontSize: 15.sp,
-                                  decoration: TextDecoration.underline,
+                                ),
+                              )
+                            : TextButton(
+                                onPressed: _resendCode,
+                                style: TextButton.styleFrom(
+                                  padding: EdgeInsets.zero,
+                                  minimumSize: Size.zero,
+                                  tapTargetSize:
+                                      MaterialTapTargetSize.shrinkWrap,
+                                ),
+                                child: Text(
+                                  "Resend now",
+                                  style: TextStyle(
+                                    color: const Color(0xFF6A4FB6),
+                                    fontWeight: FontWeight.w700,
+                                    fontSize: 15.sp,
+                                    decoration: TextDecoration.underline,
+                                  ),
                                 ),
                               ),
-                            ),
-                    ],
-                  ),
-
-                  const Spacer(),
-
-                  /// Security note
-                  Center(
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          Icons.lock_outline,
-                          size: 16.w,
-                          color: const Color(0xFF6A4FB6).withOpacity(0.6),
-                        ),
-                        SizedBox(width: 8.w),
-                        Text(
-                          "End‑to‑end encrypted",
-                          style: TextStyle(
-                            color: const Color(0xFF6A4FB6).withOpacity(0.6),
-                            fontSize: 13.sp,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
                       ],
                     ),
-                  ),
-                  SizedBox(height: 30.h),
-                ],
+
+                    SizedBox(height: 20.h),
+
+                    /// Security note
+                    Center(
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.lock_outline,
+                            size: 16.w,
+                            color: const Color(0xFF6A4FB6).withOpacity(0.6),
+                          ),
+                          SizedBox(width: 8.w),
+                          Text(
+                            "End‑to‑end encrypted",
+                            style: TextStyle(
+                              color: const Color(0xFF6A4FB6).withOpacity(0.6),
+                              fontSize: 13.sp,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    SizedBox(height: 30.h),
+                  ],
+                ),
               ),
             ),
           ),

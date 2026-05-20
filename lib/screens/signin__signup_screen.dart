@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:may_laud/providers/auth_provider.dart';
 import 'package:may_laud/screens/sign_in/sign_in_screen.dart';
 import 'package:may_laud/screens/sign_up/registration_screen.dart';
-import 'package:may_laud/screens/home/main_app.dart';
+import 'package:may_laud/screens/home/nav_bar_button.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// ---------------- WELCOME SCREEN ---------------- ///

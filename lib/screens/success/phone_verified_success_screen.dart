@@ -42,113 +42,115 @@ class VerifiedSuccessScreen extends StatelessWidget {
           ),
 
           SafeArea(
-            child: Padding(
-              padding: EdgeInsets.symmetric(horizontal: 24.w),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  /// SUCCESS ICON (WITH GLOW)
-                  Container(
-                    width: 120.w,
-                    height: 120.w,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      gradient: const LinearGradient(
-                        colors: [Color(0xFF4C229C), Color(0xFF643EB5)],
-                      ),
-                      boxShadow: [
-                        BoxShadow(
-                          color: const Color(0xFF643EB5).withOpacity(0.4),
-                          blurRadius: 20,
-                          offset: const Offset(0, 8),
-                        )
-                      ],
-                    ),
-                    child: Icon(
-                      Icons.check,
-                      size: 60.sp,
-                      color: Colors.white,
-                    ),
-                  ),
-
-                  SizedBox(height: 40.h),
-
-                  /// TITLE
-                  Text(
-                    "Verification Successful",
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: 26.sp,
-                      fontWeight: FontWeight.bold,
-                      color: const Color(0xFF2E0C6D),
-                    ),
-                  ),
-
-                  SizedBox(height: 12.h),
-
-                  /// SUBTEXT
-                  Text(
-                    "Your phone number has been successfully verified.\nYou can now proceed to use Milaud services.",
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: 15.sp,
-                      color: const Color(0xFF666666),
-                      height: 1.5,
-                    ),
-                  ),
-
-                  SizedBox(height: 50.h),
-
-                  /// BUTTON
-                  GestureDetector(
-                    onTap: () {
-                      Navigator.pushReplacement(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => const HomeScreen(),
-                        ),
-                      );
-                    },
-                    child: Container(
-                      width: double.infinity,
-                      padding: EdgeInsets.symmetric(vertical: 16.h),
+            child: SingleChildScrollView(
+              child: Padding(
+                padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 20.h),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    /// SUCCESS ICON (WITH GLOW)
+                    Container(
+                      width: 120.w,
+                      height: 120.w,
                       decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(40.r),
+                        shape: BoxShape.circle,
                         gradient: const LinearGradient(
                           colors: [Color(0xFF4C229C), Color(0xFF643EB5)],
                         ),
                         boxShadow: [
                           BoxShadow(
-                            color: const Color(0xFF643EB5),
-                            blurRadius: 12,
-                            offset: const Offset(0, 6),
+                            color: const Color(0xFF643EB5).withOpacity(0.4),
+                            blurRadius: 20,
+                            offset: const Offset(0, 8),
                           )
                         ],
                       ),
-                      child: Center(
-                        child: Text(
-                          "Continue",
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 18.sp,
-                            fontWeight: FontWeight.bold,
+                      child: Icon(
+                        Icons.check,
+                        size: 60.sp,
+                        color: Colors.white,
+                      ),
+                    ),
+
+                    SizedBox(height: 40.h),
+
+                    /// TITLE
+                    Text(
+                      "Verification Successful",
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 26.sp,
+                        fontWeight: FontWeight.bold,
+                        color: const Color(0xFF2E0C6D),
+                      ),
+                    ),
+
+                    SizedBox(height: 12.h),
+
+                    /// SUBTEXT
+                    Text(
+                      "Your phone number has been successfully verified.\nYou can now proceed to use Milaud services.",
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 15.sp,
+                        color: const Color(0xFF666666),
+                        height: 1.5,
+                      ),
+                    ),
+
+                    SizedBox(height: 50.h),
+
+                    /// BUTTON
+                    GestureDetector(
+                      onTap: () {
+                        Navigator.pushReplacement(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => const HomeScreen(),
+                          ),
+                        );
+                      },
+                      child: Container(
+                        width: double.infinity,
+                        padding: EdgeInsets.symmetric(vertical: 16.h),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(40.r),
+                          gradient: const LinearGradient(
+                            colors: [Color(0xFF4C229C), Color(0xFF643EB5)],
+                          ),
+                          boxShadow: [
+                            BoxShadow(
+                              color: const Color(0xFF643EB5),
+                              blurRadius: 12,
+                              offset: const Offset(0, 6),
+                            )
+                          ],
+                        ),
+                        child: Center(
+                          child: Text(
+                            "Continue",
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 18.sp,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
                         ),
                       ),
                     ),
-                  ),
 
-                  SizedBox(height: 30.h),
+                    SizedBox(height: 30.h),
 
-                  /// EXTRA SMALL TEXT (OPTIONAL)
-                  Text(
-                    "Welcome to Milaud • Milaor Camarines Sur",
-                    style: TextStyle(
-                      fontSize: 12.sp,
-                      color: Colors.grey,
+                    /// EXTRA SMALL TEXT (OPTIONAL)
+                    Text(
+                      "Welcome to Milaud • Milaor Camarines Sur",
+                      style: TextStyle(
+                        fontSize: 12.sp,
+                        color: Colors.grey,
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
           ),

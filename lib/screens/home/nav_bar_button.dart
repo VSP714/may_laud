@@ -94,18 +94,17 @@ class _MainAppState extends State<MainApp> {
     );
   }
 
-  // ─── HOME-STYLE BOTTOM NAV (with notch for FAB) ───────
+  // ─── PROFESSIONAL BOTTOM NAV (notch for FAB) ──────────
   Widget _buildBottomNav() {
     return Container(
-      height: 110.h,
+      height: 100.h,
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(32.r)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(.06),
-            blurRadius: 20,
-            offset: const Offset(0, -4),
+            color: HomeColors.heritagePurple.withOpacity(0.06),
+            blurRadius: 24,
+            offset: const Offset(0, -6),
           ),
         ],
       ),
@@ -113,15 +112,15 @@ class _MainAppState extends State<MainApp> {
         color: Colors.transparent,
         elevation: 0,
         shape: const CircularNotchedRectangle(),
-        notchMargin: 10,
+        notchMargin: 8,
         child: Padding(
-          padding: EdgeInsets.symmetric(horizontal: 4.w),
+          padding: EdgeInsets.symmetric(horizontal: 8.w),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
               _navItem(Icons.home_rounded, 'Home', 0),
               _navItem(Icons.campaign_outlined, 'Announcements', 1),
-              SizedBox(width: 40.w), // gap for FAB
+              SizedBox(width: 44.w), // gap for FAB
               _navItem(Icons.notifications_outlined, 'Notifications', 2),
               _navItem(Icons.person_outline_rounded, 'Profile', 3),
             ],
@@ -131,56 +130,62 @@ class _MainAppState extends State<MainApp> {
     );
   }
 
-  // ─── NAV ITEM (icon + label) ──────────────────────────
+  // ─── PROFESSIONAL NAV ITEM ─────────────────────────────
   Widget _navItem(IconData icon, String label, int index) {
     final bool active = _selectedIndex == index;
-    return InkWell(
-      borderRadius: BorderRadius.circular(16.r),
-      onTap: () => _onItemTapped(index),
-      splashColor: HomeColors.heritagePurple.withOpacity(0.08),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 250),
-        padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(16.r),
-          color: active
-              ? HomeColors.heritagePurple.withOpacity(0.08)
-              : Colors.transparent,
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            AnimatedContainer(
-              duration: const Duration(milliseconds: 250),
-              padding: EdgeInsets.all(active ? 6.w : 4.w),
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: active
-                    ? HomeColors.heritagePurple.withOpacity(0.12)
-                    : Colors.transparent,
+    return Expanded(
+      child: InkWell(
+        borderRadius: BorderRadius.circular(14.r),
+        onTap: () => _onItemTapped(index),
+        splashColor: Colors.transparent,
+        highlightColor: Colors.transparent,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeOutCubic,
+          padding: EdgeInsets.symmetric(vertical: 6.h),
+          margin: EdgeInsets.only(top: active ? 0 : 4.h),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(14.r),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              // Active indicator pill
+              AnimatedContainer(
+                duration: const Duration(milliseconds: 300),
+                curve: Curves.easeOutCubic,
+                margin: EdgeInsets.only(bottom: active ? 5.h : 0),
+                width: active ? 32.w : 0,
+                height: 3.h,
+                decoration: BoxDecoration(
+                  color: HomeColors.heritagePurple,
+                  borderRadius: BorderRadius.circular(10.r),
+                ),
               ),
-              child: Icon(
+              Icon(
                 icon,
-                size: active ? 26.sp : 24.sp,
+                size: active ? 26.sp : 23.sp,
                 color: active
                     ? HomeColors.heritagePurple
-                    : const Color(0xFF9E9E9E),
+                    : const Color(0xFFBDBDBD),
               ),
-            ),
-            SizedBox(height: 4.h),
-            AnimatedDefaultTextStyle(
-              duration: const Duration(milliseconds: 250),
-              style: TextStyle(
-                fontSize: active ? 12.sp : 11.sp,
-                fontWeight: active ? FontWeight.w700 : FontWeight.w500,
-                color: active
-                    ? HomeColors.heritagePurple
-                    : const Color(0xFF9E9E9E),
+              SizedBox(height: active ? 3.h : 2.h),
+              AnimatedDefaultTextStyle(
+                duration: const Duration(milliseconds: 300),
+                curve: Curves.easeOutCubic,
+                style: TextStyle(
+                  fontSize: active ? 11.sp : 10.sp,
+                  fontWeight: active ? FontWeight.w700 : FontWeight.w500,
+                  color: active
+                      ? HomeColors.heritagePurple
+                      : const Color(0xFFBDBDBD),
+                  letterSpacing: active ? 0.2 : 0,
+                ),
+                child: Text(label),
               ),
-              child: Text(label),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -193,48 +198,67 @@ class _MainAppState extends State<MainApp> {
       backgroundColor: Colors.transparent,
       isScrollControlled: true,
       builder: (_) => Container(
-        padding: EdgeInsets.all(24.w),
+        padding: EdgeInsets.fromLTRB(24.w, 16.h, 24.w, 36.h),
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(34.r)),
+          borderRadius: BorderRadius.vertical(top: Radius.circular(28.r)),
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             // Drag handle
             Container(
-              width: 50.w,
-              height: 5.h,
+              width: 40.w,
+              height: 4.h,
               decoration: BoxDecoration(
                 color: Colors.grey.shade300,
                 borderRadius: BorderRadius.circular(20.r),
               ),
             ),
-            SizedBox(height: 28.h),
-            Text(
-              'Quick Services',
-              style: TextStyle(
-                fontSize: 28.sp,
-                fontWeight: FontWeight.bold,
-                color: HomeColors.deepAnchor,
-              ),
+            SizedBox(height: 24.h),
+            Row(
+              children: [
+                Container(
+                  width: 42.w,
+                  height: 42.w,
+                  decoration: BoxDecoration(
+                    color: HomeColors.heritagePurple.withOpacity(0.08),
+                    borderRadius: BorderRadius.circular(12.r),
+                  ),
+                  child: Icon(Icons.miscellaneous_services_rounded,
+                      size: 22.sp, color: HomeColors.heritagePurple),
+                ),
+                SizedBox(width: 14.w),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Public Services',
+                      style: TextStyle(
+                        fontSize: 22.sp,
+                        fontWeight: FontWeight.w700,
+                        color: HomeColors.deepAnchor,
+                      ),
+                    ),
+                    Text(
+                      'Choose a service below',
+                      style: TextStyle(
+                          fontSize: 13.sp, color: HomeColors.textMuted),
+                    ),
+                  ],
+                ),
+              ],
             ),
-            SizedBox(height: 8.h),
-            Text(
-              'Choose from the following services:',
-              style: TextStyle(fontSize: 15.sp, color: Colors.grey),
-            ),
-            SizedBox(height: 28.h),
+            SizedBox(height: 24.h),
             GridView.count(
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
               crossAxisCount: 2,
-              mainAxisSpacing: 18.h,
-              crossAxisSpacing: 18.w,
-              childAspectRatio: 1.15,
+              mainAxisSpacing: 14.h,
+              crossAxisSpacing: 14.w,
+              childAspectRatio: 1.05,
               children: _services.map((s) => _serviceTile(context, s)).toList(),
             ),
-            SizedBox(height: 30.h),
           ],
         ),
       ),
@@ -243,38 +267,60 @@ class _MainAppState extends State<MainApp> {
 
   Widget _serviceTile(BuildContext context, _QuickService service) {
     return InkWell(
-      borderRadius: BorderRadius.circular(28.r),
+      borderRadius: BorderRadius.circular(20.r),
       onTap: () => _openService(context, service),
       child: Container(
+        padding: EdgeInsets.all(16.w),
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(28.r),
-          gradient: LinearGradient(
-            colors: [
-              HomeColors.riverFlow.withOpacity(.12),
-              HomeColors.heritagePurple.withOpacity(.08),
-            ],
+          color: HomeColors.warmHearth,
+          borderRadius: BorderRadius.circular(20.r),
+          border: Border.all(
+            color: HomeColors.heritagePurple.withOpacity(0.06),
           ),
         ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Container(
-              width: 70.w,
-              height: 70.w,
-              decoration: const BoxDecoration(
-                shape: BoxShape.circle,
-                color: HomeColors.heritagePurple,
+              width: 56.w,
+              height: 56.w,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(16.r),
+                boxShadow: [
+                  BoxShadow(
+                    color: HomeColors.heritagePurple.withOpacity(0.08),
+                    blurRadius: 8,
+                    offset: const Offset(0, 3),
+                  ),
+                ],
               ),
-              child: Icon(service.icon, color: Colors.white, size: 34.sp),
+              child: Icon(service.icon,
+                  size: 28.sp, color: HomeColors.heritagePurple),
             ),
-            SizedBox(height: 18.h),
+            SizedBox(height: 12.h),
             Text(
               service.title,
               textAlign: TextAlign.center,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
               style: TextStyle(
-                fontSize: 16.sp,
+                fontSize: 13.sp,
                 fontWeight: FontWeight.w700,
                 color: HomeColors.deepAnchor,
+                height: 1.2,
+              ),
+            ),
+            SizedBox(height: 4.h),
+            Text(
+              service.subtitle,
+              textAlign: TextAlign.center,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                fontSize: 10.sp,
+                height: 1.2,
+                color: HomeColors.textMuted,
               ),
             ),
           ],

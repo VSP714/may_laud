@@ -1,11 +1,41 @@
+// ignore_for_file: deprecated_member_use
+
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:flutter_animate/flutter_animate.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 
 import '../../home/home.dart';
-import '../../home/main_app.dart';
+import '../../home/nav_bar_button.dart';
 import '../../../services/app_services.dart';
+
+// ─── REPORT COLOR PALETTE ─────────────────────────────
+class ReportColors {
+  static const Color heritagePurple = HomeColors.heritagePurple;
+  static const Color deepAnchor = HomeColors.deepAnchor;
+  static const Color warmHearth = HomeColors.warmHearth;
+  static const Color cardWhite = HomeColors.cardWhite;
+  static const Color riverFlow = HomeColors.riverFlow;
+
+  static const Color priorityLow = Color(0xFF22C55E);
+  static const Color priorityMedium = Color(0xFFF59E0B);
+  static const Color priorityHigh = Color(0xFFF97316);
+  static const Color priorityEmergency = Color(0xFFEF4444);
+
+  static const LinearGradient headerGradient = LinearGradient(
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+    colors: [deepAnchor, heritagePurple],
+  );
+
+  static const LinearGradient submitGradient = LinearGradient(
+    begin: Alignment.centerLeft,
+    end: Alignment.centerRight,
+    colors: [heritagePurple, riverFlow],
+  );
+}
 
 class CitizenReportScreen extends StatefulWidget {
   const CitizenReportScreen({super.key});
@@ -28,21 +58,69 @@ class _CitizenReportScreenState extends State<CitizenReportScreen> {
 
   final CitizenReportService _reportService = CitizenReportService();
 
-  final List<String> _categories = [
-    'Infrastructure',
-    'Sanitation',
-    'Security',
-    'Traffic',
-    'Environment',
-    'Health',
-    'Other',
+  final List<Map<String, dynamic>> _categories = [
+    {
+      'name': 'Infrastructure',
+      'icon': Icons.construction_rounded,
+      'color': const Color(0xFF6366F1)
+    },
+    {
+      'name': 'Sanitation',
+      'icon': Icons.cleaning_services_rounded,
+      'color': const Color(0xFF22C55E)
+    },
+    {
+      'name': 'Security',
+      'icon': Icons.security_rounded,
+      'color': const Color(0xFF0EA5E9)
+    },
+    {
+      'name': 'Traffic',
+      'icon': Icons.traffic_rounded,
+      'color': const Color(0xFFF59E0B)
+    },
+    {
+      'name': 'Environment',
+      'icon': Icons.eco_rounded,
+      'color': const Color(0xFF10B981)
+    },
+    {
+      'name': 'Health',
+      'icon': Icons.medical_services_rounded,
+      'color': const Color(0xFFEF4444)
+    },
+    {
+      'name': 'Other',
+      'icon': Icons.more_horiz_rounded,
+      'color': const Color(0xFF8B5CF6)
+    },
   ];
 
-  final List<String> _priorities = [
-    'Low',
-    'Medium',
-    'High',
-    'Emergency',
+  final List<Map<String, dynamic>> _priorities = [
+    {
+      'level': 'Low',
+      'label': 'Routine issue',
+      'icon': Icons.flag_rounded,
+      'color': ReportColors.priorityLow
+    },
+    {
+      'level': 'Medium',
+      'label': 'Needs attention',
+      'icon': Icons.flag_rounded,
+      'color': ReportColors.priorityMedium
+    },
+    {
+      'level': 'High',
+      'label': 'Urgent concern',
+      'icon': Icons.flag_rounded,
+      'color': ReportColors.priorityHigh
+    },
+    {
+      'level': 'Emergency',
+      'label': 'Immediate action',
+      'icon': Icons.warning_rounded,
+      'color': ReportColors.priorityEmergency
+    },
   ];
 
   @override
@@ -54,82 +132,47 @@ class _CitizenReportScreenState extends State<CitizenReportScreen> {
   }
 
   Future<void> _pickFromGallery() async {
-    final XFile? image = await _picker.pickImage(
-      source: ImageSource.gallery,
-      imageQuality: 80,
-    );
-    if (image != null) {
-      setState(() => _attachedPhotos.add(File(image.path)));
-    }
+    final XFile? image =
+        await _picker.pickImage(source: ImageSource.gallery, imageQuality: 80);
+    if (image != null) setState(() => _attachedPhotos.add(File(image.path)));
   }
 
   Future<void> _pickFromCamera() async {
-    final XFile? photo = await _picker.pickImage(
-      source: ImageSource.camera,
-      imageQuality: 80,
-    );
-    if (photo != null) {
-      setState(() => _attachedPhotos.add(File(photo.path)));
-    }
+    final XFile? photo =
+        await _picker.pickImage(source: ImageSource.camera, imageQuality: 80);
+    if (photo != null) setState(() => _attachedPhotos.add(File(photo.path)));
   }
 
-  void _removePhoto(int index) {
-    setState(() => _attachedPhotos.removeAt(index));
-  }
-
-  Color _priorityColor(String priority) {
-    return HomeColors.heritagePurple.withOpacity(
-      priority == 'Low'
-          ? 0.55
-          : priority == 'Medium'
-              ? 0.70
-              : priority == 'High'
-                  ? 0.85
-                  : 1.0,
-    );
-  }
-
-  String _priorityLabel(String priority) {
-    switch (priority) {
-      case 'Low':
-        return 'Low — Routine issue';
-      case 'Medium':
-        return 'Medium — Needs attention';
-      case 'High':
-        return 'High — Urgent concern';
-      case 'Emergency':
-        return 'Emergency — Immediate action';
-      default:
-        return priority;
-    }
-  }
+  void _removePhoto(int index) =>
+      setState(() => _attachedPhotos.removeAt(index));
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: HomeColors.warmHearth,
-      body: SafeArea(
+      backgroundColor: ReportColors.warmHearth,
+      body: Form(
+        key: _formKey,
         child: CustomScrollView(
           physics: const BouncingScrollPhysics(),
           slivers: [
-            _buildHeader(),
+            _buildSliverAppBar(),
             SliverPadding(
-              padding: EdgeInsets.symmetric(horizontal: 20.w),
+              padding: EdgeInsets.fromLTRB(20.w, 20.h, 20.w, 40.h),
               sliver: SliverList(
                 delegate: SliverChildListDelegate([
+                  _buildCategorySection(),
                   SizedBox(height: 20.h),
-                  _buildCategoryCard(),
-                  SizedBox(height: 16.h),
+                  _buildPrioritySection(),
+                  SizedBox(height: 20.h),
                   _buildDetailsCard(),
-                  SizedBox(height: 16.h),
+                  SizedBox(height: 20.h),
                   _buildLocationCard(),
-                  SizedBox(height: 16.h),
+                  SizedBox(height: 20.h),
                   _buildPhotoCard(),
-                  SizedBox(height: 12.h),
+                  SizedBox(height: 24.h),
                   _buildSubmitButton(),
-                  SizedBox(height: 12.h),
-                  _buildInfoNote(),
-                  SizedBox(height: 40.h),
+                  SizedBox(height: 16.h),
+                  _buildInfoBanner(),
                 ]),
               ),
             ),
@@ -139,195 +182,241 @@ class _CitizenReportScreenState extends State<CitizenReportScreen> {
     );
   }
 
-  // ─── GRADIENT HEADER ────────────────────────────────────
-  Widget _buildHeader() {
-    return SliverToBoxAdapter(
-      child: Container(
-        margin: EdgeInsets.fromLTRB(20.w, 12.h, 20.w, 0),
-        padding: EdgeInsets.all(24.w),
-        decoration: BoxDecoration(
-          gradient: const LinearGradient(
-            colors: [HomeColors.deepAnchor, HomeColors.heritagePurple],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-          borderRadius: BorderRadius.circular(24.r),
-          boxShadow: [
-            BoxShadow(
-              color: HomeColors.heritagePurple.withOpacity(0.25),
-              blurRadius: 16,
-              offset: const Offset(0, 6),
-            ),
-          ],
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            InkWell(
-              onTap: () => Navigator.pushAndRemoveUntil(
-                context,
-                MaterialPageRoute(builder: (_) => const MainApp()),
-                (route) => false,
-              ),
-              borderRadius: BorderRadius.circular(8.r),
-              child: Padding(
-                padding: EdgeInsets.all(4.w),
-                child: Icon(Icons.arrow_back_rounded,
-                    size: 22.sp, color: Colors.white),
-              ),
-            ),
-            SizedBox(height: 8.h),
-            Row(
-              children: [
-                Container(
-                  width: 48.w,
-                  height: 48.w,
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.18),
-                    borderRadius: BorderRadius.circular(14.r),
-                  ),
-                  child: Icon(
-                    Icons.report_problem_rounded,
-                    size: 26.sp,
-                    color: Colors.white,
-                  ),
-                ),
-                SizedBox(width: 14.w),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+  // ─── SLIVER APP BAR ─────────────────────────────────
+  Widget _buildSliverAppBar() {
+    return SliverAppBar(
+      expandedHeight: 180.h,
+      pinned: true,
+      elevation: 0,
+      backgroundColor: ReportColors.heritagePurple,
+      flexibleSpace: FlexibleSpaceBar(
+        background: Container(
+          decoration:
+              const BoxDecoration(gradient: ReportColors.headerGradient),
+          child: SafeArea(
+            child: Padding(
+              padding: EdgeInsets.fromLTRB(20.w, 8.h, 20.w, 20.h),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  SizedBox(height: 20.h),
+                  Row(
                     children: [
-                      Text(
-                        'Citizen Report',
-                        style: TextStyle(
-                          fontSize: 22.sp,
-                          fontWeight: FontWeight.w700,
-                          color: Colors.white,
-                          letterSpacing: -0.3,
+                      Container(
+                        width: 52.w,
+                        height: 52.w,
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.18),
+                          borderRadius: BorderRadius.circular(16.r),
                         ),
+                        child: const Icon(Icons.report_problem_rounded,
+                            color: Colors.white, size: 26),
                       ),
-                      SizedBox(height: 2.h),
-                      Text(
-                        'Report an Issue or Concern',
-                        style: TextStyle(
-                          fontSize: 14.sp,
-                          fontWeight: FontWeight.w500,
-                          color: Colors.white70,
+                      SizedBox(width: 14.w),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'CITIZEN REPORT',
+                              style: GoogleFonts.poppins(
+                                fontSize: 12.sp,
+                                fontWeight: FontWeight.w700,
+                                color: Colors.white54,
+                                letterSpacing: 3,
+                              ),
+                            ),
+                            SizedBox(height: 2.h),
+                            Text(
+                              'Report an Issue',
+                              style: GoogleFonts.poppins(
+                                fontSize: 22.sp,
+                                fontWeight: FontWeight.w700,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                     ],
                   ),
-                ),
-              ],
-            ),
-            SizedBox(height: 16.h),
-            Text(
-              'Help improve Milaor by reporting issues you encounter in the community. Your report will be reviewed by the appropriate department.',
-              style: TextStyle(
-                fontSize: 13.sp,
-                fontWeight: FontWeight.w400,
-                color: Colors.white60,
-                height: 1.5,
+                  SizedBox(height: 14.h),
+                  Text(
+                    'Help improve Milaor by reporting community issues. Your report will be reviewed by the appropriate department.',
+                    style: GoogleFonts.inter(
+                      fontSize: 12.sp,
+                      color: Colors.white60,
+                      height: 1,
+                    ),
+                  ),
+                ],
               ),
             ),
-          ],
+          ),
         ),
       ),
     );
   }
 
-  // ─── CATEGORY + PRIORITY CARD ───────────────────────────
-  Widget _buildCategoryCard() {
+  // ─── CATEGORY SELECTOR ──────────────────────────────
+  Widget _buildCategorySection() {
     return Container(
-      padding: EdgeInsets.all(20.w),
-      decoration: BoxDecoration(
-        color: HomeColors.cardWhite,
-        borderRadius: BorderRadius.circular(20.r),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.04),
-            blurRadius: 10,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
+      padding: EdgeInsets.all(22.w),
+      decoration: _cardDecoration(),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _sectionLabel('Category'),
-          SizedBox(height: 10.h),
-          DropdownButtonFormField<String>(
-            value: _selectedCategory,
-            decoration: _dropDecoration(),
-            items: _categories.map((category) {
-              return DropdownMenuItem(
-                value: category,
-                child: Text(
-                  category,
-                  style:
-                      TextStyle(fontSize: 15.sp, fontWeight: FontWeight.w500),
-                ),
-              );
-            }).toList(),
-            onChanged: (value) => setState(() => _selectedCategory = value!),
-          ),
-          SizedBox(height: 20.h),
-          _sectionLabel('Priority Level'),
-          SizedBox(height: 10.h),
-          ..._priorities.map((priority) {
-            final isSelected = _selectedPriority == priority;
-            return Padding(
-              padding: EdgeInsets.only(bottom: 8.h),
-              child: InkWell(
-                onTap: () => setState(() => _selectedPriority = priority),
-                borderRadius: BorderRadius.circular(12.r),
+          _sectionHeader('Category', Icons.category_rounded),
+          SizedBox(height: 16.h),
+          Wrap(
+            spacing: 10.w,
+            runSpacing: 10.h,
+            children: _categories.map((cat) {
+              final isSelected = _selectedCategory == cat['name'];
+              return GestureDetector(
+                onTap: () => setState(() => _selectedCategory = cat['name']),
                 child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 180),
+                  duration: 200.ms,
                   padding:
-                      EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
+                      EdgeInsets.symmetric(horizontal: 14.w, vertical: 10.h),
                   decoration: BoxDecoration(
                     color: isSelected
-                        ? HomeColors.heritagePurple.withOpacity(0.06)
+                        ? (cat['color'] as Color).withOpacity(0.1)
                         : Colors.transparent,
-                    borderRadius: BorderRadius.circular(12.r),
+                    borderRadius: BorderRadius.circular(14.r),
                     border: Border.all(
                       color: isSelected
-                          ? _priorityColor(priority)
-                          : const Color(0xFFE0E0E0),
+                          ? (cat['color'] as Color)
+                          : Colors.grey[300]!,
                       width: isSelected ? 1.5 : 1,
                     ),
                   ),
                   child: Row(
+                    mainAxisSize: MainAxisSize.min,
                     children: [
-                      Container(
-                        width: 14.w,
-                        height: 14.w,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: _priorityColor(priority),
+                      Icon(cat['icon'] as IconData,
+                          size: 18.sp,
+                          color: isSelected
+                              ? (cat['color'] as Color)
+                              : Colors.grey[500]),
+                      SizedBox(width: 6.w),
+                      Text(
+                        cat['name'],
+                        style: GoogleFonts.inter(
+                          fontSize: 13.sp,
+                          fontWeight:
+                              isSelected ? FontWeight.w600 : FontWeight.w500,
+                          color: isSelected
+                              ? (cat['color'] as Color)
+                              : Colors.grey[600],
                         ),
                       ),
-                      SizedBox(width: 12.w),
-                      Expanded(
-                        child: Text(
-                          _priorityLabel(priority),
-                          style: TextStyle(
-                            fontSize: 14.sp,
-                            fontWeight:
-                                isSelected ? FontWeight.w600 : FontWeight.w500,
-                            color: isSelected
-                                ? HomeColors.deepAnchor
-                                : const Color(0xFF757575),
+                    ],
+                  ),
+                ),
+              );
+            }).toList(),
+          ),
+        ],
+      ),
+    ).animate().fadeIn(duration: 400.ms).slideY(begin: 0.04, end: 0);
+  }
+
+  // ─── PRIORITY SELECTOR ──────────────────────────────
+  Widget _buildPrioritySection() {
+    return Container(
+      padding: EdgeInsets.all(22.w),
+      decoration: _cardDecoration(),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _sectionHeader('Priority Level', Icons.flag_circle_rounded),
+          SizedBox(height: 14.h),
+          ..._priorities.map((p) {
+            final isSelected = _selectedPriority == p['level'];
+            final Color color = p['color'];
+            return Padding(
+              padding: EdgeInsets.only(bottom: 10.h),
+              child: Material(
+                color: Colors.transparent,
+                borderRadius: BorderRadius.circular(16.r),
+                child: InkWell(
+                  borderRadius: BorderRadius.circular(16.r),
+                  onTap: () => setState(() => _selectedPriority = p['level']),
+                  child: AnimatedContainer(
+                    duration: 200.ms,
+                    padding:
+                        EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
+                    decoration: BoxDecoration(
+                      color: isSelected
+                          ? color.withOpacity(0.06)
+                          : Colors.transparent,
+                      borderRadius: BorderRadius.circular(16.r),
+                      border: Border.all(
+                        color: isSelected ? color : Colors.grey[200]!,
+                        width: isSelected ? 1.5 : 1,
+                      ),
+                    ),
+                    child: Row(
+                      children: [
+                        Container(
+                          width: 40.w,
+                          height: 40.w,
+                          decoration: BoxDecoration(
+                            color: isSelected ? color : color.withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(12.r),
+                            boxShadow: isSelected
+                                ? [
+                                    BoxShadow(
+                                        color: color.withOpacity(0.3),
+                                        blurRadius: 8,
+                                        offset: const Offset(0, 3))
+                                  ]
+                                : null,
+                          ),
+                          child: Icon(p['icon'] as IconData,
+                              color: isSelected ? Colors.white : color,
+                              size: 20.sp),
+                        ),
+                        SizedBox(width: 14.w),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                p['level'],
+                                style: GoogleFonts.poppins(
+                                  fontSize: 15.sp,
+                                  fontWeight: FontWeight.w600,
+                                  color: isSelected
+                                      ? ReportColors.deepAnchor
+                                      : Colors.grey[700],
+                                ),
+                              ),
+                              Text(
+                                p['label'],
+                                style: GoogleFonts.inter(
+                                  fontSize: 12.sp,
+                                  color: Colors.grey[500],
+                                ),
+                              ),
+                            ],
                           ),
                         ),
-                      ),
-                      if (isSelected)
-                        Icon(
-                          Icons.check_circle_rounded,
-                          size: 20.sp,
-                          color: HomeColors.heritagePurple,
-                        ),
-                    ],
+                        if (isSelected)
+                          Container(
+                            width: 24.w,
+                            height: 24.w,
+                            decoration: BoxDecoration(
+                              color: color,
+                              shape: BoxShape.circle,
+                            ),
+                            child: const Icon(Icons.check_rounded,
+                                color: Colors.white, size: 16),
+                          ),
+                      ],
+                    ),
                   ),
                 ),
               ),
@@ -335,342 +424,193 @@ class _CitizenReportScreenState extends State<CitizenReportScreen> {
           }),
         ],
       ),
-    );
+    )
+        .animate()
+        .fadeIn(duration: 400.ms, delay: 100.ms)
+        .slideY(begin: 0.04, end: 0);
   }
 
-  // ─── TITLE + DESCRIPTION CARD ───────────────────────────
+  // ─── DETAILS CARD ───────────────────────────────────
   Widget _buildDetailsCard() {
     return Container(
-      padding: EdgeInsets.all(20.w),
-      decoration: BoxDecoration(
-        color: HomeColors.cardWhite,
-        borderRadius: BorderRadius.circular(20.r),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.04),
-            blurRadius: 10,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
+      padding: EdgeInsets.all(22.w),
+      decoration: _cardDecoration(),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _sectionLabel('Issue Details'),
-          SizedBox(height: 14.h),
-          TextFormField(
+          _sectionHeader('Issue Details', Icons.description_rounded),
+          SizedBox(height: 16.h),
+          _buildTextField(
             controller: _titleController,
-            style: TextStyle(
-              fontSize: 15.sp,
-              fontWeight: FontWeight.w500,
-              color: HomeColors.deepAnchor,
-            ),
-            decoration: InputDecoration(
-              hintText: 'Brief title of the issue',
-              hintStyle: TextStyle(
-                fontSize: 14.sp,
-                color: const Color(0xFFBDBDBD),
-                fontWeight: FontWeight.w400,
-              ),
-              prefixIcon: Icon(
-                Icons.title_rounded,
-                size: 20.sp,
-                color: HomeColors.heritagePurple.withOpacity(0.6),
-              ),
-              filled: true,
-              fillColor: HomeColors.warmHearth,
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12.r),
-                borderSide: BorderSide.none,
-              ),
-              enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12.r),
-                borderSide: BorderSide.none,
-              ),
-              focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12.r),
-                borderSide: const BorderSide(
-                    color: HomeColors.heritagePurple, width: 1.5),
-              ),
-              errorBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12.r),
-                borderSide: const BorderSide(color: Color(0xFFD32F2F)),
-              ),
-              contentPadding:
-                  EdgeInsets.symmetric(horizontal: 16.w, vertical: 16.h),
-            ),
-            validator: (value) {
-              if (value == null || value.trim().isEmpty) {
-                return 'Please enter a title';
-              }
-              return null;
-            },
+            hint: 'Brief title of the issue',
+            icon: Icons.title_rounded,
+            validator: (v) =>
+                (v == null || v.trim().isEmpty) ? 'Please enter a title' : null,
           ),
           SizedBox(height: 14.h),
-          TextFormField(
+          _buildTextField(
             controller: _descriptionController,
+            hint:
+                'Describe the issue in detail — what happened, when, and who is affected...',
+            icon: Icons.article_rounded,
             maxLines: 5,
-            style: TextStyle(
-              fontSize: 15.sp,
-              fontWeight: FontWeight.w500,
-              color: HomeColors.deepAnchor,
-            ),
-            decoration: InputDecoration(
-              hintText:
-                  'Describe the issue in detail — what happened, when, and who is affected...',
-              hintStyle: TextStyle(
-                fontSize: 14.sp,
-                color: const Color(0xFFBDBDBD),
-                fontWeight: FontWeight.w400,
-              ),
-              alignLabelWithHint: true,
-              filled: true,
-              fillColor: HomeColors.warmHearth,
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12.r),
-                borderSide: BorderSide.none,
-              ),
-              enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12.r),
-                borderSide: BorderSide.none,
-              ),
-              focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12.r),
-                borderSide: const BorderSide(
-                    color: HomeColors.heritagePurple, width: 1.5),
-              ),
-              errorBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12.r),
-                borderSide: const BorderSide(color: Color(0xFFD32F2F)),
-              ),
-              contentPadding:
-                  EdgeInsets.symmetric(horizontal: 16.w, vertical: 16.h),
-            ),
-            validator: (value) {
-              if (value == null || value.trim().isEmpty) {
-                return 'Please enter a description';
-              }
-              return null;
-            },
+            validator: (v) => (v == null || v.trim().isEmpty)
+                ? 'Please enter a description'
+                : null,
           ),
         ],
       ),
-    );
+    )
+        .animate()
+        .fadeIn(duration: 400.ms, delay: 200.ms)
+        .slideY(begin: 0.04, end: 0);
   }
 
-  // ─── LOCATION CARD ──────────────────────────────────────
+  // ─── LOCATION CARD ──────────────────────────────────
   Widget _buildLocationCard() {
     return Container(
-      padding: EdgeInsets.all(20.w),
-      decoration: BoxDecoration(
-        color: HomeColors.cardWhite,
-        borderRadius: BorderRadius.circular(20.r),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.04),
-            blurRadius: 10,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
+      padding: EdgeInsets.all(22.w),
+      decoration: _cardDecoration(),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _sectionLabel('Location'),
-          SizedBox(height: 10.h),
+          _sectionHeader('Location', Icons.location_on_rounded),
+          SizedBox(height: 14.h),
           Row(
             children: [
               Expanded(
-                child: TextFormField(
+                child: _buildTextField(
                   controller: _locationController,
-                  style: TextStyle(
-                    fontSize: 15.sp,
-                    fontWeight: FontWeight.w500,
-                    color: HomeColors.deepAnchor,
-                  ),
-                  decoration: InputDecoration(
-                    hintText: 'Street, Barangay, or Landmark',
-                    hintStyle: TextStyle(
-                      fontSize: 14.sp,
-                      color: const Color(0xFFBDBDBD),
-                    ),
-                    prefixIcon: Icon(
-                      Icons.location_on_outlined,
-                      size: 20.sp,
-                      color: HomeColors.heritagePurple.withOpacity(0.6),
-                    ),
-                    filled: true,
-                    fillColor: HomeColors.warmHearth,
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12.r),
-                      borderSide: BorderSide.none,
-                    ),
-                    enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12.r),
-                      borderSide: BorderSide.none,
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12.r),
-                      borderSide: const BorderSide(
-                          color: HomeColors.heritagePurple, width: 1.5),
-                    ),
-                    contentPadding:
-                        EdgeInsets.symmetric(horizontal: 16.w, vertical: 16.h),
-                  ),
-                  validator: (value) {
-                    if (value == null || value.trim().isEmpty) {
-                      return 'Please enter a location';
-                    }
-                    return null;
-                  },
+                  hint: 'Street, Barangay, or Landmark',
+                  icon: Icons.pin_drop_rounded,
+                  validator: (v) => (v == null || v.trim().isEmpty)
+                      ? 'Please enter a location'
+                      : null,
                 ),
               ),
-              SizedBox(width: 10.w),
-              InkWell(
+              SizedBox(width: 12.w),
+              GestureDetector(
                 onTap: () => _showSnack('Getting current location...'),
-                borderRadius: BorderRadius.circular(12.r),
                 child: Container(
                   width: 52.w,
                   height: 52.w,
                   decoration: BoxDecoration(
-                    color: HomeColors.heritagePurple.withOpacity(0.08),
-                    borderRadius: BorderRadius.circular(12.r),
+                    color: ReportColors.heritagePurple.withOpacity(0.08),
+                    borderRadius: BorderRadius.circular(14.r),
+                    border: Border.all(
+                        color: ReportColors.heritagePurple.withOpacity(0.15)),
                   ),
-                  child: Icon(
-                    Icons.my_location_rounded,
-                    size: 22.sp,
-                    color: HomeColors.heritagePurple,
-                  ),
+                  child: Icon(Icons.my_location_rounded,
+                      size: 22.sp, color: ReportColors.heritagePurple),
                 ),
               ),
             ],
           ),
         ],
       ),
-    );
+    )
+        .animate()
+        .fadeIn(duration: 400.ms, delay: 300.ms)
+        .slideY(begin: 0.04, end: 0);
   }
 
-  // ─── PHOTO ATTACHMENTS CARD ─────────────────────────────
+  // ─── PHOTO CARD ─────────────────────────────────────
   Widget _buildPhotoCard() {
     return Container(
-      padding: EdgeInsets.all(20.w),
-      decoration: BoxDecoration(
-        color: HomeColors.cardWhite,
-        borderRadius: BorderRadius.circular(20.r),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.04),
-            blurRadius: 10,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
+      padding: EdgeInsets.all(22.w),
+      decoration: _cardDecoration(),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              _sectionLabel('Photo Evidence'),
+              _sectionHeader('Photo Evidence', Icons.camera_alt_rounded),
               if (_attachedPhotos.isNotEmpty)
-                Text(
-                  '${_attachedPhotos.length} attached',
-                  style: TextStyle(
-                    fontSize: 13.sp,
-                    fontWeight: FontWeight.w500,
-                    color: const Color(0xFF9E9E9E),
+                Container(
+                  padding:
+                      EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
+                  decoration: BoxDecoration(
+                    color: ReportColors.heritagePurple.withOpacity(0.08),
+                    borderRadius: BorderRadius.circular(8.r),
+                  ),
+                  child: Text(
+                    '${_attachedPhotos.length} attached',
+                    style: GoogleFonts.inter(
+                        fontSize: 12.sp,
+                        fontWeight: FontWeight.w600,
+                        color: ReportColors.heritagePurple),
                   ),
                 ),
             ],
           ),
-          SizedBox(height: 3.h),
+          SizedBox(height: 4.h),
           Text(
             'Photos help us understand the issue better (optional)',
-            style: TextStyle(
-              fontSize: 13.sp,
-              color: const Color(0xFF9E9E9E),
-              height: 1.4,
-            ),
+            style: GoogleFonts.inter(fontSize: 12.sp, color: Colors.grey[500]),
           ),
-          SizedBox(height: 14.h),
-
-          // Photo grid
-          if (_attachedPhotos.isNotEmpty) ...[
+          SizedBox(height: 16.h),
+          if (_attachedPhotos.isNotEmpty)
             SizedBox(
-              height: 110.h,
+              height: 120.h,
               child: ListView.separated(
                 scrollDirection: Axis.horizontal,
+                physics: const BouncingScrollPhysics(),
                 itemCount: _attachedPhotos.length + 1,
                 separatorBuilder: (_, __) => SizedBox(width: 10.w),
                 itemBuilder: (context, index) {
-                  // Add photo button at the end
-                  if (index == _attachedPhotos.length) {
-                    return _buildAddPhotoThumb(
-                      onTap: _showPhotoSourcePicker,
-                    );
-                  }
-                  // Photo thumbnail
-                  return _buildPhotoThumb(
-                    file: _attachedPhotos[index],
-                    index: index,
-                  );
+                  if (index == _attachedPhotos.length) return _addPhotoThumb();
+                  return _photoThumb(index);
                 },
               ),
-            ),
-          ] else
-            _buildEmptyPhotoArea(),
+            )
+          else
+            _emptyPhotoArea(),
         ],
       ),
-    );
+    )
+        .animate()
+        .fadeIn(duration: 400.ms, delay: 400.ms)
+        .slideY(begin: 0.04, end: 0);
   }
 
-  Widget _buildEmptyPhotoArea() {
-    return InkWell(
+  Widget _emptyPhotoArea() {
+    return GestureDetector(
       onTap: _showPhotoSourcePicker,
-      borderRadius: BorderRadius.circular(14.r),
       child: Container(
         width: double.infinity,
-        padding: EdgeInsets.symmetric(vertical: 28.h),
+        padding: EdgeInsets.symmetric(vertical: 32.h),
         decoration: BoxDecoration(
-          color: HomeColors.warmHearth,
-          borderRadius: BorderRadius.circular(14.r),
+          color: ReportColors.warmHearth,
+          borderRadius: BorderRadius.circular(16.r),
           border: Border.all(
-            color: HomeColors.heritagePurple.withOpacity(0.15),
-            width: 1.5,
-            strokeAlign: BorderSide.strokeAlignInside,
-          ),
+              color: ReportColors.heritagePurple.withOpacity(0.15), width: 1.5),
         ),
         child: Column(
           children: [
             Container(
-              width: 48.w,
-              height: 48.w,
+              width: 52.w,
+              height: 52.w,
               decoration: BoxDecoration(
-                color: HomeColors.heritagePurple.withOpacity(0.08),
-                borderRadius: BorderRadius.circular(12.r),
+                color: ReportColors.heritagePurple.withOpacity(0.08),
+                borderRadius: BorderRadius.circular(14.r),
               ),
-              child: Icon(
-                Icons.add_a_photo_rounded,
-                size: 24.sp,
-                color: HomeColors.heritagePurple,
-              ),
+              child: Icon(Icons.add_a_photo_rounded,
+                  size: 26.sp, color: ReportColors.heritagePurple),
             ),
-            SizedBox(height: 10.h),
+            SizedBox(height: 12.h),
             Text(
               'Tap to add photos',
-              style: TextStyle(
-                fontSize: 14.sp,
-                fontWeight: FontWeight.w600,
-                color: HomeColors.heritagePurple,
-              ),
+              style: GoogleFonts.inter(
+                  fontSize: 14.sp,
+                  fontWeight: FontWeight.w600,
+                  color: ReportColors.heritagePurple),
             ),
             SizedBox(height: 4.h),
             Text(
               'Gallery or Camera',
-              style: TextStyle(
-                fontSize: 12.sp,
-                color: const Color(0xFF9E9E9E),
-              ),
+              style:
+                  GoogleFonts.inter(fontSize: 12.sp, color: Colors.grey[500]),
             ),
           ],
         ),
@@ -678,43 +618,34 @@ class _CitizenReportScreenState extends State<CitizenReportScreen> {
     );
   }
 
-  Widget _buildAddPhotoThumb({required VoidCallback onTap}) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(12.r),
+  Widget _addPhotoThumb() {
+    return GestureDetector(
+      onTap: _showPhotoSourcePicker,
       child: Container(
-        width: 100.w,
-        height: 110.h,
+        width: 110.w,
+        height: 120.h,
         decoration: BoxDecoration(
-          color: HomeColors.heritagePurple.withOpacity(0.05),
-          borderRadius: BorderRadius.circular(12.r),
+          color: ReportColors.heritagePurple.withOpacity(0.04),
+          borderRadius: BorderRadius.circular(14.r),
           border: Border.all(
-            color: HomeColors.heritagePurple.withOpacity(0.2),
-            width: 1.5,
-            strokeAlign: BorderSide.strokeAlignInside,
-          ),
+              color: ReportColors.heritagePurple.withOpacity(0.2), width: 1.5),
         ),
-        child: Icon(
-          Icons.add_rounded,
-          size: 28.sp,
-          color: HomeColors.heritagePurple,
-        ),
+        child: Icon(Icons.add_rounded,
+            size: 30.sp, color: ReportColors.heritagePurple.withOpacity(0.6)),
       ),
     );
   }
 
-  Widget _buildPhotoThumb({required File file, required int index}) {
+  Widget _photoThumb(int index) {
     return Stack(
       children: [
         Container(
-          width: 100.w,
-          height: 110.h,
+          width: 110.w,
+          height: 120.h,
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(12.r),
+            borderRadius: BorderRadius.circular(14.r),
             image: DecorationImage(
-              image: FileImage(file),
-              fit: BoxFit.cover,
-            ),
+                image: FileImage(_attachedPhotos[index]), fit: BoxFit.cover),
           ),
         ),
         Positioned(
@@ -723,14 +654,12 @@ class _CitizenReportScreenState extends State<CitizenReportScreen> {
           child: GestureDetector(
             onTap: () => _removePhoto(index),
             child: Container(
-              width: 24.w,
-              height: 24.w,
+              width: 26.w,
+              height: 26.w,
               decoration: const BoxDecoration(
-                color: Colors.black54,
-                shape: BoxShape.circle,
-              ),
+                  color: Colors.black54, shape: BoxShape.circle),
               child:
-                  Icon(Icons.close_rounded, size: 14.sp, color: Colors.white),
+                  Icon(Icons.close_rounded, size: 15.sp, color: Colors.white),
             ),
           ),
         ),
@@ -744,222 +673,265 @@ class _CitizenReportScreenState extends State<CitizenReportScreen> {
       backgroundColor: Colors.transparent,
       builder: (ctx) => Container(
         padding:
-            EdgeInsets.only(bottom: MediaQuery.of(ctx).padding.bottom + 16.h),
+            EdgeInsets.only(bottom: MediaQuery.of(ctx).padding.bottom + 20.h),
         decoration: BoxDecoration(
-          color: HomeColors.cardWhite,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(24.r)),
+          color: ReportColors.cardWhite,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(32.r)),
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            SizedBox(height: 8.h),
+            SizedBox(height: 10.h),
             Container(
-              width: 36.w,
+              width: 40.w,
               height: 4.h,
               decoration: BoxDecoration(
-                color: const Color(0xFFE0E0E0),
-                borderRadius: BorderRadius.circular(2.r),
-              ),
+                  color: Colors.grey[300],
+                  borderRadius: BorderRadius.circular(2.r)),
             ),
-            SizedBox(height: 20.h),
-            Text(
-              'Add Photo',
-              style: TextStyle(
-                fontSize: 18.sp,
-                fontWeight: FontWeight.w700,
-                color: HomeColors.deepAnchor,
-              ),
-            ),
-            SizedBox(height: 20.h),
-            ListTile(
+            SizedBox(height: 22.h),
+            Text('Add Photo',
+                style: GoogleFonts.poppins(
+                    fontSize: 20.sp,
+                    fontWeight: FontWeight.w700,
+                    color: ReportColors.deepAnchor)),
+            SizedBox(height: 22.h),
+            _photoOption(
+              icon: Icons.camera_alt_rounded,
+              title: 'Take a Photo',
+              subtitle: 'Use your camera',
               onTap: () {
                 Navigator.pop(ctx);
                 _pickFromCamera();
               },
-              leading: Container(
-                width: 44.w,
-                height: 44.w,
-                decoration: BoxDecoration(
-                  color: HomeColors.heritagePurple.withOpacity(0.08),
-                  borderRadius: BorderRadius.circular(12.r),
-                ),
-                child: Icon(
-                  Icons.camera_alt_rounded,
-                  size: 22.sp,
-                  color: HomeColors.heritagePurple,
-                ),
-              ),
-              title: Text(
-                'Take a Photo',
-                style: TextStyle(
-                  fontSize: 15.sp,
-                  fontWeight: FontWeight.w600,
-                  color: HomeColors.deepAnchor,
-                ),
-              ),
-              subtitle: Text(
-                'Use your camera',
-                style:
-                    TextStyle(fontSize: 13.sp, color: const Color(0xFF9E9E9E)),
-              ),
             ),
-            ListTile(
+            _photoOption(
+              icon: Icons.photo_library_rounded,
+              title: 'Choose from Gallery',
+              subtitle: 'Pick from your photos',
               onTap: () {
                 Navigator.pop(ctx);
                 _pickFromGallery();
               },
-              leading: Container(
-                width: 44.w,
-                height: 44.w,
-                decoration: BoxDecoration(
-                  color: HomeColors.heritagePurple.withOpacity(0.08),
-                  borderRadius: BorderRadius.circular(12.r),
-                ),
-                child: Icon(
-                  Icons.photo_library_rounded,
-                  size: 22.sp,
-                  color: HomeColors.heritagePurple,
-                ),
-              ),
-              title: Text(
-                'Choose from Gallery',
-                style: TextStyle(
-                  fontSize: 15.sp,
-                  fontWeight: FontWeight.w600,
-                  color: HomeColors.deepAnchor,
-                ),
-              ),
-              subtitle: Text(
-                'Pick from your photos',
-                style:
-                    TextStyle(fontSize: 13.sp, color: const Color(0xFF9E9E9E)),
-              ),
             ),
-            SizedBox(height: 8.h),
+            SizedBox(height: 10.h),
           ],
         ),
       ),
     );
   }
 
-  // ─── SUBMIT BUTTON ──────────────────────────────────────
-  Widget _buildSubmitButton() {
-    return SizedBox(
-      width: double.infinity,
-      height: 56.h,
-      child: ElevatedButton(
-        onPressed: _isSubmitting ? null : _submitReport,
-        style: ElevatedButton.styleFrom(
-          backgroundColor: HomeColors.heritagePurple,
-          foregroundColor: Colors.white,
-          disabledBackgroundColor: HomeColors.heritagePurple.withOpacity(0.6),
-          disabledForegroundColor: Colors.white70,
-          elevation: 0,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16.r),
-          ),
+  Widget _photoOption(
+      {required IconData icon,
+      required String title,
+      required String subtitle,
+      required VoidCallback onTap}) {
+    return ListTile(
+      onTap: onTap,
+      leading: Container(
+        width: 48.w,
+        height: 48.w,
+        decoration: BoxDecoration(
+          color: ReportColors.heritagePurple.withOpacity(0.08),
+          borderRadius: BorderRadius.circular(14.r),
         ),
-        child: _isSubmitting
-            ? SizedBox(
-                width: 22.w,
-                height: 22.w,
-                child: const CircularProgressIndicator(
-                  strokeWidth: 2.5,
-                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white70),
-                ),
-              )
-            : Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(Icons.send_rounded, size: 20.sp),
-                  SizedBox(width: 10.w),
-                  Text(
-                    'Submit Report',
-                    style: TextStyle(
-                      fontSize: 17.sp,
-                      fontWeight: FontWeight.w700,
-                      letterSpacing: -0.2,
-                    ),
-                  ),
-                ],
-              ),
+        child: Icon(icon, size: 24.sp, color: ReportColors.heritagePurple),
       ),
+      title: Text(title,
+          style: GoogleFonts.inter(
+              fontSize: 15.sp,
+              fontWeight: FontWeight.w600,
+              color: ReportColors.deepAnchor)),
+      subtitle: Text(subtitle,
+          style: GoogleFonts.inter(fontSize: 13.sp, color: Colors.grey[500])),
     );
   }
 
-  // ─── INFO NOTE ──────────────────────────────────────────
-  Widget _buildInfoNote() {
+  // ─── SUBMIT BUTTON ──────────────────────────────────
+  Widget _buildSubmitButton() {
     return Container(
-      padding: EdgeInsets.all(16.w),
+      width: double.infinity,
+      height: 58.h,
       decoration: BoxDecoration(
-        color: HomeColors.cardWhite,
-        borderRadius: BorderRadius.circular(14.r),
+        gradient: ReportColors.submitGradient,
+        borderRadius: BorderRadius.circular(18.r),
+        boxShadow: [
+          BoxShadow(
+            color: ReportColors.heritagePurple.withOpacity(0.35),
+            blurRadius: 18,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        borderRadius: BorderRadius.circular(18.r),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(18.r),
+          onTap: _isSubmitting ? null : _submitReport,
+          child: Center(
+            child: _isSubmitting
+                ? SizedBox(
+                    width: 24.w,
+                    height: 24.w,
+                    child: const CircularProgressIndicator(
+                      strokeWidth: 2.5,
+                      valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                    ),
+                  )
+                : Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Icon(Icons.send_rounded,
+                          color: Colors.white, size: 22),
+                      SizedBox(width: 10.w),
+                      Text(
+                        'Submit Report',
+                        style: GoogleFonts.poppins(
+                          fontSize: 17.sp,
+                          fontWeight: FontWeight.w700,
+                          color: Colors.white,
+                          letterSpacing: -0.3,
+                        ),
+                      ),
+                    ],
+                  ),
+          ),
+        ),
+      ),
+    ).animate().fadeIn(duration: 500.ms, delay: 500.ms);
+  }
+
+  // ─── INFO BANNER ────────────────────────────────────
+  Widget _buildInfoBanner() {
+    return Container(
+      padding: EdgeInsets.all(18.w),
+      decoration: BoxDecoration(
+        color: ReportColors.cardWhite,
+        borderRadius: BorderRadius.circular(16.r),
         border: Border.all(color: const Color(0xFFE8E0F0)),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(
-            Icons.info_outline_rounded,
-            size: 20.sp,
-            color: HomeColors.heritagePurple.withOpacity(0.6),
+          Container(
+            width: 36.w,
+            height: 36.w,
+            decoration: BoxDecoration(
+              color: ReportColors.heritagePurple.withOpacity(0.08),
+              borderRadius: BorderRadius.circular(10.r),
+            ),
+            child: Icon(Icons.info_outline_rounded,
+                size: 20.sp, color: ReportColors.heritagePurple),
           ),
           SizedBox(width: 12.w),
           Expanded(
             child: Text(
-              'Your report will be reviewed within 24–48 hours. For emergencies requiring immediate response, please call the Milaor hotline directly.',
-              style: TextStyle(
+              'Your report will be reviewed within 24–48 hours. For emergencies, please call the Milaor hotline directly.',
+              style: GoogleFonts.inter(
                 fontSize: 13.sp,
-                fontWeight: FontWeight.w400,
-                color: const Color(0xFF757575),
-                height: 1.5,
+                color: Colors.grey[600],
+                height: 1.6,
               ),
             ),
           ),
         ],
       ),
+    ).animate().fadeIn(duration: 400.ms, delay: 600.ms);
+  }
+
+  // ─── SHARED HELPERS ─────────────────────────────────
+  BoxDecoration _cardDecoration() {
+    return BoxDecoration(
+      color: ReportColors.cardWhite,
+      borderRadius: BorderRadius.circular(24.r),
+      boxShadow: [
+        BoxShadow(
+          color: ReportColors.heritagePurple.withOpacity(0.06),
+          blurRadius: 20,
+          offset: const Offset(0, 8),
+        ),
+      ],
     );
   }
 
-  // ─── SECTION LABEL HELPER ───────────────────────────────
-  Widget _sectionLabel(String text) {
-    return Text(
-      text,
-      style: TextStyle(
-        fontSize: 17.sp,
-        fontWeight: FontWeight.w700,
-        color: HomeColors.deepAnchor,
-        letterSpacing: -0.2,
-      ),
+  Widget _sectionHeader(String title, IconData icon) {
+    return Row(
+      children: [
+        Container(
+          width: 34.w,
+          height: 34.w,
+          decoration: BoxDecoration(
+            color: ReportColors.heritagePurple.withOpacity(0.08),
+            borderRadius: BorderRadius.circular(10.r),
+          ),
+          child: Icon(icon, size: 18.sp, color: ReportColors.heritagePurple),
+        ),
+        SizedBox(width: 10.w),
+        Text(
+          title,
+          style: GoogleFonts.poppins(
+            fontSize: 17.sp,
+            fontWeight: FontWeight.w700,
+            color: ReportColors.deepAnchor,
+          ),
+        ),
+      ],
     );
   }
 
-  // ─── DROPDOWN DECORATION ────────────────────────────────
-  InputDecoration _dropDecoration() {
-    return InputDecoration(
-      filled: true,
-      fillColor: HomeColors.warmHearth,
-      border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(12.r),
-        borderSide: BorderSide.none,
+  Widget _buildTextField({
+    required TextEditingController controller,
+    required String hint,
+    required IconData icon,
+    int maxLines = 1,
+    String? Function(String?)? validator,
+  }) {
+    return TextFormField(
+      controller: controller,
+      maxLines: maxLines,
+      style: GoogleFonts.inter(
+          fontSize: 15.sp,
+          fontWeight: FontWeight.w500,
+          color: ReportColors.deepAnchor),
+      decoration: InputDecoration(
+        hintText: hint,
+        hintStyle:
+            GoogleFonts.inter(fontSize: 14.sp, color: const Color(0xFFBDBDBD)),
+        prefixIcon: Padding(
+          padding: EdgeInsets.only(left: 4.w),
+          child: Icon(icon,
+              size: 20.sp, color: ReportColors.heritagePurple.withOpacity(0.5)),
+        ),
+        filled: true,
+        fillColor: ReportColors.warmHearth,
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(14.r),
+          borderSide: BorderSide.none,
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(14.r),
+          borderSide: BorderSide.none,
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(14.r),
+          borderSide:
+              const BorderSide(color: ReportColors.heritagePurple, width: 1.5),
+        ),
+        errorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(14.r),
+          borderSide: const BorderSide(color: Color(0xFFEF4444), width: 1),
+        ),
+        contentPadding: EdgeInsets.symmetric(
+            horizontal: 16.w, vertical: maxLines > 1 ? 16.h : 14.h),
       ),
-      enabledBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(12.r),
-        borderSide: BorderSide.none,
-      ),
-      focusedBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(12.r),
-        borderSide:
-            const BorderSide(color: HomeColors.heritagePurple, width: 1.5),
-      ),
-      contentPadding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 16.h),
+      validator: validator,
     );
   }
 
-  // ─── SUBMIT LOGIC ───────────────────────────────────────
+  // ─── SUBMIT LOGIC ───────────────────────────────────
   Future<void> _submitReport() async {
     if (!_formKey.currentState!.validate()) return;
-
     setState(() => _isSubmitting = true);
 
     try {
@@ -972,7 +944,6 @@ class _CitizenReportScreenState extends State<CitizenReportScreen> {
       );
 
       if (!mounted) return;
-
       _showSuccessDialog(
         reportId: result['reportId'] as String,
         assignedTo: result['assignedTo'] as String,
@@ -993,95 +964,90 @@ class _CitizenReportScreenState extends State<CitizenReportScreen> {
   }) {
     showDialog(
       context: context,
-      builder: (ctx) => AlertDialog(
-        shape:
-            RoundedRectangleBorder(borderRadius: BorderRadius.circular(20.r)),
-        title: Column(
-          children: [
-            Container(
-              width: 56.w,
-              height: 56.w,
-              decoration: BoxDecoration(
-                color: const Color(0xFFE8F5E9),
-                borderRadius: BorderRadius.circular(16.r),
-              ),
-              child: Icon(
-                Icons.check_circle_rounded,
-                size: 32.sp,
-                color: const Color(0xFF2E7D32),
-              ),
-            ),
-            SizedBox(height: 16.h),
-            Text(
-              'Report Submitted',
-              style: TextStyle(
-                fontSize: 20.sp,
-                fontWeight: FontWeight.w700,
-                color: HomeColors.deepAnchor,
-              ),
-            ),
-          ],
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 8.h),
-              decoration: BoxDecoration(
-                color: HomeColors.warmHearth,
-                borderRadius: BorderRadius.circular(10.r),
-              ),
-              child: Text(
-                reportId,
-                style: TextStyle(
-                  fontSize: 15.sp,
-                  fontWeight: FontWeight.w700,
-                  color: HomeColors.heritagePurple,
-                  letterSpacing: 0.5,
+      builder: (ctx) => Dialog(
+        backgroundColor: Colors.transparent,
+        child: Container(
+          padding: EdgeInsets.all(28.w),
+          decoration: BoxDecoration(
+            color: ReportColors.cardWhite,
+            borderRadius: BorderRadius.circular(28.r),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 72.w,
+                height: 72.w,
+                decoration: BoxDecoration(
+                  color: const Color(0xFFE8F5E9),
+                  borderRadius: BorderRadius.circular(20.r),
                 ),
+                child: const Icon(Icons.check_circle_rounded,
+                    size: 40, color: Color(0xFF2E7D32)),
               ),
-            ),
-            SizedBox(height: 14.h),
-            Text(
-              'Thank you for your report, kababayan. Your concern has been forwarded to $assignedTo. Estimated resolution: $estimatedResolution.',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 14.sp,
-                color: const Color(0xFF616161),
-                height: 1.5,
+              SizedBox(height: 20.h),
+              Text(
+                'Report Submitted!',
+                style: GoogleFonts.poppins(
+                    fontSize: 22.sp,
+                    fontWeight: FontWeight.w700,
+                    color: ReportColors.deepAnchor),
               ),
-            ),
-          ],
-        ),
-        actions: [
-          SizedBox(
-            width: double.infinity,
-            child: ElevatedButton(
-              onPressed: () {
-                Navigator.pop(ctx); // close dialog
-                Navigator.pushAndRemoveUntil(
-                  context,
-                  MaterialPageRoute(builder: (_) => const MainApp()),
-                  (route) => false,
-                );
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: HomeColors.heritagePurple,
-                foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(
+              SizedBox(height: 8.h),
+              Container(
+                padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
+                decoration: BoxDecoration(
+                  color: ReportColors.warmHearth,
                   borderRadius: BorderRadius.circular(12.r),
                 ),
-                padding: EdgeInsets.symmetric(vertical: 14.h),
+                child: Text(
+                  reportId,
+                  style: GoogleFonts.poppins(
+                    fontSize: 15.sp,
+                    fontWeight: FontWeight.w700,
+                    color: ReportColors.heritagePurple,
+                    letterSpacing: 0.5,
+                  ),
+                ),
               ),
-              child: Text(
-                'OK, understood',
-                style: TextStyle(fontSize: 15.sp, fontWeight: FontWeight.w600),
+              SizedBox(height: 16.h),
+              Text(
+                'Thank you, kababayan! Your concern has been forwarded to $assignedTo. Estimated resolution: $estimatedResolution.',
+                textAlign: TextAlign.center,
+                style: GoogleFonts.inter(
+                    fontSize: 14.sp, color: Colors.grey[600], height: 1.6),
               ),
-            ),
+              SizedBox(height: 24.h),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () {
+                    Navigator.pop(ctx);
+                    Navigator.pushAndRemoveUntil(
+                      context,
+                      MaterialPageRoute(builder: (_) => const MainApp()),
+                      (route) => false,
+                    );
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: ReportColors.heritagePurple,
+                    foregroundColor: Colors.white,
+                    padding: EdgeInsets.symmetric(vertical: 16.h),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14.r)),
+                    elevation: 0,
+                  ),
+                  child: Text(
+                    'OK, understood',
+                    style: GoogleFonts.inter(
+                        fontSize: 15.sp, fontWeight: FontWeight.w600),
+                  ),
+                ),
+              ),
+            ],
           ),
-        ],
-        actionsPadding: EdgeInsets.fromLTRB(20.w, 0, 20.w, 16.h),
-      ),
+        ),
+      ).animate().scale(duration: 300.ms, curve: Curves.easeOutBack),
     );
   }
 
@@ -1092,7 +1058,7 @@ class _CitizenReportScreenState extends State<CitizenReportScreen> {
         behavior: SnackBarBehavior.floating,
         duration: const Duration(seconds: 2),
         shape:
-            RoundedRectangleBorder(borderRadius: BorderRadius.circular(10.r)),
+            RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
         margin: EdgeInsets.all(12.w),
       ),
     );

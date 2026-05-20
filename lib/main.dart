@@ -5,7 +5,7 @@ import 'package:may_laud/core/local_storage.dart';
 import 'package:may_laud/core/performance_optimization.dart';
 import 'package:may_laud/providers/app_providers.dart';
 import 'package:may_laud/screens/intro_pages/opening_milaud.dart';
-import 'package:may_laud/screens/home/main_app.dart';
+import 'package:may_laud/screens/home/nav_bar_button.dart';
 //import 'package:may_laud/screens/splash_screen.dart';
 import 'theme/app_theme.dart';
 

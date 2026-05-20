@@ -2,6 +2,38 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:flutter_animate/flutter_animate.dart';
+import 'package:pull_to_refresh/pull_to_refresh.dart';
+import 'package:google_fonts/google_fonts.dart';
+
+// ─── BRAND PALETTE (mirrors home.dart for consistency) ───
+class FloodColors {
+  static const Color heritagePurple = Color(0xFF4C229C);
+  static const Color riverFlow = Color(0xFF643EB5);
+  static const Color deepAnchor = Color(0xFF24005B);
+  static const Color warmHearth = Color(0xFFF8F5FF);
+  static const Color cardWhite = Colors.white;
+
+  // Flood severity
+  static const Color safe = Color(0xFF22C55E);
+  static const Color alert = Color(0xFFF59E0B);
+  static const Color danger = Color(0xFFEF4444);
+  static const Color safeBg = Color(0xFFF0FDF4);
+  static const Color alertBg = Color(0xFFFFFBEB);
+  static const Color dangerBg = Color(0xFFFEF2F2);
+
+  static const LinearGradient headerGradient = LinearGradient(
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+    colors: [heritagePurple, deepAnchor],
+  );
+
+  static const LinearGradient safeGradient = LinearGradient(
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+    colors: [Color(0xFF16A34A), Color(0xFF22C55E)],
+  );
+}
 
 class FloodAlertScreen extends StatefulWidget {
   const FloodAlertScreen({super.key});
@@ -11,342 +43,618 @@ class FloodAlertScreen extends StatefulWidget {
 }
 
 class _FloodAlertScreenState extends State<FloodAlertScreen> {
-  // Mock flood data
-  final Map<String, dynamic> _floodData = {
-    'riverLevel': 2.4, // meters
-    'dangerLevel': 3.0, // meters
-    'status': 'Normal',
-    'trend': 'stable', // rising, falling, stable
-    'lastUpdate': DateTime.now().subtract(const Duration(minutes: 30)),
-    'forecast': [
-      {'time': 'Now', 'level': 2.4, 'status': 'Normal'},
-      {'time': '3h', 'level': 2.5, 'status': 'Normal'},
-      {'time': '6h', 'level': 2.7, 'status': 'Normal'},
-      {'time': '12h', 'level': 2.9, 'status': 'Alert'},
-      {'time': '24h', 'level': 3.2, 'status': 'Warning'},
-    ],
-  };
+  final RefreshController _refreshController = RefreshController();
+  late Map<String, dynamic> _floodData;
+  late List<Map<String, dynamic>> _alerts;
+  late List<Map<String, dynamic>> _safetyTips;
+  int _expandedTipIndex = -1;
 
-  final List<Map<String, dynamic>> _alerts = [
-    {
-      'title': 'Bicol River Monitoring',
-      'level': 'Normal',
-      'color': Color(0xFF4CAF50),
-      'updated': '30 minutes ago',
-    },
-    {
-      'title': 'Milaor Creek',
-      'level': 'Normal',
-      'color': Color(0xFF4CAF50),
-      'updated': '1 hour ago',
-    },
-    {
-      'title': 'San Francisco River',
-      'level': 'Alert',
-      'color': Color(0xFFFF9800),
-      'updated': '2 hours ago',
-    },
-  ];
+  @override
+  void initState() {
+    super.initState();
+    _initData();
+  }
 
-  final List<Map<String, dynamic>> _safetyTips = [
-    {
-      'title': 'During Flood Warnings',
-      'tips': [
-        'Move to higher ground immediately.',
-        'Avoid walking or driving through flood waters.',
-        'Stay tuned to local news for updates.',
-        'Prepare emergency kit with food, water, and medicines.',
+  void _initData() {
+    _floodData = {
+      'riverLevel': 2.4,
+      'dangerLevel': 3.0,
+      'status': 'Normal',
+      'trend': 'stable',
+      'lastUpdate': DateTime.now().subtract(const Duration(minutes: 30)),
+      'forecast': [
+        {'time': 'Now', 'level': 2.4, 'status': 'Normal', 'icon': Icons.waves},
+        {'time': '3h', 'level': 2.5, 'status': 'Normal', 'icon': Icons.waves},
+        {'time': '6h', 'level': 2.7, 'status': 'Normal', 'icon': Icons.water},
+        {
+          'time': '12h',
+          'level': 2.9,
+          'status': 'Alert',
+          'icon': Icons.warning_amber
+        },
+        {
+          'time': '24h',
+          'level': 3.2,
+          'status': 'Warning',
+          'icon': Icons.dangerous
+        },
       ],
-    },
-    {
-      'title': 'Emergency Contacts',
-      'tips': [
-        'Milaor Disaster Risk Reduction Office: (054) 123-4567',
-        'Emergency Hotline: 911',
-        'Barangay Hall: (054) 123-4568',
-        'Rescue Team: 0912-345-6789',
-      ],
-    },
-  ];
+    };
+
+    _alerts = [
+      {
+        'title': 'Bicol River Monitoring',
+        'level': 'Normal',
+        'color': FloodColors.safe,
+        'bgColor': FloodColors.safeBg,
+        'icon': Icons.waves_rounded,
+        'updated': '30 minutes ago',
+        'station': 'Station 1 - Poblacion',
+      },
+      {
+        'title': 'Milaor Creek',
+        'level': 'Normal',
+        'color': FloodColors.safe,
+        'bgColor': FloodColors.safeBg,
+        'icon': Icons.water_drop_rounded,
+        'updated': '1 hour ago',
+        'station': 'Station 2 - San Roque',
+      },
+      {
+        'title': 'San Francisco River',
+        'level': 'Alert',
+        'color': FloodColors.alert,
+        'bgColor': FloodColors.alertBg,
+        'icon': Icons.warning_rounded,
+        'updated': '2 hours ago',
+        'station': 'Station 3 - Capucnasan',
+      },
+    ];
+
+    _safetyTips = [
+      {
+        'title': 'During Flood Warnings',
+        'icon': Icons.shield_rounded,
+        'tips': [
+          'Move to higher ground immediately.',
+          'Avoid walking or driving through flood waters.',
+          'Stay tuned to local news for updates.',
+          'Prepare emergency kit with food, water, and medicines.',
+        ],
+      },
+      {
+        'title': 'Emergency Contacts',
+        'icon': Icons.contact_phone_rounded,
+        'tips': [
+          'MDRRMO: (054) 123-4567',
+          'Emergency Hotline: 911',
+          'Barangay Hall: (054) 123-4568',
+          'Rescue Team: 0912-345-6789',
+        ],
+      },
+      {
+        'title': 'Evacuation Routes',
+        'icon': Icons.map_rounded,
+        'tips': [
+          'Milaor Central School - Primary evacuation center',
+          'Barangay San Roque Covered Court',
+          'Milaor Municipal Hall - Command center',
+          'Follow designated routes posted in your barangay.',
+        ],
+      },
+    ];
+  }
+
+  @override
+  void dispose() {
+    _refreshController.dispose();
+    super.dispose();
+  }
+
+  void _onRefresh() async {
+    await Future.delayed(const Duration(seconds: 2));
+    setState(() => _initData());
+    _refreshController.refreshCompleted();
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFFEF7FF),
-      appBar: AppBar(
-        title: Text(
-          'Flood Alert System',
-          style: TextStyle(
-            fontSize: 24.sp,
-            fontWeight: FontWeight.w700,
-            color: const Color(0xFF4C229C),
-          ),
+      backgroundColor: FloodColors.warmHearth,
+      body: SmartRefresher(
+        controller: _refreshController,
+        onRefresh: _onRefresh,
+        header: const WaterDropMaterialHeader(
+          backgroundColor: FloodColors.heritagePurple,
+          color: Colors.white,
         ),
-        backgroundColor: Colors.white,
-        elevation: 0,
-        centerTitle: false,
-        actions: [
-          IconButton(
-            onPressed: _refreshData,
-            icon: Icon(
-              Icons.refresh,
-              size: 28.sp,
-              color: const Color(0xFF4C229C),
-            ),
-          ),
-        ],
-      ),
-      body: SingleChildScrollView(
-        padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 16.h),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Current Status Card
-            _buildStatusCard(),
-            SizedBox(height: 24.h),
-
-            // River Level Chart
-            _buildRiverLevelChart(),
-            SizedBox(height: 24.h),
-
-            // Area Alerts
-            Text(
-              'Area Flood Alerts',
-              style: TextStyle(
-                fontSize: 20.sp,
-                fontWeight: FontWeight.w700,
-                color: const Color(0xFF333333),
+        child: CustomScrollView(
+          physics: const BouncingScrollPhysics(),
+          slivers: [
+            _buildSliverAppBar(),
+            SliverPadding(
+              padding: EdgeInsets.fromLTRB(20.w, 20.h, 20.w, 40.h),
+              sliver: SliverList(
+                delegate: SliverChildListDelegate([
+                  _buildHeroStatusCard(),
+                  SizedBox(height: 24.h),
+                  _buildQuickStatsRow(),
+                  SizedBox(height: 24.h),
+                  _buildForecastSection(),
+                  SizedBox(height: 24.h),
+                  _buildSectionHeader(
+                      'Area Flood Alerts', Icons.location_on_rounded),
+                  SizedBox(height: 12.h),
+                  ..._alerts.asMap().entries.map(
+                      (e) => _buildAlertCard(e.value, e.key).animate().fadeIn(
+                            duration: 400.ms,
+                            delay: (100 * e.key).ms,
+                          )),
+                  SizedBox(height: 24.h),
+                  _buildSectionHeader(
+                      'Safety Information', Icons.info_outline_rounded),
+                  SizedBox(height: 12.h),
+                  ..._safetyTips
+                      .asMap()
+                      .entries
+                      .map((e) => _buildSafetyAccordion(e.value, e.key)),
+                  SizedBox(height: 24.h),
+                  _buildEmergencyActions(),
+                ]),
               ),
             ),
-            SizedBox(height: 12.h),
-            ..._alerts.map((alert) => _buildAlertCard(alert)),
-            SizedBox(height: 24.h),
-
-            // Safety Information
-            Text(
-              'Safety Information',
-              style: TextStyle(
-                fontSize: 20.sp,
-                fontWeight: FontWeight.w700,
-                color: const Color(0xFF333333),
-              ),
-            ),
-            SizedBox(height: 12.h),
-            ..._safetyTips.map((tip) => _buildSafetyTipCard(tip)),
-            SizedBox(height: 24.h),
-
-            // Emergency Actions
-            _buildEmergencyActions(),
-            SizedBox(height: 40.h),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildStatusCard() {
-    Color statusColor;
-    String statusText = _floodData['status'];
+  // ─── SLIVER APP BAR ────────────────────────────────────
+  Widget _buildSliverAppBar() {
+    return SliverAppBar(
+      expandedHeight: 140.h,
+      pinned: true,
+      elevation: 0,
+      backgroundColor: FloodColors.heritagePurple,
+      flexibleSpace: FlexibleSpaceBar(
+        background: Container(
+          decoration: const BoxDecoration(gradient: FloodColors.headerGradient),
+          child: SafeArea(
+            child: Padding(
+              padding: EdgeInsets.fromLTRB(20.w, 12.h, 20.w, 0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Row(
+                    children: [
+                      SizedBox(width: 16.w),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'FLOOD MONITORING',
+                              style: GoogleFonts.poppins(
+                                fontSize: 12.sp,
+                                fontWeight: FontWeight.w700,
+                                color: Colors.white54,
+                                letterSpacing: 3,
+                              ),
+                            ),
+                            Text(
+                              'Milaor Alert System',
+                              style: GoogleFonts.poppins(
+                                fontSize: 22.sp,
+                                fontWeight: FontWeight.w700,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      // _buildRefreshButton(),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
 
+  // ─── HERO STATUS CARD ──────────────────────────────────
+  Widget _buildHeroStatusCard() {
+    final statusText = _floodData['status'] as String;
+    final riverLevel = (_floodData['riverLevel'] as num).toDouble();
+    final dangerLevel = (_floodData['dangerLevel'] as num).toDouble();
+    final percentage = (riverLevel / dangerLevel).clamp(0.0, 1.0);
+
+    Color statusColor;
+    Color glowColor;
+    IconData statusIcon;
     switch (statusText.toLowerCase()) {
       case 'normal':
-        statusColor = const Color(0xFF4CAF50);
+        statusColor = FloodColors.safe;
+        glowColor = FloodColors.safe.withOpacity(0.3);
+        statusIcon = Icons.check_circle_rounded;
         break;
       case 'alert':
-        statusColor = const Color(0xFFFF9800);
+        statusColor = FloodColors.alert;
+        glowColor = FloodColors.alert.withOpacity(0.3);
+        statusIcon = Icons.warning_amber_rounded;
         break;
       case 'warning':
-        statusColor = const Color(0xFFF44336);
+        statusColor = FloodColors.danger;
+        glowColor = FloodColors.danger.withOpacity(0.3);
+        statusIcon = Icons.dangerous_rounded;
         break;
       default:
-        statusColor = const Color(0xFF4C229C);
+        statusColor = FloodColors.heritagePurple;
+        glowColor = FloodColors.heritagePurple.withOpacity(0.3);
+        statusIcon = Icons.info_rounded;
     }
 
     return Container(
-      padding: EdgeInsets.all(20.w),
+      width: double.infinity,
+      padding: EdgeInsets.all(24.w),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20.r),
+        color: FloodColors.cardWhite,
+        borderRadius: BorderRadius.circular(28.r),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
+            color: FloodColors.heritagePurple.withOpacity(0.08),
+            blurRadius: 30,
+            offset: const Offset(0, 12),
           ),
         ],
       ),
       child: Column(
         children: [
+          // ─── Status Badge & Title ───
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
                 'Current Status',
-                style: TextStyle(
-                  fontSize: 18.sp,
+                style: GoogleFonts.poppins(
+                  fontSize: 14.sp,
                   fontWeight: FontWeight.w600,
-                  color: const Color(0xFF333333),
+                  color: Colors.grey[600],
                 ),
               ),
               Container(
                 padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
                 decoration: BoxDecoration(
                   color: statusColor.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(20.r),
-                  border: Border.all(color: statusColor, width: 1),
+                  borderRadius: BorderRadius.circular(100.r),
+                  border: Border.all(color: statusColor.withOpacity(0.3)),
                 ),
-                child: Text(
-                  statusText.toUpperCase(),
-                  style: TextStyle(
-                    fontSize: 14.sp,
-                    fontWeight: FontWeight.w700,
-                    color: statusColor,
-                  ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(statusIcon, color: statusColor, size: 18.sp),
+                    SizedBox(width: 6.w),
+                    Text(
+                      statusText.toUpperCase(),
+                      style: GoogleFonts.poppins(
+                        fontSize: 13.sp,
+                        fontWeight: FontWeight.w700,
+                        color: statusColor,
+                        letterSpacing: 1,
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ],
           ),
-          SizedBox(height: 20.h),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              _buildMetric(
-                label: 'River Level',
-                value: '${_floodData['riverLevel']} m',
-                subtext: 'Danger: ${_floodData['dangerLevel']} m',
-              ),
-              _buildMetric(
-                label: 'Trend',
-                value: _floodData['trend'].toString().toUpperCase(),
-                subtext: 'Last 6 hours',
-              ),
-              _buildMetric(
-                label: 'Last Update',
-                value: _formatTime(_floodData['lastUpdate']),
-                subtext: '30 min ago',
-              ),
-            ],
+          SizedBox(height: 28.h),
+          // ─── Circular Gauge ───
+          SizedBox(
+            width: 170.w,
+            height: 170.w,
+            child: Stack(
+              alignment: Alignment.center,
+              children: [
+                SizedBox(
+                  width: 170.w,
+                  height: 170.w,
+                  child: CircularProgressIndicator(
+                    value: percentage,
+                    strokeWidth: 12.w,
+                    backgroundColor: Colors.grey[200],
+                    valueColor: AlwaysStoppedAnimation(statusColor),
+                    strokeCap: StrokeCap.round,
+                  ),
+                ),
+                Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      '${riverLevel}m',
+                      style: GoogleFonts.poppins(
+                        fontSize: 38.sp,
+                        fontWeight: FontWeight.w800,
+                        color: FloodColors.deepAnchor,
+                        height: 1,
+                      ),
+                    ),
+                    SizedBox(height: 2.h),
+                    Text(
+                      'of ${dangerLevel}m',
+                      style: GoogleFonts.inter(
+                        fontSize: 14.sp,
+                        fontWeight: FontWeight.w500,
+                        color: Colors.grey[500],
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+          SizedBox(height: 24.h),
+          // ─── Status Text ───
+          Container(
+            padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 12.h),
+            decoration: BoxDecoration(
+              color: statusColor.withOpacity(0.08),
+              borderRadius: BorderRadius.circular(16.r),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 8.w,
+                  height: 8.w,
+                  decoration: BoxDecoration(
+                    color: statusColor,
+                    shape: BoxShape.circle,
+                    boxShadow: [
+                      BoxShadow(
+                          color: glowColor, blurRadius: 8, spreadRadius: 2),
+                    ],
+                  ),
+                ),
+                SizedBox(width: 10.w),
+                Text(
+                  _getStatusMessage(statusText),
+                  style: GoogleFonts.inter(
+                    fontSize: 14.sp,
+                    fontWeight: FontWeight.w600,
+                    color: FloodColors.deepAnchor,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    ).animate().fadeIn(duration: 500.ms).slideY(begin: 0.05, end: 0);
+  }
+
+  String _getStatusMessage(String status) {
+    switch (status.toLowerCase()) {
+      case 'normal':
+        return 'Water levels are within safe limits';
+      case 'alert':
+        return 'Monitor updates — water level is rising';
+      case 'warning':
+        return 'Danger level reached — prepare to evacuate';
+      default:
+        return 'Monitoring in progress';
+    }
+  }
+
+  // ─── QUICK STATS ROW ───────────────────────────────────
+  Widget _buildQuickStatsRow() {
+    return Row(
+      children: [
+        Expanded(
+            child: _buildStatCard(
+          icon: Icons.trending_up_rounded,
+          label: 'Trend',
+          value: (_floodData['trend'] as String).toUpperCase(),
+          color: FloodColors.riverFlow,
+        )),
+        SizedBox(width: 12.w),
+        Expanded(
+            child: _buildStatCard(
+          icon: Icons.access_time_rounded,
+          label: 'Last Update',
+          value: _formatTime(_floodData['lastUpdate']),
+          color: FloodColors.heritagePurple,
+        )),
+        SizedBox(width: 12.w),
+        Expanded(
+            child: _buildStatCard(
+          icon: Icons.water_drop_rounded,
+          label: 'Rainfall',
+          value: '12mm',
+          color: const Color(0xFF0EA5E9),
+        )),
+      ],
+    );
+  }
+
+  Widget _buildStatCard({
+    required IconData icon,
+    required String label,
+    required String value,
+    required Color color,
+  }) {
+    return Container(
+      padding: EdgeInsets.all(16.w),
+      decoration: BoxDecoration(
+        color: FloodColors.cardWhite,
+        borderRadius: BorderRadius.circular(20.r),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          Container(
+            width: 40.w,
+            height: 40.w,
+            decoration: BoxDecoration(
+              color: color.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(12.r),
+            ),
+            child: Icon(icon, color: color, size: 20.sp),
+          ),
+          SizedBox(height: 10.h),
+          Text(
+            value,
+            style: GoogleFonts.poppins(
+              fontSize: 18.sp,
+              fontWeight: FontWeight.w700,
+              color: FloodColors.deepAnchor,
+            ),
+          ),
+          SizedBox(height: 2.h),
+          Text(
+            label,
+            style: GoogleFonts.inter(
+              fontSize: 11.sp,
+              color: Colors.grey[500],
+            ),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildMetric({
-    required String label,
-    required String value,
-    required String subtext,
-  }) {
-    return Column(
-      children: [
-        Text(
-          label,
-          style: TextStyle(
-            fontSize: 12.sp,
-            color: const Color(0xFF666666),
-          ),
-        ),
-        SizedBox(height: 4.h),
-        Text(
-          value,
-          style: TextStyle(
-            fontSize: 20.sp,
-            fontWeight: FontWeight.w700,
-            color: const Color(0xFF4C229C),
-          ),
-        ),
-        SizedBox(height: 4.h),
-        Text(
-          subtext,
-          style: TextStyle(
-            fontSize: 10.sp,
-            color: const Color(0xFF999999),
-          ),
-        ),
-      ],
-    );
-  }
+  // ─── FORECAST SECTION ──────────────────────────────────
+  Widget _buildForecastSection() {
+    final forecasts = _floodData['forecast'] as List<dynamic>;
 
-  Widget _buildRiverLevelChart() {
     return Container(
-      padding: EdgeInsets.all(20.w),
+      width: double.infinity,
+      padding: EdgeInsets.all(24.w),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20.r),
+        color: FloodColors.cardWhite,
+        borderRadius: BorderRadius.circular(28.r),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
+            color: FloodColors.heritagePurple.withOpacity(0.06),
+            blurRadius: 24,
+            offset: const Offset(0, 10),
           ),
         ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            'River Level Forecast',
-            style: TextStyle(
-              fontSize: 18.sp,
-              fontWeight: FontWeight.w600,
-              color: const Color(0xFF333333),
-            ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'River Level Forecast',
+                style: GoogleFonts.poppins(
+                  fontSize: 18.sp,
+                  fontWeight: FontWeight.w700,
+                  color: FloodColors.deepAnchor,
+                ),
+              ),
+              Container(
+                padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
+                decoration: BoxDecoration(
+                  color: FloodColors.warmHearth,
+                  borderRadius: BorderRadius.circular(100.r),
+                ),
+                child: Text(
+                  '24h outlook',
+                  style: GoogleFonts.inter(
+                    fontSize: 12.sp,
+                    fontWeight: FontWeight.w600,
+                    color: FloodColors.heritagePurple,
+                  ),
+                ),
+              ),
+            ],
           ),
-          SizedBox(height: 16.h),
+          SizedBox(height: 24.h),
+          // ─── Bar Chart ───
           SizedBox(
-            height: 150.h,
+            height: 180.h,
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.end,
               mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: _floodData['forecast'].map<Widget>((point) {
-                final level = point['level'] as double;
+              children: forecasts.map<Widget>((point) {
+                final level = (point['level'] as num).toDouble();
                 final status = point['status'] as String;
+                final time = point['time'] as String;
+                final icon = point['icon'] as IconData;
 
                 Color barColor;
                 switch (status) {
-                  case 'Normal':
-                    barColor = const Color(0xFF4CAF50);
-                    break;
                   case 'Alert':
-                    barColor = const Color(0xFFFF9800);
+                    barColor = FloodColors.alert;
                     break;
                   case 'Warning':
-                    barColor = const Color(0xFFF44336);
+                    barColor = FloodColors.danger;
                     break;
                   default:
-                    barColor = const Color(0xFF4C229C);
+                    barColor = FloodColors.safe;
                 }
 
-                final height = (level / 5.0) * 100.h; // Scale for visualization
+                final heightFactor = (level / 4.0).clamp(0.15, 1.0);
+                final barHeight = 100.h * heightFactor;
 
                 return Column(
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
-                    Container(
-                      width: 30.w,
-                      height: height,
-                      decoration: BoxDecoration(
+                    // Level label
+                    Text(
+                      '${level}m',
+                      style: GoogleFonts.poppins(
+                        fontSize: 12.sp,
+                        fontWeight: FontWeight.w700,
                         color: barColor,
-                        borderRadius: BorderRadius.vertical(
-                          top: Radius.circular(8.r),
+                      ),
+                    ),
+                    SizedBox(height: 6.h),
+                    // Bar
+                    Container(
+                      width: 32.w,
+                      height: barHeight,
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.bottomCenter,
+                          end: Alignment.topCenter,
+                          colors: [barColor, barColor.withOpacity(0.6)],
                         ),
+                        borderRadius: BorderRadius.vertical(
+                          top: Radius.circular(10.r),
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: barColor.withOpacity(0.3),
+                            blurRadius: 8,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
                       ),
                     ),
                     SizedBox(height: 8.h),
+                    // Time icon
+                    Icon(icon, color: barColor, size: 18.sp),
+                    SizedBox(height: 4.h),
+                    // Time label
                     Text(
-                      point['time'],
-                      style: TextStyle(
+                      time,
+                      style: GoogleFonts.inter(
                         fontSize: 12.sp,
                         fontWeight: FontWeight.w600,
-                        color: const Color(0xFF666666),
-                      ),
-                    ),
-                    SizedBox(height: 4.h),
-                    Text(
-                      '${level}m',
-                      style: TextStyle(
-                        fontSize: 10.sp,
-                        color: const Color(0xFF999999),
+                        color: Colors.grey[700],
                       ),
                     ),
                   ],
@@ -354,13 +662,16 @@ class _FloodAlertScreenState extends State<FloodAlertScreen> {
               }).toList(),
             ),
           ),
-          SizedBox(height: 16.h),
+          SizedBox(height: 20.h),
+          // ─── Legend ───
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              _buildLegendItem('Normal', const Color(0xFF4CAF50)),
-              _buildLegendItem('Alert', const Color(0xFFFF9800)),
-              _buildLegendItem('Warning', const Color(0xFFF44336)),
+              _buildLegendChip('Normal', FloodColors.safe),
+              SizedBox(width: 16.w),
+              _buildLegendChip('Alert', FloodColors.alert),
+              SizedBox(width: 16.w),
+              _buildLegendChip('Warning', FloodColors.danger),
             ],
           ),
         ],
@@ -368,267 +679,517 @@ class _FloodAlertScreenState extends State<FloodAlertScreen> {
     );
   }
 
-  Widget _buildLegendItem(String text, Color color) {
+  Widget _buildLegendChip(String label, Color color) {
     return Row(
+      mainAxisSize: MainAxisSize.min,
       children: [
         Container(
-          width: 12.w,
-          height: 12.w,
+          width: 10.w,
+          height: 10.w,
           decoration: BoxDecoration(
             color: color,
             shape: BoxShape.circle,
+            boxShadow: [
+              BoxShadow(color: color.withOpacity(0.4), blurRadius: 4),
+            ],
           ),
         ),
-        SizedBox(width: 8.w),
+        SizedBox(width: 6.w),
         Text(
-          text,
-          style: TextStyle(
+          label,
+          style: GoogleFonts.inter(
             fontSize: 12.sp,
-            color: const Color(0xFF666666),
+            fontWeight: FontWeight.w500,
+            color: Colors.grey[600],
           ),
         ),
       ],
     );
   }
 
-  Widget _buildAlertCard(Map<String, dynamic> alert) {
+  // ─── SECTION HEADER ────────────────────────────────────
+  Widget _buildSectionHeader(String title, IconData icon) {
+    return Row(
+      children: [
+        Container(
+          width: 36.w,
+          height: 36.w,
+          decoration: BoxDecoration(
+            color: FloodColors.heritagePurple.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(10.r),
+          ),
+          child: Icon(icon, color: FloodColors.heritagePurple, size: 20.sp),
+        ),
+        SizedBox(width: 12.w),
+        Text(
+          title,
+          style: GoogleFonts.poppins(
+            fontSize: 18.sp,
+            fontWeight: FontWeight.w700,
+            color: FloodColors.deepAnchor,
+          ),
+        ),
+      ],
+    );
+  }
+
+  // ─── ALERT CARD ────────────────────────────────────────
+  Widget _buildAlertCard(Map<String, dynamic> alert, int index) {
+    final color = alert['color'] as Color;
+    final bgColor = alert['bgColor'] as Color;
+
     return Container(
       margin: EdgeInsets.only(bottom: 12.h),
-      padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16.r),
-        border: Border.all(
-          color: alert['color'] as Color,
-          width: 1,
-        ),
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 12.w,
-            height: 12.w,
-            decoration: BoxDecoration(
-              color: alert['color'] as Color,
-              shape: BoxShape.circle,
-            ),
+        color: FloodColors.cardWhite,
+        borderRadius: BorderRadius.circular(20.r),
+        border: Border.all(color: color.withOpacity(0.2)),
+        boxShadow: [
+          BoxShadow(
+            color: color.withOpacity(0.06),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
           ),
-          SizedBox(width: 16.w),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        borderRadius: BorderRadius.circular(20.r),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(20.r),
+          onTap: () => _showAlertDetails(alert),
+          child: Padding(
+            padding: EdgeInsets.all(16.w),
+            child: Row(
               children: [
-                Text(
-                  alert['title'],
-                  style: TextStyle(
-                    fontSize: 16.sp,
-                    fontWeight: FontWeight.w600,
-                    color: const Color(0xFF333333),
+                // Status indicator bar
+                Container(
+                  width: 4.w,
+                  height: 56.h,
+                  decoration: BoxDecoration(
+                    color: color,
+                    borderRadius: BorderRadius.circular(2.r),
                   ),
                 ),
-                SizedBox(height: 4.h),
-                Text(
-                  'Status: ${alert['level']} • Updated ${alert['updated']}',
-                  style: TextStyle(
-                    fontSize: 12.sp,
-                    color: const Color(0xFF666666),
+                SizedBox(width: 14.w),
+                // Icon
+                Container(
+                  width: 46.w,
+                  height: 46.w,
+                  decoration: BoxDecoration(
+                    color: bgColor,
+                    borderRadius: BorderRadius.circular(14.r),
+                  ),
+                  child: Icon(alert['icon'] as IconData,
+                      color: color, size: 22.sp),
+                ),
+                SizedBox(width: 14.w),
+                // Text content
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        alert['title'],
+                        style: GoogleFonts.poppins(
+                          fontSize: 15.sp,
+                          fontWeight: FontWeight.w600,
+                          color: FloodColors.deepAnchor,
+                        ),
+                      ),
+                      SizedBox(height: 4.h),
+                      Text(
+                        alert['station'],
+                        style: GoogleFonts.inter(
+                          fontSize: 12.sp,
+                          color: Colors.grey[500],
+                        ),
+                      ),
+                      SizedBox(height: 4.h),
+                      Row(
+                        children: [
+                          _buildStatusDot(color),
+                          SizedBox(width: 6.w),
+                          Text(
+                            '${alert['level']} · ${alert['updated']}',
+                            style: GoogleFonts.inter(
+                              fontSize: 12.sp,
+                              fontWeight: FontWeight.w500,
+                              color: color,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
                   ),
                 ),
+                // Chevron
+                Icon(Icons.chevron_right_rounded,
+                    color: Colors.grey[400], size: 24.sp),
               ],
             ),
           ),
-          IconButton(
-            onPressed: () {
-              // View details
-              _showAlertDetails(alert);
-            },
-            icon: Icon(
-              Icons.chevron_right,
-              size: 24.sp,
-              color: const Color(0xFF4C229C),
-            ),
-          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildStatusDot(Color color) {
+    return Container(
+      width: 8.w,
+      height: 8.w,
+      decoration: BoxDecoration(
+        color: color,
+        shape: BoxShape.circle,
+        boxShadow: [
+          BoxShadow(color: color.withOpacity(0.5), blurRadius: 6),
         ],
       ),
     );
   }
 
-  Widget _buildSafetyTipCard(Map<String, dynamic> tip) {
+  // ─── SAFETY ACCORDION ──────────────────────────────────
+  Widget _buildSafetyAccordion(Map<String, dynamic> tip, int index) {
+    final isExpanded = _expandedTipIndex == index;
+
     return Container(
-      margin: EdgeInsets.only(bottom: 16.h),
-      padding: EdgeInsets.all(20.w),
+      margin: EdgeInsets.only(bottom: 12.h),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16.r),
+        color: FloodColors.cardWhite,
+        borderRadius: BorderRadius.circular(20.r),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
           ),
         ],
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            tip['title'],
-            style: TextStyle(
-              fontSize: 18.sp,
-              fontWeight: FontWeight.w600,
-              color: const Color(0xFF4C229C),
-            ),
-          ),
-          SizedBox(height: 12.h),
-          ...(tip['tips'] as List<String>).map((tipText) => Padding(
-                padding: EdgeInsets.only(bottom: 8.h),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+      child: Material(
+        color: Colors.transparent,
+        borderRadius: BorderRadius.circular(20.r),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(20.r),
+          onTap: () => setState(() {
+            _expandedTipIndex = isExpanded ? -1 : index;
+          }),
+          child: AnimatedContainer(
+            duration: 300.ms,
+            padding: EdgeInsets.all(18.w),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
                   children: [
-                    Icon(
-                      Icons.check_circle,
-                      size: 16.sp,
-                      color: const Color(0xFF4CAF50),
+                    Container(
+                      width: 42.w,
+                      height: 42.w,
+                      decoration: BoxDecoration(
+                        color: FloodColors.heritagePurple.withOpacity(0.08),
+                        borderRadius: BorderRadius.circular(12.r),
+                      ),
+                      child: Icon(
+                        tip['icon'] as IconData,
+                        color: FloodColors.heritagePurple,
+                        size: 20.sp,
+                      ),
                     ),
-                    SizedBox(width: 8.w),
+                    SizedBox(width: 14.w),
                     Expanded(
                       child: Text(
-                        tipText,
-                        style: TextStyle(
-                          fontSize: 14.sp,
-                          color: const Color(0xFF666666),
-                          height: 1.4,
+                        tip['title'],
+                        style: GoogleFonts.poppins(
+                          fontSize: 15.sp,
+                          fontWeight: FontWeight.w600,
+                          color: FloodColors.deepAnchor,
                         ),
+                      ),
+                    ),
+                    AnimatedRotation(
+                      turns: isExpanded ? 0.5 : 0,
+                      duration: 300.ms,
+                      child: Icon(
+                        Icons.keyboard_arrow_down_rounded,
+                        color: Colors.grey[400],
+                        size: 24.sp,
                       ),
                     ),
                   ],
                 ),
-              )),
-        ],
+                AnimatedCrossFade(
+                  firstChild: const SizedBox.shrink(),
+                  secondChild: Padding(
+                    padding: EdgeInsets.only(top: 16.h, left: 56.w),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: (tip['tips'] as List<String>)
+                          .map((t) => Padding(
+                                padding: EdgeInsets.only(bottom: 10.h),
+                                child: Row(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Container(
+                                      margin: EdgeInsets.only(top: 4.h),
+                                      width: 6.w,
+                                      height: 6.w,
+                                      decoration: BoxDecoration(
+                                        color: FloodColors.heritagePurple,
+                                        shape: BoxShape.circle,
+                                      ),
+                                    ),
+                                    SizedBox(width: 10.w),
+                                    Expanded(
+                                      child: Text(
+                                        t,
+                                        style: GoogleFonts.inter(
+                                          fontSize: 14.sp,
+                                          color: Colors.grey[700],
+                                          height: 1.5,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ))
+                          .toList(),
+                    ),
+                  ),
+                  crossFadeState: isExpanded
+                      ? CrossFadeState.showSecond
+                      : CrossFadeState.showFirst,
+                  duration: 300.ms,
+                ),
+              ],
+            ),
+          ),
+        ),
       ),
     );
   }
 
+  // ─── EMERGENCY ACTIONS ─────────────────────────────────
   Widget _buildEmergencyActions() {
     return Container(
-      padding: EdgeInsets.all(20.w),
+      width: double.infinity,
+      padding: EdgeInsets.all(24.w),
       decoration: BoxDecoration(
-        color: const Color(0xFFF5F0F8),
-        borderRadius: BorderRadius.circular(20.r),
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            FloodColors.deepAnchor,
+            FloodColors.heritagePurple,
+          ],
+        ),
+        borderRadius: BorderRadius.circular(28.r),
+        boxShadow: [
+          BoxShadow(
+            color: FloodColors.heritagePurple.withOpacity(0.3),
+            blurRadius: 24,
+            offset: const Offset(0, 14),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          Row(
+            children: [
+              const Icon(Icons.bolt_rounded, color: Colors.amber, size: 24),
+              SizedBox(width: 8.w),
+              Text(
+                'EMERGENCY ACTIONS',
+                style: GoogleFonts.poppins(
+                  fontSize: 14.sp,
+                  fontWeight: FontWeight.w700,
+                  color: Colors.white54,
+                  letterSpacing: 2,
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: 8.h),
           Text(
-            'Emergency Actions',
-            style: TextStyle(
-              fontSize: 20.sp,
+            'Need immediate help?',
+            style: GoogleFonts.poppins(
+              fontSize: 22.sp,
               fontWeight: FontWeight.w700,
-              color: const Color(0xFF4C229C),
+              color: Colors.white,
             ),
           ),
-          SizedBox(height: 16.h),
+          SizedBox(height: 20.h),
           Row(
             children: [
               Expanded(
-                child: ElevatedButton.icon(
-                  onPressed: () {
-                    // Call emergency
-                    _showMessage(context, 'Calling emergency hotline...');
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFFF44336),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12.r),
-                    ),
-                    padding: EdgeInsets.symmetric(
-                      horizontal: 16.w,
-                      vertical: 16.h,
-                    ),
-                  ),
-                  icon: Icon(
-                    Icons.phone,
-                    color: Colors.white,
-                    size: 20.sp,
-                  ),
-                  label: Text(
-                    'Call Emergency',
-                    style: TextStyle(
-                      fontSize: 16.sp,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.white,
-                    ),
-                  ),
+                child: _buildActionButton(
+                  icon: Icons.phone_in_talk_rounded,
+                  label: 'Call\nEmergency',
+                  color: FloodColors.danger,
+                  onTap: () =>
+                      _showMessage(context, 'Calling emergency hotline...'),
                 ),
               ),
               SizedBox(width: 12.w),
               Expanded(
-                child: ElevatedButton.icon(
-                  onPressed: () {
-                    // Report flood
-                    _showMessage(context, 'Opening flood report form...');
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF4C229C),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12.r),
-                    ),
-                    padding: EdgeInsets.symmetric(
-                      horizontal: 16.w,
-                      vertical: 16.h,
-                    ),
-                  ),
-                  icon: Icon(
-                    Icons.warning,
-                    color: Colors.white,
-                    size: 20.sp,
-                  ),
-                  label: Text(
-                    'Report Flood',
-                    style: TextStyle(
-                      fontSize: 16.sp,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.white,
-                    ),
-                  ),
+                child: _buildActionButton(
+                  icon: Icons.campaign_rounded,
+                  label: 'Report\nFlood',
+                  color: const Color(0xFFF59E0B),
+                  onTap: () =>
+                      _showMessage(context, 'Opening flood report form...'),
+                ),
+              ),
+              SizedBox(width: 12.w),
+              Expanded(
+                child: _buildActionButton(
+                  icon: Icons.share_location_rounded,
+                  label: 'Share\nLocation',
+                  color: const Color(0xFF0EA5E9),
+                  onTap: () =>
+                      _showMessage(context, 'Sharing your location...'),
                 ),
               ),
             ],
           ),
         ],
       ),
+    ).animate().fadeIn(duration: 600.ms);
+  }
+
+  Widget _buildActionButton({
+    required IconData icon,
+    required String label,
+    required Color color,
+    required VoidCallback onTap,
+  }) {
+    return Material(
+      color: Colors.white.withOpacity(0.15),
+      borderRadius: BorderRadius.circular(18.r),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(18.r),
+        onTap: onTap,
+        child: Container(
+          padding: EdgeInsets.symmetric(vertical: 18.h),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(18.r),
+            border: Border.all(color: Colors.white.withOpacity(0.2)),
+          ),
+          child: Column(
+            children: [
+              Container(
+                width: 44.w,
+                height: 44.w,
+                decoration: BoxDecoration(
+                  color: color,
+                  borderRadius: BorderRadius.circular(14.r),
+                  boxShadow: [
+                    BoxShadow(
+                      color: color.withOpacity(0.4),
+                      blurRadius: 12,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: Icon(icon, color: Colors.white, size: 22.sp),
+              ),
+              SizedBox(height: 10.h),
+              Text(
+                label,
+                textAlign: TextAlign.center,
+                style: GoogleFonts.inter(
+                  fontSize: 13.sp,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.white,
+                  height: 1.3,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 
+  // ─── HELPERS ───────────────────────────────────────────
   String _formatTime(DateTime dateTime) {
     final hour = dateTime.hour.toString().padLeft(2, '0');
     final minute = dateTime.minute.toString().padLeft(2, '0');
     return '$hour:$minute';
   }
 
-  void _refreshData() {
-    _showMessage(context, 'Refreshing flood data...');
-    // In a real app, this would fetch new data from API
+  void _showAlertDetails(Map<String, dynamic> alert) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => Container(
+        padding: EdgeInsets.all(24.w),
+        decoration: BoxDecoration(
+          color: FloodColors.cardWhite,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(32.r)),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Center(
+              child: Container(
+                width: 40.w,
+                height: 4.h,
+                decoration: BoxDecoration(
+                  color: Colors.grey[300],
+                  borderRadius: BorderRadius.circular(2.r),
+                ),
+              ),
+            ),
+            SizedBox(height: 20.h),
+            Text(
+              alert['title'],
+              style: GoogleFonts.poppins(
+                fontSize: 22.sp,
+                fontWeight: FontWeight.w700,
+                color: FloodColors.deepAnchor,
+              ),
+            ),
+            SizedBox(height: 16.h),
+            _buildDetailRow('Status', alert['level'], alert['color'] as Color),
+            SizedBox(height: 12.h),
+            _buildDetailRow(
+                'Station', alert['station'], FloodColors.heritagePurple),
+            SizedBox(height: 12.h),
+            _buildDetailRow('Last Updated', alert['updated'], Colors.grey),
+            SizedBox(height: 20.h),
+            Text(
+              'Residents in this area are advised to monitor water levels and follow safety guidelines issued by MDRRMO.',
+              style: GoogleFonts.inter(
+                fontSize: 14.sp,
+                color: Colors.grey[600],
+                height: 1.6,
+              ),
+            ),
+            SizedBox(height: 24.h),
+          ],
+        ),
+      ),
+    );
   }
 
-  void _showAlertDetails(Map<String, dynamic> alert) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text(alert['title']),
-        content: Text(
-          'Detailed information about ${alert['title']} flood status.\n\n'
-          'Current Level: ${alert['level']}\n'
-          'Last Updated: ${alert['updated']}\n\n'
-          'Residents in this area are advised to monitor water levels and follow safety guidelines.',
+  Widget _buildDetailRow(String label, String value, Color valueColor) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(
+          label,
+          style: GoogleFonts.inter(fontSize: 14.sp, color: Colors.grey[500]),
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Close'),
+        Text(
+          value,
+          style: GoogleFonts.poppins(
+            fontSize: 14.sp,
+            fontWeight: FontWeight.w600,
+            color: valueColor,
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 
@@ -637,6 +1198,9 @@ class _FloodAlertScreenState extends State<FloodAlertScreen> {
       SnackBar(
         content: Text(message),
         duration: const Duration(seconds: 2),
+        behavior: SnackBarBehavior.floating,
+        shape:
+            RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
       ),
     );
   }

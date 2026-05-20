@@ -1,9 +1,9 @@
-// ignore_for_file: deprecated_member_use
-
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+// import 'package:may_laud/screens/home/main_app.dart';
+// import 'package:may_laud/screens/sign_in/sign_in_screen.dart';
 import '../success/registration_verified_success_screen.dart';
 
 class VerificationScreen extends StatefulWidget {
@@ -199,196 +199,199 @@ class _VerificationScreenState extends State<VerificationScreen> {
           ),
 
           SafeArea(
-            child: Padding(
-              padding: EdgeInsets.symmetric(horizontal: 24.w),
-              child: Column(
-                children: [
-                  SizedBox(height: 16.h),
+            child: SingleChildScrollView(
+              child: Padding(
+                padding: EdgeInsets.symmetric(horizontal: 24.w),
+                child: Column(
+                  children: [
+                    SizedBox(height: 16.h),
 
-                  /// Back + Title
-                  Stack(
-                    alignment: Alignment.center,
-                    children: [
-                      Align(
-                        alignment: Alignment.centerLeft,
-                        child: IconButton(
-                          icon: const Icon(Icons.arrow_back,
-                              color: Color(0xFF6A4FB6)),
-                          onPressed: () => Navigator.pop(context),
-                        ),
-                      ),
-                      Text(
-                        "Verification",
-                        style: TextStyle(
-                          fontSize: 20.sp,
-                          fontWeight: FontWeight.w600,
-                          color: Color(0xFF6A4FB6),
-                        ),
-                      ),
-                    ],
-                  ),
-
-                  SizedBox(height: 48.h),
-
-                  /// Icon
-                  Icon(
-                    Icons.lock_open_outlined,
-                    size: 80.w,
-                    color: const Color(0xFF6A4FB6).withAlpha(230),
-                  ),
-
-                  SizedBox(height: 32.h),
-
-                  /// Title
-                  Text(
-                    "Enter Verification Code",
-                    style: TextStyle(
-                      fontSize: 28.sp,
-                      fontWeight: FontWeight.w700,
-                      color: Color(0xFF333333),
-                    ),
-                  ),
-
-                  SizedBox(height: 12.h),
-
-                  /// Subtitle
-                  Text(
-                    "We've sent a 6‑digit code to your\n"
-                    "phone number for security verification.",
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: 16.sp,
-                      color: Color(0xFF666666),
-                      height: 1.5,
-                    ),
-                  ),
-
-                  SizedBox(height: 45.h),
-
-                  /// OTP Fields
-                  SingleChildScrollView(
-                    scrollDirection: Axis.horizontal,
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: List.generate(6, otpBox),
-                    ),
-                  ),
-
-                  SizedBox(height: 40.h),
-
-                  // Verify Button
-                  SizedBox(
-                    width: double.infinity,
-                    height: 56.h,
-                    child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF6A4FB6),
-                        foregroundColor: Colors.white,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(16.r),
-                        ),
-                        elevation: 0,
-                        shadowColor: Colors.transparent,
-                      ),
-                      onPressed: () {
-                        String code = controllers.map((e) => e.text).join();
-
-                        if (code.length == 6) {
-                          Navigator.pushReplacement(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) => const VerifiedSuccessScreen(),
-                            ),
-                          );
-                        } else {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content:
-                                  Text("Please enter complete 6‑digit code"),
-                            ),
-                          );
-                        }
-                      },
-                      child: Text(
-                        "Verify",
-                        style: TextStyle(
-                          fontSize: 18.sp,
-                          fontWeight: FontWeight.w700,
-                          color: Colors.white,
-                        ),
-                      ),
-                    ),
-                  ),
-
-                  SizedBox(height: 24.h),
-
-                  // Resend Row
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        "Didn't receive the code?",
-                        style: TextStyle(
-                          color: const Color(0xFF6E6A75),
-                          fontSize: 15.sp,
-                        ),
-                      ),
-                      SizedBox(width: 6.w),
-                      secondsRemaining > 0
-                          ? Text(
-                              "Resend in 00:${secondsRemaining.toString().padLeft(2, '0')}",
-                              style: TextStyle(
-                                color: const Color(0xFF6A4FB6),
-                                fontWeight: FontWeight.w700,
-                                fontSize: 15.sp,
-                              ),
-                            )
-                          : TextButton(
-                              onPressed: _resendCode,
-                              style: TextButton.styleFrom(
-                                padding: EdgeInsets.zero,
-                                minimumSize: Size.zero,
-                                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                              ),
-                              child: Text(
-                                "Resend now",
-                                style: TextStyle(
-                                  color: const Color(0xFF6A4FB6),
-                                  fontWeight: FontWeight.w700,
-                                  fontSize: 15.sp,
-                                  decoration: TextDecoration.underline,
-                                ),
-                              ),
-                            ),
-                    ],
-                  ),
-
-                  const Spacer(),
-
-                  // Security note
-                  Center(
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
+                    /// Back + Title
+                    Stack(
+                      alignment: Alignment.center,
                       children: [
-                        Icon(
-                          Icons.lock_outline,
-                          size: 16.w,
-                          color: const Color(0xFF6A4FB6).withOpacity(0.6),
+                        Align(
+                          alignment: Alignment.centerLeft,
+                          child: IconButton(
+                            icon: const Icon(Icons.arrow_back,
+                                color: Color(0xFF6A4FB6)),
+                            onPressed: () => Navigator.pop(context),
+                          ),
                         ),
-                        SizedBox(width: 8.w),
                         Text(
-                          "End‑to‑end encrypted",
+                          "Verification",
                           style: TextStyle(
-                            color: const Color(0xFF6A4FB6).withOpacity(0.6),
-                            fontSize: 13.sp,
+                            fontSize: 20.sp,
                             fontWeight: FontWeight.w600,
+                            color: Color(0xFF6A4FB6),
                           ),
                         ),
                       ],
                     ),
-                  ),
-                  SizedBox(height: 30.h),
-                ],
+
+                    SizedBox(height: 48.h),
+
+                    /// Icon
+                    Icon(
+                      Icons.lock_open_outlined,
+                      size: 80.w,
+                      color: const Color(0xFF6A4FB6).withAlpha(230),
+                    ),
+
+                    SizedBox(height: 32.h),
+
+                    /// Title
+                    Text(
+                      "Enter Verification Code",
+                      style: TextStyle(
+                        fontSize: 28.sp,
+                        fontWeight: FontWeight.w700,
+                        color: Color(0xFF333333),
+                      ),
+                    ),
+
+                    SizedBox(height: 12.h),
+
+                    /// Subtitle
+                    Text(
+                      "We've sent a 6‑digit code to your\n"
+                      "phone number for security verification.",
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 16.sp,
+                        color: Color(0xFF666666),
+                        height: 1.5,
+                      ),
+                    ),
+
+                    SizedBox(height: 45.h),
+
+                    /// OTP Fields
+                    SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: List.generate(6, otpBox),
+                      ),
+                    ),
+
+                    SizedBox(height: 40.h),
+
+                    // Verify Button
+                    SizedBox(
+                      width: double.infinity,
+                      height: 56.h,
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF6A4FB6),
+                          foregroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16.r),
+                          ),
+                          elevation: 0,
+                          shadowColor: Colors.transparent,
+                        ),
+                        onPressed: () {
+                          String code = controllers.map((e) => e.text).join();
+
+                          if (code.length == 6) {
+                            Navigator.pushReplacement(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => const VerifiedSuccessScreen(),
+                              ),
+                            );
+                          } else {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content:
+                                    Text("Please enter complete 6‑digit code"),
+                              ),
+                            );
+                          }
+                        },
+                        child: Text(
+                          "Verify",
+                          style: TextStyle(
+                            fontSize: 18.sp,
+                            fontWeight: FontWeight.w700,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                    ),
+
+                    SizedBox(height: 24.h),
+
+                    // Resend Row
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          "Didn't receive the code?",
+                          style: TextStyle(
+                            color: const Color(0xFF6E6A75),
+                            fontSize: 15.sp,
+                          ),
+                        ),
+                        SizedBox(width: 6.w),
+                        secondsRemaining > 0
+                            ? Text(
+                                "Resend in 00:${secondsRemaining.toString().padLeft(2, '0')}",
+                                style: TextStyle(
+                                  color: const Color(0xFF6A4FB6),
+                                  fontWeight: FontWeight.w700,
+                                  fontSize: 15.sp,
+                                ),
+                              )
+                            : TextButton(
+                                onPressed: _resendCode,
+                                style: TextButton.styleFrom(
+                                  padding: EdgeInsets.zero,
+                                  minimumSize: Size.zero,
+                                  tapTargetSize:
+                                      MaterialTapTargetSize.shrinkWrap,
+                                ),
+                                child: Text(
+                                  "Resend now",
+                                  style: TextStyle(
+                                    color: const Color(0xFF6A4FB6),
+                                    fontWeight: FontWeight.w700,
+                                    fontSize: 15.sp,
+                                    decoration: TextDecoration.underline,
+                                  ),
+                                ),
+                              ),
+                      ],
+                    ),
+
+                    SizedBox(height: 20.h),
+
+                    // Security note
+                    Center(
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.lock_outline,
+                            size: 16.w,
+                            color: const Color(0xFF6A4FB6).withOpacity(0.6),
+                          ),
+                          SizedBox(width: 8.w),
+                          Text(
+                            "End‑to‑end encrypted",
+                            style: TextStyle(
+                              color: const Color(0xFF6A4FB6).withOpacity(0.6),
+                              fontSize: 13.sp,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    SizedBox(height: 30.h),
+                  ],
+                ),
               ),
             ),
           ),

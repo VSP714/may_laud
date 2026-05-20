@@ -1,9 +1,121 @@
-// ignore_for_file: use_build_context_synchronously, deprecated_member_use
+// ─── Milaor Hotlines — Professional Resident-Friendly Design ───
+// Mirrors FloodColors purple palette for consistent app-wide branding
+// 60-30-10: warmHearth canvas (60%), card white surfaces (30%), heritage purple accent (10%)
 
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:flutter_animate/flutter_animate.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:url_launcher/url_launcher.dart';
+import '../../../theme/app_theme.dart';
 
+// ─── BRAND PALETTE (mirrors FloodColors / other app features) ───
+class HotlineColors {
+  static const Color heritagePurple = Color(0xFF4C229C);
+  static const Color riverFlow = Color(0xFF643EB5);
+  static const Color deepAnchor = Color(0xFF24005B);
+  static const Color warmHearth = Color(0xFFF8F5FF);
+  static const Color cardWhite = Colors.white;
+
+  // Semantic accents
+  static const Color emergencyRed = Color(0xFFDC2626);
+  static const Color emergencyRedBg = Color(0xFFFEF2F2);
+  static const Color emergencyRedBorder = Color(0xFFFECACA);
+
+  static const Color medicalGreen = Color(0xFF059669);
+  static const Color medicalGreenBg = Color(0xFFECFDF5);
+  static const Color medicalGreenBorder = Color(0xFFA7F3D0);
+
+  static const Color utilitySlate = Color(0xFF64748B);
+  static const Color utilitySlateBg = Color(0xFFF8FAFC);
+  static const Color utilitySlateBorder = Color(0xFFCBD5E1);
+
+  static const Color purpleTint = Color(0xFFF3EFFF); // bg for government icon
+
+  static const LinearGradient headerGradient = LinearGradient(
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+    colors: [heritagePurple, deepAnchor],
+  );
+}
+
+// ─── DATA MODEL ────────────────────────────────────────
+enum ContactType { emergency, government, health, services, utilities }
+
+class EmergencyContact {
+  final String name;
+  final String number;
+  final String description;
+  final ContactType type;
+  final IconData icon;
+
+  const EmergencyContact({
+    required this.name,
+    required this.number,
+    required this.description,
+    required this.type,
+    required this.icon,
+  });
+
+  Color get accentColor {
+    switch (type) {
+      case ContactType.emergency:
+        return HotlineColors.emergencyRed;
+      case ContactType.health:
+        return HotlineColors.medicalGreen;
+      case ContactType.government:
+        return HotlineColors.riverFlow;
+      case ContactType.services:
+      case ContactType.utilities:
+        return HotlineColors.utilitySlate;
+    }
+  }
+
+  Color get bgColor {
+    switch (type) {
+      case ContactType.emergency:
+        return HotlineColors.emergencyRedBg;
+      case ContactType.health:
+        return HotlineColors.medicalGreenBg;
+      case ContactType.government:
+        return HotlineColors.purpleTint;
+      case ContactType.services:
+      case ContactType.utilities:
+        return HotlineColors.utilitySlateBg;
+    }
+  }
+
+  Color get borderColor {
+    switch (type) {
+      case ContactType.emergency:
+        return HotlineColors.emergencyRedBorder;
+      case ContactType.health:
+        return HotlineColors.medicalGreenBorder;
+      case ContactType.government:
+        return const Color(0xFFD4C4F0); // purple-200 equivalent
+      case ContactType.services:
+      case ContactType.utilities:
+        return HotlineColors.utilitySlateBorder;
+    }
+  }
+
+  String get typeLabel {
+    switch (type) {
+      case ContactType.emergency:
+        return 'Emergency';
+      case ContactType.government:
+        return 'Government';
+      case ContactType.health:
+        return 'Health';
+      case ContactType.services:
+        return 'Services';
+      case ContactType.utilities:
+        return 'Utilities';
+    }
+  }
+}
+
+// ─── SCREEN ────────────────────────────────────────────
 class HotlinesScreen extends StatefulWidget {
   const HotlinesScreen({super.key});
 
@@ -12,479 +124,743 @@ class HotlinesScreen extends StatefulWidget {
 }
 
 class _HotlinesScreenState extends State<HotlinesScreen> {
-  final List<EmergencyContact> _emergencyContacts = [
-    EmergencyContact(
-      name: 'Police Station',
-      number: '911',
-      description: 'Emergency police assistance',
-      category: 'Emergency',
-      icon: Icons.local_police,
-      color: Colors.blue,
-    ),
-    EmergencyContact(
-      name: 'Fire Department',
-      number: '912',
-      description: 'Fire and rescue services',
-      category: 'Emergency',
-      icon: Icons.fire_truck,
-      color: Colors.red,
-    ),
-    EmergencyContact(
-      name: 'Ambulance',
-      number: '913',
-      description: 'Medical emergency services',
-      category: 'Emergency',
-      icon: Icons.medical_services,
-      color: Colors.green,
-    ),
-    EmergencyContact(
-      name: 'Milaor Municipal Hall',
-      number: '(054) 555-1234',
-      description: 'Local government office',
-      category: 'Government',
-      icon: Icons.account_balance,
-      color: Colors.purple,
-    ),
-    EmergencyContact(
-      name: 'Barangay Hall',
-      number: '(054) 555-5678',
-      description: 'Barangay administration',
-      category: 'Government',
-      icon: Icons.home_work,
-      color: Colors.orange,
-    ),
-    EmergencyContact(
-      name: 'Disaster Risk Reduction',
-      number: '(054) 555-9012',
-      description: 'DRRM Office for disasters',
-      category: 'Emergency',
-      icon: Icons.warning,
-      color: Colors.amber,
-    ),
-    EmergencyContact(
-      name: 'Health Center',
-      number: '(054) 555-3456',
-      description: 'Community health services',
-      category: 'Health',
-      icon: Icons.local_hospital,
-      color: Colors.teal,
-    ),
-    EmergencyContact(
-      name: 'Public Works',
-      number: '(054) 555-7890',
-      description: 'Road and infrastructure issues',
-      category: 'Services',
-      icon: Icons.construction,
-      color: Colors.brown,
-    ),
-    EmergencyContact(
-      name: 'Water District',
-      number: '(054) 555-2345',
-      description: 'Water supply concerns',
-      category: 'Utilities',
-      icon: Icons.water_drop,
-      color: Colors.blue,
-    ),
-    EmergencyContact(
-      name: 'Electric Cooperative',
-      number: '(054) 555-6789',
-      description: 'Power outage reports',
-      category: 'Utilities',
-      icon: Icons.electrical_services,
-      color: Colors.yellow.shade700,
-    ),
-  ];
+  ContactType? _selectedType;
 
-  final List<String> _categories = [
-    'All',
-    'Emergency',
-    'Government',
-    'Health',
-    'Services',
-    'Utilities',
-  ];
+  late final List<EmergencyContact> _contacts;
+  late final List<Map<String, dynamic>> _filterOptions;
 
-  String _selectedCategory = 'All';
+  @override
+  void initState() {
+    super.initState();
+    _contacts = [
+      const EmergencyContact(
+        name: 'Police Station',
+        number: '911',
+        description: '24/7 emergency police assistance and rapid response',
+        type: ContactType.emergency,
+        icon: Icons.local_police_rounded,
+      ),
+      const EmergencyContact(
+        name: 'Fire Department',
+        number: '912',
+        description: 'Fire suppression, rescue and disaster response',
+        type: ContactType.emergency,
+        icon: Icons.fire_truck_rounded,
+      ),
+      const EmergencyContact(
+        name: 'Ambulance / EMS',
+        number: '913',
+        description: 'Emergency medical services and patient transport',
+        type: ContactType.emergency,
+        icon: Icons.medical_services_rounded,
+      ),
+      const EmergencyContact(
+        name: 'MDRRMO',
+        number: '(054) 555-9012',
+        description: 'Disaster Risk Reduction and Management Office',
+        type: ContactType.emergency,
+        icon: Icons.shield_rounded,
+      ),
+      const EmergencyContact(
+        name: 'Milaor Municipal Hall',
+        number: '(054) 555-1234',
+        description: 'Local government administration and services',
+        type: ContactType.government,
+        icon: Icons.account_balance_rounded,
+      ),
+      const EmergencyContact(
+        name: 'Barangay Hall',
+        number: '(054) 555-5678',
+        description: 'Barangay services, clearance and community concerns',
+        type: ContactType.government,
+        icon: Icons.home_work_rounded,
+      ),
+      const EmergencyContact(
+        name: 'Health Center',
+        number: '(054) 555-3456',
+        description: 'Community health, checkups and medical services',
+        type: ContactType.health,
+        icon: Icons.local_hospital_rounded,
+      ),
+      const EmergencyContact(
+        name: 'Public Works',
+        number: '(054) 555-7890',
+        description: 'Roads, drainage and public infrastructure',
+        type: ContactType.services,
+        icon: Icons.engineering_rounded,
+      ),
+      const EmergencyContact(
+        name: 'Water District',
+        number: '(054) 555-2345',
+        description: 'Water supply concerns and service interruptions',
+        type: ContactType.utilities,
+        icon: Icons.water_drop_rounded,
+      ),
+      const EmergencyContact(
+        name: 'Electric Cooperative',
+        number: '(054) 555-6789',
+        description: 'Power outages and electrical service concerns',
+        type: ContactType.utilities,
+        icon: Icons.electrical_services_rounded,
+      ),
+    ];
 
-  List<EmergencyContact> get _filteredContacts {
-    if (_selectedCategory == 'All') {
-      return _emergencyContacts;
-    }
-    return _emergencyContacts
-        .where((contact) => contact.category == _selectedCategory)
-        .toList();
+    _filterOptions = [
+      {'label': 'All', 'type': null},
+      {'label': 'Emergency', 'type': ContactType.emergency},
+      {'label': 'Government', 'type': ContactType.government},
+      {'label': 'Health', 'type': ContactType.health},
+      {'label': 'Services', 'type': ContactType.services},
+      {'label': 'Utilities', 'type': ContactType.utilities},
+    ];
   }
 
-  Future<void> _launchCall(String phoneNumber) async {
-    final Uri telUri = Uri.parse('tel:$phoneNumber');
-    if (await canLaunchUrl(telUri)) {
-      await launchUrl(telUri);
+  List<EmergencyContact> get _filtered => _selectedType == null
+      ? _contacts
+      : _contacts.where((c) => c.type == _selectedType).toList();
+
+  int get _emergencyCount =>
+      _contacts.where((c) => c.type == ContactType.emergency).length;
+
+  Future<void> _call(String number) async {
+    final uri = Uri.parse('tel:$number');
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri);
     } else {
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Cannot make call to $phoneNumber'),
-          backgroundColor: Colors.red,
+          content: Text('Cannot dial $number'),
+          duration: const Duration(seconds: 2),
+          behavior: SnackBarBehavior.floating,
+          backgroundColor: HotlineColors.emergencyRed,
+          shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(AppTheme.borderRadiusSm)),
+          margin: EdgeInsets.all(16.w),
         ),
       );
     }
   }
 
-  Future<void> _showContactDetails(EmergencyContact contact) async {
-    await showDialog(
+  void _showContactSheet(EmergencyContact c) {
+    showModalBottomSheet(
       context: context,
-      builder: (context) => AlertDialog(
-        title: Row(
-          children: [
-            Icon(contact.icon, color: contact.color),
-            SizedBox(width: 12.w),
-            Text(contact.name),
-          ],
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              contact.description,
-              style: TextStyle(
-                fontSize: 16.sp,
-                color: Colors.grey.shade700,
-              ),
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (_) => _ContactDetailSheet(
+          contact: c,
+          onCall: () {
+            Navigator.pop(context);
+            _call(c.number);
+          }),
+    );
+  }
+
+  // ─── MAIN BUILD ──────────────────────────────────────
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: HotlineColors.warmHearth,
+      body: CustomScrollView(
+        physics: const BouncingScrollPhysics(),
+        slivers: [
+          _buildAppBar(),
+          SliverPadding(
+            padding: EdgeInsets.fromLTRB(20.w, 16.h, 20.w, 40.h),
+            sliver: SliverList(
+              delegate: SliverChildListDelegate([
+                _buildEmergencyBanner(),
+                SizedBox(height: 24.h),
+                _buildFilterChips(),
+                SizedBox(height: 24.h),
+                _buildSectionLabel('Contact Directory', _filtered.length),
+                SizedBox(height: 12.h),
+                if (_filtered.isNotEmpty)
+                  ...List.generate(_filtered.length, (i) {
+                    return _buildContactRow(_filtered[i])
+                        .animate()
+                        .fadeIn(duration: 350.ms, delay: (70 * i).ms)
+                        .slideY(begin: 0.06, end: 0, duration: 350.ms);
+                  })
+                else
+                  _buildEmptyState(),
+                SizedBox(height: 32.h),
+                _buildFooterTip(),
+              ]),
             ),
-            SizedBox(height: 16.h),
-            Text(
-              'Phone: ${contact.number}',
-              style: TextStyle(
-                fontSize: 18.sp,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            SizedBox(height: 8.h),
-            Text(
-              'Category: ${contact.category}',
-              style: TextStyle(
-                fontSize: 14.sp,
-                color: Colors.grey.shade600,
-              ),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Close'),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              Navigator.pop(context);
-              _launchCall(contact.number);
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: contact.color,
-            ),
-            child: const Text('Call Now'),
           ),
         ],
       ),
     );
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFFFEF7FF),
-      appBar: AppBar(
-        title: Text(
-          'Milaor Hotlines',
-          style: TextStyle(
-            fontSize: 24.sp,
-            fontWeight: FontWeight.w700,
-            color: const Color(0xFF4C229C),
-          ),
-        ),
-        backgroundColor: Colors.white,
-        elevation: 0,
-        centerTitle: false,
+  // ─── APP BAR ─────────────────────────────────────────
+  Widget _buildAppBar() {
+    return SliverAppBar(
+      pinned: true,
+      elevation: 0,
+      backgroundColor: HotlineColors.heritagePurple,
+      flexibleSpace: Container(
+        decoration: const BoxDecoration(gradient: HotlineColors.headerGradient),
       ),
-      body: Column(
-        children: [
-          // Emergency banner
-          Container(
-            width: double.infinity,
-            padding: EdgeInsets.symmetric(vertical: 16.h, horizontal: 20.w),
+      leading: IconButton(
+        icon: const Icon(Icons.arrow_back_rounded, color: Colors.white),
+        onPressed: () => Navigator.pop(context),
+      ),
+      title: Text(
+        'Milaor Hotlines',
+        style: GoogleFonts.poppins(
+          fontSize: 18.sp,
+          fontWeight: FontWeight.w700,
+          color: Colors.white,
+        ),
+      ),
+      centerTitle: false,
+      actions: [
+        Padding(
+          padding: EdgeInsets.only(right: 16.w),
+          child: Container(
+            padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
             decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [Colors.red.shade700, Colors.orange.shade700],
-                begin: Alignment.centerLeft,
-                end: Alignment.centerRight,
-              ),
+              color: HotlineColors.emergencyRed,
+              borderRadius: BorderRadius.circular(AppTheme.borderRadiusCircle),
             ),
             child: Row(
+              mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(Icons.warning, color: Colors.white, size: 30.sp),
-                SizedBox(width: 12.w),
+                const Icon(Icons.emergency_rounded,
+                    color: Colors.white, size: 16),
+                SizedBox(width: 4.w),
+                Text(
+                  '$_emergencyCount',
+                  style: GoogleFonts.inter(
+                    fontSize: 13.sp,
+                    fontWeight: FontWeight.w700,
+                    color: Colors.white,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  // ─── EMERGENCY BANNER ────────────────────────────────
+  Widget _buildEmergencyBanner() {
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.all(24.w),
+      decoration: BoxDecoration(
+        color: HotlineColors.cardWhite,
+        borderRadius: BorderRadius.circular(AppTheme.borderRadiusXl),
+        border: Border.all(color: HotlineColors.emergencyRedBorder),
+        boxShadow: AppTheme.shadowSm,
+      ),
+      child: Column(
+        children: [
+          Row(
+            children: [
+              Container(
+                width: 48.w,
+                height: 48.w,
+                decoration: BoxDecoration(
+                  color: HotlineColors.emergencyRedBg,
+                  borderRadius: BorderRadius.circular(AppTheme.borderRadiusLg),
+                ),
+                child: const Icon(
+                  Icons.emergency_rounded,
+                  color: HotlineColors.emergencyRed,
+                  size: 28,
+                ),
+              ),
+              SizedBox(width: 14.w),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'National Emergency Hotline',
+                      style: GoogleFonts.poppins(
+                        fontSize: 15.sp,
+                        fontWeight: FontWeight.w700,
+                        color: AppTheme.neutralGray800,
+                      ),
+                    ),
+                    SizedBox(height: 2.h),
+                    Text(
+                      'Available 24 hours, 7 days a week',
+                      style: GoogleFonts.inter(
+                        fontSize: 13.sp,
+                        color: AppTheme.neutralGray500,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: 20.h),
+          Text(
+            '911',
+            style: GoogleFonts.poppins(
+              fontSize: 52.sp,
+              fontWeight: FontWeight.w900,
+              color: HotlineColors.deepAnchor,
+              letterSpacing: 3,
+              height: 1,
+            ),
+          ),
+          SizedBox(height: 4.h),
+          Text(
+            'Police · Fire · Ambulance',
+            style: GoogleFonts.inter(
+              fontSize: 14.sp,
+              fontWeight: FontWeight.w500,
+              color: AppTheme.neutralGray500,
+            ),
+          ),
+          SizedBox(height: 18.h),
+          SizedBox(
+            width: double.infinity,
+            height: 52.h,
+            child: ElevatedButton.icon(
+              onPressed: () => _call('911'),
+              icon: const Icon(Icons.phone_in_talk_rounded, size: 20),
+              label: Text(
+                'Call 911 Now',
+                style: GoogleFonts.poppins(
+                  fontSize: 16.sp,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: 0.5,
+                ),
+              ),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: HotlineColors.emergencyRed,
+                foregroundColor: Colors.white,
+                elevation: 0,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(AppTheme.borderRadiusLg),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ─── FILTER CHIPS ────────────────────────────────────
+  Widget _buildFilterChips() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Filter by Category',
+          style: GoogleFonts.poppins(
+            fontSize: 16.sp,
+            fontWeight: FontWeight.w600,
+            color: HotlineColors.deepAnchor,
+          ),
+        ),
+        SizedBox(height: 12.h),
+        SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          physics: const BouncingScrollPhysics(),
+          child: Row(
+            children: _filterOptions.map((opt) {
+              final label = opt['label'] as String;
+              final type = opt['type'] as ContactType?;
+              final isSelected = _selectedType == type;
+
+              return Padding(
+                padding: EdgeInsets.only(right: 8.w),
+                child: GestureDetector(
+                  onTap: () => setState(() => _selectedType = type),
+                  child: AnimatedContainer(
+                    duration: 200.ms,
+                    curve: Curves.easeOutCubic,
+                    padding:
+                        EdgeInsets.symmetric(horizontal: 16.w, vertical: 10.h),
+                    decoration: BoxDecoration(
+                      color: isSelected
+                          ? HotlineColors.heritagePurple
+                          : HotlineColors.cardWhite,
+                      borderRadius:
+                          BorderRadius.circular(AppTheme.borderRadiusCircle),
+                      border: Border.all(
+                        color: isSelected
+                            ? HotlineColors.heritagePurple
+                            : AppTheme.neutralGray200,
+                      ),
+                      boxShadow: isSelected ? AppTheme.shadowSm : [],
+                    ),
+                    child: Text(
+                      label,
+                      style: GoogleFonts.inter(
+                        fontSize: 13.sp,
+                        fontWeight: FontWeight.w600,
+                        color:
+                            isSelected ? Colors.white : AppTheme.neutralGray500,
+                      ),
+                    ),
+                  ),
+                ),
+              );
+            }).toList(),
+          ),
+        ),
+      ],
+    );
+  }
+
+  // ─── SECTION LABEL ───────────────────────────────────
+  Widget _buildSectionLabel(String title, int count) {
+    return Row(
+      children: [
+        Text(
+          title,
+          style: GoogleFonts.poppins(
+            fontSize: 16.sp,
+            fontWeight: FontWeight.w600,
+            color: HotlineColors.deepAnchor,
+          ),
+        ),
+        SizedBox(width: 8.w),
+        Container(
+          padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 2.h),
+          decoration: BoxDecoration(
+            color: HotlineColors.heritagePurple.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(AppTheme.borderRadiusCircle),
+          ),
+          child: Text(
+            '$count',
+            style: GoogleFonts.inter(
+              fontSize: 12.sp,
+              fontWeight: FontWeight.w700,
+              color: HotlineColors.heritagePurple,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  // ─── CONTACT ROW ─────────────────────────────────────
+  Widget _buildContactRow(EmergencyContact c) {
+    final color = c.accentColor;
+    final bg = c.bgColor;
+    final border = c.borderColor;
+
+    return Container(
+      margin: EdgeInsets.only(bottom: 10.h),
+      decoration: BoxDecoration(
+        color: HotlineColors.cardWhite,
+        borderRadius: BorderRadius.circular(AppTheme.borderRadiusLg),
+        border: Border.all(color: AppTheme.neutralGray100),
+        boxShadow: AppTheme.shadowSm,
+      ),
+      child: Material(
+        color: Colors.transparent,
+        borderRadius: BorderRadius.circular(AppTheme.borderRadiusLg),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(AppTheme.borderRadiusLg),
+          onTap: () => _showContactSheet(c),
+          child: Padding(
+            padding: EdgeInsets.all(16.w),
+            child: Row(
+              children: [
+                Container(
+                  width: 48.w,
+                  height: 48.w,
+                  decoration: BoxDecoration(
+                    color: bg,
+                    borderRadius:
+                        BorderRadius.circular(AppTheme.borderRadiusMd),
+                    border: Border.all(color: border),
+                  ),
+                  child: Icon(c.icon, color: color, size: 24.sp),
+                ),
+                SizedBox(width: 14.w),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Emergency Hotline',
-                        style: TextStyle(
-                          fontSize: 18.sp,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
+                        c.name,
+                        style: GoogleFonts.poppins(
+                          fontSize: 15.sp,
+                          fontWeight: FontWeight.w600,
+                          color: HotlineColors.deepAnchor,
                         ),
                       ),
+                      SizedBox(height: 4.h),
                       Text(
-                        'Dial 911 for immediate police, fire, or medical assistance',
-                        style: TextStyle(
-                          fontSize: 14.sp,
-                          color: Colors.white.withOpacity(0.9),
+                        c.number,
+                        style: GoogleFonts.inter(
+                          fontSize: 16.sp,
+                          fontWeight: FontWeight.w700,
+                          color: HotlineColors.heritagePurple,
+                          letterSpacing: 0.5,
                         ),
                       ),
                     ],
                   ),
                 ),
-                ElevatedButton(
-                  onPressed: () => _launchCall('911'),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.white,
-                    foregroundColor: Colors.red.shade700,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(20.r),
-                    ),
-                  ),
-                  child: Text(
-                    'CALL 911',
-                    style: TextStyle(
-                      fontSize: 14.sp,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-
-          // Category filter
-          SizedBox(height: 16.h),
-          Padding(
-            padding: EdgeInsets.symmetric(horizontal: 16.w),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Filter by Category',
-                  style: TextStyle(
-                    fontSize: 16.sp,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.grey.shade700,
-                  ),
-                ),
-                SizedBox(height: 8.h),
-                SizedBox(
-                  height: 50.h,
-                  child: ListView.builder(
-                    scrollDirection: Axis.horizontal,
-                    itemCount: _categories.length,
-                    itemBuilder: (context, index) {
-                      final category = _categories[index];
-                      final isSelected = _selectedCategory == category;
-                      return Padding(
-                        padding: EdgeInsets.only(right: 8.w),
-                        child: FilterChip(
-                          label: Text(category),
-                          selected: isSelected,
-                          onSelected: (selected) {
-                            setState(() {
-                              _selectedCategory = category;
-                            });
-                          },
-                          backgroundColor: Colors.grey.shade200,
-                          selectedColor: Theme.of(context).primaryColor,
-                          labelStyle: TextStyle(
-                            fontSize: 14.sp,
-                            color: isSelected ? Colors.white : Colors.black,
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-                ),
-              ],
-            ),
-          ),
-
-          // Contacts list
-          Expanded(
-            child: ListView.builder(
-              padding: EdgeInsets.all(16.w),
-              itemCount: _filteredContacts.length,
-              itemBuilder: (context, index) {
-                final contact = _filteredContacts[index];
-                return Card(
-                  margin: EdgeInsets.only(bottom: 12.h),
-                  elevation: 2,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12.r),
-                  ),
-                  child: ListTile(
-                    onTap: () => _showContactDetails(contact),
-                    leading: Container(
-                      width: 50.w,
-                      height: 50.h,
-                      decoration: BoxDecoration(
-                        color: contact.color.withOpacity(0.2),
-                        borderRadius: BorderRadius.circular(25.r),
-                      ),
-                      child: Icon(
-                        contact.icon,
-                        color: contact.color,
-                        size: 28.sp,
-                      ),
-                    ),
-                    title: Text(
-                      contact.name,
-                      style: TextStyle(
-                        fontSize: 18.sp,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    subtitle: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        SizedBox(height: 4.h),
-                        Text(
-                          contact.number,
-                          style: TextStyle(
-                            fontSize: 16.sp,
-                            color: Colors.blue.shade700,
-                          ),
-                        ),
-                        SizedBox(height: 4.h),
-                        Text(
-                          contact.description,
-                          style: TextStyle(
-                            fontSize: 14.sp,
-                            color: Colors.grey.shade600,
-                          ),
-                        ),
-                      ],
-                    ),
-                    trailing: IconButton(
-                      onPressed: () => _launchCall(contact.number),
-                      icon: Icon(
-                        Icons.phone,
-                        color: Colors.green,
-                        size: 28.sp,
-                      ),
-                      tooltip: 'Call ${contact.number}',
-                    ),
-                  ),
-                );
-              },
-            ),
-          ),
-
-          // Quick dial section
-          Container(
-            padding: EdgeInsets.all(16.w),
-            decoration: BoxDecoration(
-              color: Colors.grey.shade50,
-              border: Border(top: BorderSide(color: Colors.grey.shade300)),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Quick Dial',
-                  style: TextStyle(
-                    fontSize: 18.sp,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                SizedBox(height: 12.h),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
-                    _buildQuickDialButton(
-                      icon: Icons.local_police,
-                      label: 'Police',
-                      number: '911',
-                      color: Colors.blue,
+                    Container(
+                      padding:
+                          EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
+                      decoration: BoxDecoration(
+                        color: bg,
+                        borderRadius:
+                            BorderRadius.circular(AppTheme.borderRadiusSm),
+                      ),
+                      child: Text(
+                        c.typeLabel,
+                        style: GoogleFonts.inter(
+                          fontSize: 11.sp,
+                          fontWeight: FontWeight.w600,
+                          color: color,
+                        ),
+                      ),
                     ),
-                    _buildQuickDialButton(
-                      icon: Icons.fire_truck,
-                      label: 'Fire',
-                      number: '912',
-                      color: Colors.red,
-                    ),
-                    _buildQuickDialButton(
-                      icon: Icons.medical_services,
-                      label: 'Ambulance',
-                      number: '913',
-                      color: Colors.green,
-                    ),
-                    _buildQuickDialButton(
-                      icon: Icons.warning,
-                      label: 'DRRM',
-                      number: '(054) 555-9012',
-                      color: Colors.amber,
+                    SizedBox(height: 6.h),
+                    GestureDetector(
+                      onTap: () => _call(c.number),
+                      child: Container(
+                        width: 36.w,
+                        height: 36.w,
+                        decoration: BoxDecoration(
+                          color: color,
+                          borderRadius:
+                              BorderRadius.circular(AppTheme.borderRadiusMd),
+                        ),
+                        child: const Icon(
+                          Icons.phone_rounded,
+                          color: Colors.white,
+                          size: 18,
+                        ),
+                      ),
                     ),
                   ],
                 ),
               ],
             ),
           ),
+        ),
+      ),
+    );
+  }
+
+  // ─── EMPTY STATE ─────────────────────────────────────
+  Widget _buildEmptyState() {
+    return Padding(
+      padding: EdgeInsets.symmetric(vertical: 48.h),
+      child: Column(
+        children: [
+          Icon(Icons.search_off_rounded,
+              size: 48.sp, color: AppTheme.neutralGray200),
+          SizedBox(height: 12.h),
+          Text(
+            'No contacts in this category',
+            style: GoogleFonts.inter(
+              fontSize: 14.sp,
+              color: AppTheme.neutralGray500,
+            ),
+          ),
         ],
       ),
     );
   }
 
-  Widget _buildQuickDialButton({
-    required IconData icon,
-    required String label,
-    required String number,
-    required Color color,
-  }) {
-    return Column(
-      children: [
-        IconButton(
-          onPressed: () => _launchCall(number),
-          icon: Icon(icon, size: 32.sp),
-          style: IconButton.styleFrom(
-            backgroundColor: color.withOpacity(0.2),
-            foregroundColor: color,
-            padding: EdgeInsets.all(16.w),
+  // ─── FOOTER TIP ──────────────────────────────────────
+  Widget _buildFooterTip() {
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.all(20.w),
+      decoration: BoxDecoration(
+        color: HotlineColors.purpleTint,
+        borderRadius: BorderRadius.circular(AppTheme.borderRadiusLg),
+        border:
+            Border.all(color: HotlineColors.heritagePurple.withOpacity(0.15)),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 40.w,
+            height: 40.w,
+            decoration: BoxDecoration(
+              color: HotlineColors.heritagePurple.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(AppTheme.borderRadiusMd),
+            ),
+            child: const Icon(
+              Icons.info_outline_rounded,
+              color: HotlineColors.heritagePurple,
+              size: 22,
+            ),
           ),
-        ),
-        SizedBox(height: 4.h),
-        Text(
-          label,
-          style: TextStyle(
-            fontSize: 12.sp,
-            fontWeight: FontWeight.w500,
+          SizedBox(width: 14.w),
+          Expanded(
+            child: Text(
+              'Save these numbers in your phone. In an emergency, every second counts.',
+              style: GoogleFonts.inter(
+                fontSize: 13.sp,
+                fontWeight: FontWeight.w500,
+                color: HotlineColors.deepAnchor,
+                height: 1.5,
+              ),
+            ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }
 
-class EmergencyContact {
-  final String name;
-  final String number;
-  final String description;
-  final String category;
-  final IconData icon;
-  final Color color;
+// ─── CONTACT DETAIL BOTTOM SHEET ───────────────────────
+class _ContactDetailSheet extends StatelessWidget {
+  final EmergencyContact contact;
+  final VoidCallback onCall;
 
-  EmergencyContact({
-    required this.name,
-    required this.number,
-    required this.description,
-    required this.category,
-    required this.icon,
-    required this.color,
+  const _ContactDetailSheet({
+    required this.contact,
+    required this.onCall,
   });
+
+  @override
+  Widget build(BuildContext context) {
+    final color = contact.accentColor;
+    final bg = contact.bgColor;
+
+    return Container(
+      padding: EdgeInsets.fromLTRB(24.w, 16.h, 24.w, 32.h),
+      decoration: BoxDecoration(
+        color: HotlineColors.cardWhite,
+        borderRadius: BorderRadius.vertical(
+            top: Radius.circular(AppTheme.borderRadiusXl)),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Center(
+            child: Container(
+              width: 36.w,
+              height: 4.h,
+              decoration: BoxDecoration(
+                color: AppTheme.neutralGray200,
+                borderRadius: BorderRadius.circular(2.r),
+              ),
+            ),
+          ),
+          SizedBox(height: 20.h),
+          Row(
+            children: [
+              Container(
+                width: 56.w,
+                height: 56.w,
+                decoration: BoxDecoration(
+                  color: bg,
+                  borderRadius: BorderRadius.circular(AppTheme.borderRadiusLg),
+                ),
+                child: Icon(contact.icon, color: color, size: 28.sp),
+              ),
+              SizedBox(width: 16.w),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      contact.name,
+                      style: GoogleFonts.poppins(
+                        fontSize: 20.sp,
+                        fontWeight: FontWeight.w700,
+                        color: HotlineColors.deepAnchor,
+                      ),
+                    ),
+                    SizedBox(height: 4.h),
+                    Container(
+                      padding:
+                          EdgeInsets.symmetric(horizontal: 10.w, vertical: 3.h),
+                      decoration: BoxDecoration(
+                        color: color.withOpacity(0.1),
+                        borderRadius:
+                            BorderRadius.circular(AppTheme.borderRadiusSm),
+                      ),
+                      child: Text(
+                        contact.typeLabel,
+                        style: GoogleFonts.inter(
+                          fontSize: 12.sp,
+                          fontWeight: FontWeight.w600,
+                          color: color,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: 14.h),
+          Text(
+            contact.description,
+            style: GoogleFonts.inter(
+              fontSize: 14.sp,
+              color: AppTheme.neutralGray500,
+              height: 1.6,
+            ),
+          ),
+          SizedBox(height: 20.h),
+          Container(
+            width: double.infinity,
+            padding: EdgeInsets.symmetric(vertical: 18.h),
+            decoration: BoxDecoration(
+              color: HotlineColors.warmHearth,
+              borderRadius: BorderRadius.circular(AppTheme.borderRadiusLg),
+              border: Border.all(
+                  color: HotlineColors.heritagePurple.withOpacity(0.1)),
+            ),
+            child: Text(
+              contact.number,
+              textAlign: TextAlign.center,
+              style: GoogleFonts.poppins(
+                fontSize: 30.sp,
+                fontWeight: FontWeight.w800,
+                color: HotlineColors.heritagePurple,
+                letterSpacing: 2,
+              ),
+            ),
+          ),
+          SizedBox(height: 16.h),
+          SizedBox(
+            width: double.infinity,
+            height: 56.h,
+            child: ElevatedButton.icon(
+              onPressed: onCall,
+              icon: const Icon(Icons.phone_rounded, size: 22),
+              label: Text(
+                'Call Now',
+                style: GoogleFonts.inter(
+                  fontSize: 16.sp,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: color,
+                foregroundColor: Colors.white,
+                elevation: 0,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(AppTheme.borderRadiusLg),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 }
