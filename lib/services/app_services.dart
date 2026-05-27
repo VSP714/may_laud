@@ -1,35 +1,24 @@
-// ignore_for_file: avoid_print
-
+import 'dart:io';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:may_laud/providers/content_providers.dart';
-import 'package:may_laud/services/mock_data_service.dart';
+import 'package:may_laud/services/supabase_service.dart';
 
-/// Service for announcements
 class AnnouncementService {
   final Ref ref;
-
   AnnouncementService(this.ref);
 
-  /// Fetch announcements (mock implementation)
   Future<List<Announcement>> fetchAnnouncements() async {
-    // Simulate network delay
-    await Future.delayed(const Duration(seconds: 1));
-
-    final mockData = MockDataService.generateAnnouncements(10);
-    return mockData.map((data) => Announcement.fromJson(data)).toList();
+    await ref.read(announcementsProvider.notifier).fetchAnnouncements();
+    return ref.read(announcementsProvider);
   }
 
-  /// Mark announcement as read
-  Future<void> markAsRead(String announcementId) async {
-    ref.read(announcementsProvider.notifier).markAsRead(announcementId);
-  }
+  Future<void> markAsRead(String id) async =>
+      ref.read(announcementsProvider.notifier).markAsRead(id);
 
-  /// Mark all announcements as read
-  Future<void> markAllAsRead() async {
-    ref.read(announcementsProvider.notifier).markAllAsRead();
-  }
+  Future<void> markAllAsRead() async =>
+      ref.read(announcementsProvider.notifier).markAllAsRead();
 
-  /// Submit new announcement (admin function)
   Future<void> submitAnnouncement({
     required String title,
     required String description,
@@ -37,264 +26,291 @@ class AnnouncementService {
     String? imageUrl,
     bool isImportant = false,
   }) async {
-    // Simulate network delay
-    await Future.delayed(const Duration(seconds: 1));
-
-    final newAnnouncement = Announcement(
-      id: 'ann_${DateTime.now().millisecondsSinceEpoch}',
-      title: title,
-      description: description,
-      category: category,
-      date: DateTime.now(),
-      imageUrl: imageUrl,
-      isImportant: isImportant,
-    );
-
-    ref.read(announcementsProvider.notifier).addAnnouncement(newAnnouncement);
+    await SupabaseService.client.from('announcements').insert({
+      'title':        title,
+      'description':  description,
+      'category':     category,
+      'image_url':    imageUrl,
+      'is_important': isImportant,
+    });
+    await fetchAnnouncements();
   }
 }
 
-/// Service for notifications
 class NotificationService {
   final Ref ref;
-
   NotificationService(this.ref);
 
-  /// Fetch notifications (mock implementation)
   Future<List<AppNotification>> fetchNotifications() async {
-    // Simulate network delay
-    await Future.delayed(const Duration(milliseconds: 500));
-
-    final mockData = MockDataService.generateNotifications(15);
-    return mockData.map((data) => AppNotification.fromJson(data)).toList();
+    await ref.read(notificationsProvider.notifier).fetchNotifications();
+    return ref.read(notificationsProvider);
   }
 
-  /// Mark notification as read
-  Future<void> markAsRead(String notificationId) async {
-    ref.read(notificationsProvider.notifier).markAsRead(notificationId);
-  }
+  Future<void> markAsRead(String id) async =>
+      ref.read(notificationsProvider.notifier).markAsRead(id);
 
-  /// Mark all notifications as read
-  Future<void> markAllAsRead() async {
-    ref.read(notificationsProvider.notifier).markAllAsRead();
-  }
+  Future<void> markAllAsRead() async =>
+      ref.read(notificationsProvider.notifier).markAllAsRead();
 
-  /// Send test notification
-  Future<void> sendTestNotification() async {
-    final testNotification = AppNotification(
-      id: 'test_${DateTime.now().millisecondsSinceEpoch}',
-      title: 'Test Notification',
-      message:
-          'This is a test notification sent at ${DateTime.now().toString()}',
-      timestamp: DateTime.now(),
-      type: 'system',
-    );
+  Future<void> sendNotification({
+    required String title,
+    required String message,
+    required String type,
+    String? targetUserId,
+  }) async {
+    final uid = targetUserId ?? SupabaseService.userId;
+    if (uid == null) return;
 
-    ref.read(notificationsProvider.notifier).addNotification(testNotification);
+    await SupabaseService.client.from('notifications').insert({
+      'user_id': uid,
+      'title':   title,
+      'message': message,
+      'type':    type,
+    });
+    await fetchNotifications();
   }
 }
 
-/// Service for emergency hotlines
 class HotlineService {
-  /// Fetch all hotlines
   Future<List<Map<String, dynamic>>> fetchHotlines() async {
-    await Future.delayed(const Duration(milliseconds: 300));
-    return MockDataService.generateHotlines();
-  }
-
-  /// Call hotline (mock)
-  Future<void> callHotline(String number) async {
-    // In a real app, this would use url_launcher to make a phone call
-    print('Calling hotline: $number');
-    await Future.delayed(const Duration(seconds: 1));
+    final rows = await SupabaseService.client
+        .from('hotlines')
+        .select()
+        .eq('is_active', true)
+        .order('name');
+    return List<Map<String, dynamic>>.from(rows as List);
   }
 }
 
-/// Service for document requests
 class DocumentService {
-  /// Fetch available document types
   Future<List<Map<String, dynamic>>> fetchDocumentTypes() async {
-    await Future.delayed(const Duration(milliseconds: 300));
-    return MockDataService.generateDocumentTypes();
+    return [
+      {
+        'id': '1', 'name': 'Barangay Clearance',
+        'description': 'Certificate of residency and good moral character',
+        'processingTime': '1-2 days', 'fee': '₱50.00',
+        'requirements': ['Valid ID', 'Proof of residency'],
+      },
+      {
+        'id': '2', 'name': 'Business Permit',
+        'description': 'License to operate a business in Milaor',
+        'processingTime': '3-5 days', 'fee': '₱500.00 - ₱5,000.00',
+        'requirements': ['DTI/SEC registration', 'Proof of business address'],
+      },
+      {
+        'id': '3', 'name': 'Certificate of Indigency',
+        'description': 'Proof of low-income status',
+        'processingTime': '1 day', 'fee': '₱20.00',
+        'requirements': ['Valid ID', 'Proof of income'],
+      },
+      {
+        'id': '4', 'name': 'Police Clearance',
+        'description': 'Certificate of no criminal record',
+        'processingTime': '2-3 days', 'fee': '₱100.00',
+        'requirements': ['Valid ID', '2x2 photo', 'Barangay clearance'],
+      },
+      {
+        'id': '5', 'name': 'Building Permit',
+        'description': 'Authorization for construction projects',
+        'processingTime': '7-14 days', 'fee': 'Based on project cost',
+        'requirements': ['Land title', 'Building plans'],
+      },
+    ];
   }
 
-  /// Submit document request
   Future<Map<String, dynamic>> submitDocumentRequest({
     required String documentTypeId,
     required String purpose,
     required Map<String, dynamic> userInfo,
     List<String>? attachments,
   }) async {
-    // Simulate processing delay
-    await Future.delayed(const Duration(seconds: 2));
+    final uid = SupabaseService.userId;
+    if (uid == null) throw Exception('Not logged in');
 
-    final requestId =
-        'DOC-${DateTime.now().year}-${DateTime.now().millisecondsSinceEpoch}';
+    final types = await fetchDocumentTypes();
+    final docType = types.firstWhere(
+      (t) => t['id'] == documentTypeId,
+      orElse: () => {'name': 'Document', 'fee': '—'},
+    );
+
+    final row = await SupabaseService.client
+        .from('document_requests')
+        .insert({
+          'user_id':       uid,
+          'document_type': docType['name'],
+          'purpose':       purpose,
+          'fee':           docType['fee'],
+        })
+        .select()
+        .single();
 
     return {
-      'requestId': requestId,
-      'status': 'pending',
-      'submittedAt': DateTime.now().toIso8601String(),
-      'estimatedCompletion':
-          DateTime.now().add(const Duration(days: 2)).toIso8601String(),
-      'documentTypeId': documentTypeId,
-      'purpose': purpose,
-      'message':
-          'Your document request has been submitted successfully. You will be notified when it\'s ready for pickup.',
+      'requestId':    row['id'],
+      'status':       row['status'],
+      'submittedAt':  row['created_at'],
+      'documentType': row['document_type'],
+      'message':      'Your request has been submitted. You will be notified when it\'s ready.',
     };
   }
 
-  /// Check request status
   Future<Map<String, dynamic>> checkRequestStatus(String requestId) async {
-    await Future.delayed(const Duration(seconds: 1));
-
-    final statuses = [
-      'pending',
-      'processing',
-      'ready',
-      'completed',
-      'rejected'
-    ];
-    final randomStatus = statuses[DateTime.now().millisecond % statuses.length];
+    final row = await SupabaseService.client
+        .from('document_requests')
+        .select()
+        .eq('id', requestId)
+        .single();
 
     return {
-      'requestId': requestId,
-      'status': randomStatus,
-      'lastUpdated': DateTime.now().toIso8601String(),
-      'message': _getStatusMessage(randomStatus),
+      'requestId':   row['id'],
+      'status':      row['status'],
+      'lastUpdated': row['created_at'],
+      'message':     _statusMessage(row['status'] as String),
     };
   }
 
-  String _getStatusMessage(String status) {
-    switch (status) {
-      case 'pending':
-        return 'Your request is awaiting review by the barangay office.';
-      case 'processing':
-        return 'Your document is being processed. Expected completion: 1-2 business days.';
-      case 'ready':
-        return 'Your document is ready for pickup at the barangay hall.';
-      case 'completed':
-        return 'Document has been picked up and request is closed.';
-      case 'rejected':
-        return 'Request was rejected. Please check requirements and resubmit.';
-      default:
-        return 'Status unknown.';
-    }
+  String _statusMessage(String status) {
+    const map = {
+      'pending':    'Your request is awaiting review.',
+      'processing': 'Your document is being processed.',
+      'ready':      'Your document is ready for pickup.',
+      'completed':  'Document has been picked up.',
+      'rejected':   'Request was rejected. Please resubmit.',
+    };
+    return map[status] ?? 'Status unknown.';
   }
 }
 
-/// Service for flood alerts
 class FloodAlertService {
-  /// Get current flood alert status
   Future<Map<String, dynamic>> getCurrentAlert() async {
-    await Future.delayed(const Duration(milliseconds: 500));
-    return MockDataService.generateFloodAlert();
-  }
+    final rows = await SupabaseService.client
+        .from('flood_alerts')
+        .select()
+        .eq('is_active', true)
+        .order('created_at', ascending: false)
+        .limit(1);
 
-  /// Get flood alert history
-  Future<List<Map<String, dynamic>>> getAlertHistory() async {
-    await Future.delayed(const Duration(seconds: 1));
-
-    final List<Map<String, dynamic>> history = [];
-    final now = DateTime.now();
-
-    for (int i = 0; i < 7; i++) {
-      final date = now.subtract(Duration(days: i));
-      final alert = MockDataService.generateFloodAlert();
-      alert['date'] = date.toIso8601String();
-      alert['isActive'] = false; // Past alerts are not active
-      history.add(alert);
+    if ((rows as List).isEmpty) {
+      return {
+        'level': 'Low', 'affectedAreas': <String>[],
+        'waterLevel': '—', 'advice': 'No active alerts.',
+        'isActive': false,
+      };
     }
 
-    return history;
-  }
-
-  /// Subscribe to flood alerts
-  Future<void> subscribeToAlerts(String userId) async {
-    await Future.delayed(const Duration(seconds: 1));
-    print('User $userId subscribed to flood alerts');
+    final row = rows.first as Map<String, dynamic>;
+    return {
+      'level':         row['level'],
+      'affectedAreas': List<String>.from(row['affected_areas'] ?? []),
+      'waterLevel':    row['water_level'] ?? '—',
+      'advice':        row['advice'] ?? '',
+      'isActive':      row['is_active'],
+      'updateTime':    row['created_at'],
+    };
   }
 }
 
-/// Service for citizen reports
 class CitizenReportService {
-  /// Fetch report categories
   Future<List<Map<String, dynamic>>> fetchReportCategories() async {
-    await Future.delayed(const Duration(milliseconds: 300));
-    return MockDataService.generateReportCategories();
+    return [
+      {'id': '1', 'name': 'Infrastructure', 'icon': '🚧',
+       'subcategories': ['Road Damage', 'Bridge Issues', 'Street Light', 'Drainage Problems']},
+      {'id': '2', 'name': 'Sanitation', 'icon': '🗑️',
+       'subcategories': ['Garbage Collection', 'Illegal Dumping', 'Public Toilets']},
+      {'id': '3', 'name': 'Public Safety', 'icon': '👮',
+       'subcategories': ['Criminal Activity', 'Traffic Violations', 'Fire Hazards']},
+      {'id': '4', 'name': 'Environment', 'icon': '🌳',
+       'subcategories': ['Tree Maintenance', 'Flooding', 'Pollution']},
+      {'id': '5', 'name': 'Utilities', 'icon': '⚡',
+       'subcategories': ['Water Supply', 'Power Outage', 'Internet Issues']},
+      {'id': '6', 'name': 'Others', 'icon': '📋',
+       'subcategories': ['General Complaint', 'Suggestion', 'Other Concerns']},
+    ];
   }
 
-  /// Submit citizen report
   Future<Map<String, dynamic>> submitReport({
     required String categoryId,
     required String subcategory,
     required String description,
     required String location,
-    List<String>? photos,
+    List<File>? photoFiles,
     String? contactInfo,
   }) async {
-    // Simulate processing delay
-    await Future.delayed(const Duration(seconds: 2));
+    final uid = SupabaseService.userId;
+    if (uid == null) throw Exception('Not logged in');
 
-    final reportId =
-        'CR-${DateTime.now().year}-${DateTime.now().millisecondsSinceEpoch}';
-
-    return {
-      'reportId': reportId,
-      'status': 'received',
-      'submittedAt': DateTime.now().toIso8601String(),
-      'categoryId': categoryId,
-      'subcategory': subcategory,
-      'assignedTo': 'Barangay Office',
-      'estimatedResolution': '3-5 business days',
-      'message':
-          'Thank you for your report. It has been received and will be reviewed by the appropriate department.',
-    };
-  }
-
-  /// Check report status
-  Future<Map<String, dynamic>> checkReportStatus(String reportId) async {
-    await Future.delayed(const Duration(seconds: 1));
-
-    final statuses = [
-      'received',
-      'assigned',
-      'in_progress',
-      'resolved',
-      'closed'
-    ];
-    final randomStatus = statuses[DateTime.now().millisecond % statuses.length];
-
-    return {
-      'reportId': reportId,
-      'status': randomStatus,
-      'lastUpdated': DateTime.now().toIso8601String(),
-      'message': _getReportStatusMessage(randomStatus),
-    };
-  }
-
-  String _getReportStatusMessage(String status) {
-    switch (status) {
-      case 'received':
-        return 'Report has been received and is awaiting assignment.';
-      case 'assigned':
-        return 'Report has been assigned to a department for action.';
-      case 'in_progress':
-        return 'Department is currently working on resolving the issue.';
-      case 'resolved':
-        return 'The reported issue has been resolved.';
-      case 'closed':
-        return 'Report has been closed after resolution.';
-      default:
-        return 'Status unknown.';
+    final photoUrls = <String>[];
+    if (photoFiles != null) {
+      for (int i = 0; i < photoFiles.length; i++) {
+        final path = '$uid/${DateTime.now().millisecondsSinceEpoch}_$i.jpg';
+        await SupabaseService.client.storage
+            .from('report-photos')
+            .upload(path, photoFiles[i]);
+        final url = SupabaseService.client.storage
+            .from('report-photos')
+            .getPublicUrl(path);
+        photoUrls.add(url);
+      }
     }
+
+    final categories = await fetchReportCategories();
+    final cat = categories.firstWhere(
+      (c) => c['id'] == categoryId,
+      orElse: () => {'name': 'Other'},
+    );
+
+    final row = await SupabaseService.client
+        .from('citizen_reports')
+        .insert({
+          'user_id':     uid,
+          'category':    cat['name'],
+          'subcategory': subcategory,
+          'description': description,
+          'location':    location,
+          'photo_urls':  photoUrls,
+          'contact':     contactInfo,
+        })
+        .select()
+        .single();
+
+    return {
+      'reportId':            row['id'],
+      'status':              'received',
+      'submittedAt':         row['created_at'],
+      'estimatedResolution': '3-5 business days',
+      'message':             'Thank you! Your report has been received.',
+    };
+  }
+
+  Future<Map<String, dynamic>> checkReportStatus(String reportId) async {
+    final row = await SupabaseService.client
+        .from('citizen_reports')
+        .select()
+        .eq('id', reportId)
+        .single();
+
+    return {
+      'reportId':    row['id'],
+      'status':      row['status'],
+      'lastUpdated': row['updated_at'],
+      'message':     _statusMessage(row['status'] as String),
+    };
+  }
+
+  String _statusMessage(String status) {
+    const map = {
+      'received':    'Report received, awaiting assignment.',
+      'assigned':    'Assigned to a department for action.',
+      'in_progress': 'Department is currently working on this.',
+      'resolved':    'The issue has been resolved.',
+      'closed':      'Report closed after resolution.',
+    };
+    return map[status] ?? 'Status unknown.';
   }
 }
 
-/// Provider for services
 final announcementServiceProvider = Provider((ref) => AnnouncementService(ref));
-final notificationServiceProvider = Provider((ref) => NotificationService(ref));
-final hotlineServiceProvider = Provider((ref) => HotlineService());
-final documentServiceProvider = Provider((ref) => DocumentService());
-final floodAlertServiceProvider = Provider((ref) => FloodAlertService());
-final citizenReportServiceProvider = Provider((ref) => CitizenReportService());
+final notificationServiceProvider  = Provider((ref) => NotificationService(ref));
+final hotlineServiceProvider       = Provider((_)   => HotlineService());
+final documentServiceProvider      = Provider((_)   => DocumentService());
+final floodAlertServiceProvider    = Provider((_)   => FloodAlertService());
+final citizenReportServiceProvider = Provider((_)   => CitizenReportService());

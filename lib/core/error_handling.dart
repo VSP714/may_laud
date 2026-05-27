@@ -232,24 +232,30 @@ class LoadingOverlay extends StatelessWidget {
 
 /// Async value wrapper for Riverpod
 extension AsyncValueUI<T> on AsyncValue<T> {
-  /// Show loading overlay while loading
+  /// Show loading overlay while loading, or error UI, or data UI.
   Widget buildWithLoadingOverlay({
     required Widget Function(T data) builder,
     String? loadingMessage,
     Widget Function(Object error, StackTrace stackTrace)? errorBuilder,
+    Widget? loadingPlaceholder,
   }) {
     return when(
-      loading: () => LoadingOverlay(
-        isLoading: true,
-        message: loadingMessage,
-        child: builder(value as T),
-      ),
+      loading: () {
+        // If we want to show a loading overlay over existing content,
+        // we need to provide a placeholder. For simplicity, show a full-screen loader.
+        if (loadingPlaceholder != null) {
+          return loadingPlaceholder;
+        }
+        return const Scaffold(
+          body: Center(
+            child: CircularProgressIndicator(),
+          ),
+        );
+      },
       error: (error, stackTrace) {
         if (errorBuilder != null) {
           return errorBuilder(error, stackTrace);
         }
-
-        // Default error UI
         return Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -263,15 +269,12 @@ extension AsyncValueUI<T> on AsyncValue<T> {
               Text(
                 ErrorHandler.handleException(error),
                 textAlign: TextAlign.center,
-                style: const TextStyle(
-                  fontSize: 16,
-                  color: Colors.grey,
-                ),
+                style: const TextStyle(fontSize: 16, color: Colors.grey),
               ),
               const SizedBox(height: 16),
               ElevatedButton(
                 onPressed: () {
-                  // In a real implementation, this would refresh the provider
+                  // Refresh logic would need a ref to the provider – not included here.
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppTheme.milaorBlue,
@@ -287,7 +290,6 @@ extension AsyncValueUI<T> on AsyncValue<T> {
     );
   }
 }
-
 /// Retry button widget
 class RetryButton extends StatelessWidget {
   final VoidCallback onRetry;

@@ -99,8 +99,11 @@ class LocalStorage {
 
   /// Clear all data (logout)
   static Future<void> clearAll() async {
-    await clearAuthToken();
-    await clearUserData();
-    await _hiveBox.clear();
-  }
+  await clearAuthToken();
+  await clearUserData();
+  await _prefs.remove(_isFirstLaunchKey);
+  await _prefs.remove(_isDarkModeKey);
+  await _prefs.remove(_localeKey);
+  await _hiveBox.clear();
+}
 }

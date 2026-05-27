@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-
+import 'package:may_laud/providers/auth_provider.dart';
 import '../app_features/flood_alert/flood_alert_screen.dart';
 
-// ===== MUNICIPAL BRAND PALETTE (Milaor, Camarines Sur) =====
+// ===== MUNICIPAL BRAND PALETTE (same as before) =====
 class HomeColors {
   static const Color heritagePurple = Color(0xFF4C229C);
   static const Color riverFlow = Color(0xFF643EB5);
@@ -11,7 +12,6 @@ class HomeColors {
   static const Color warmHearth = Color(0xFFF8F5FF);
   static const Color cardWhite = Colors.white;
 
-  // Semantic accents
   static const Color successGreen = Color(0xFF16A34A);
   static const Color warningAmber = Color(0xFFF59E0B);
   static const Color infoBlue = Color(0xFF3B82F6);
@@ -21,13 +21,11 @@ class HomeColors {
   static const LinearGradient fabGradient = LinearGradient(
     colors: [riverFlow, heritagePurple],
   );
-
   static const LinearGradient avatarGradient = LinearGradient(
     colors: [riverFlow, heritagePurple],
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
   );
-
   static const LinearGradient headerGradient = LinearGradient(
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
@@ -35,16 +33,14 @@ class HomeColors {
   );
 }
 
-/// ─── PARTICIPATORY GOVERNANCE HOME SCREEN ─────────────────
-/// Pure content widget — Scaffold, bottom nav & FAB live in [MainApp].
-class HomeScreen extends StatefulWidget {
+class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
 
   @override
-  State<HomeScreen> createState() => _HomeScreenState();
+  ConsumerState<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> {
+class _HomeScreenState extends ConsumerState<HomeScreen> {
   final ScrollController _scrollController = ScrollController();
   bool _isScrolled = false;
   int _feedbackRating = 0;
@@ -70,6 +66,12 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // ✅ Get auth state – user name comes from here
+    final authState = ref.watch(authProvider);
+    final user = authState.user;
+    final userName = user?.name ?? 'Resident';
+    final isGuest = authState.isGuest;
+
     return SingleChildScrollView(
       controller: _scrollController,
       physics: const BouncingScrollPhysics(),
@@ -82,7 +84,7 @@ class _HomeScreenState extends State<HomeScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _buildHeader(),
+          _buildHeader(userName, isGuest),
           SizedBox(height: 24.h),
           _buildDashboardStats(),
           SizedBox(height: 28.h),
@@ -100,13 +102,12 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  // ─── HEADER ───────────────────────────────────────────
-  Widget _buildHeader() {
+  // ─── HEADER (now receives user name) ───────────────────
+  Widget _buildHeader(String userName, bool isGuest) {
     return Column(
       children: [
         Row(
           children: [
-            // Avatar with municipal ring
             Container(
               width: 56.w,
               height: 56.w,
@@ -126,7 +127,6 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ),
             SizedBox(width: 14.w),
-            // Greeting
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -134,7 +134,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   Row(
                     children: [
                       Text(
-                        'Good Morning!',
+                        'Good ${_timeOfDay()}!',
                         style: TextStyle(
                           fontSize: 14.sp,
                           fontWeight: FontWeight.w500,
@@ -142,10 +142,8 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
                       ),
                       SizedBox(width: 6.w),
-                      // Municipal badge
                       Container(
-                        padding: EdgeInsets.symmetric(
-                            horizontal: 8.w, vertical: 3.h),
+                        padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 3.h),
                         decoration: BoxDecoration(
                           color: HomeColors.warmHearth,
                           borderRadius: BorderRadius.circular(20.r),
@@ -160,7 +158,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                 size: 12.sp, color: HomeColors.heritagePurple),
                             SizedBox(width: 4.w),
                             Text(
-                              'LGU Milaor',
+                              isGuest ? 'Guest Mode' : 'LGU Milaor',
                               style: TextStyle(
                                 fontSize: 10.sp,
                                 fontWeight: FontWeight.w700,
@@ -173,8 +171,9 @@ class _HomeScreenState extends State<HomeScreen> {
                     ],
                   ),
                   SizedBox(height: 2.h),
+                  // ✅ Dynamic user name
                   Text(
-                    'Juan Dela Cruz',
+                    userName,
                     style: TextStyle(
                       fontSize: 22.sp,
                       fontWeight: FontWeight.w700,
@@ -198,10 +197,9 @@ class _HomeScreenState extends State<HomeScreen> {
                 ],
               ),
             ),
-            // Notification bell with badge
             GestureDetector(
               onTap: () {
-                // Navigate to notifications (index 2 in MainApp)
+                // Navigate to notifications
               },
               child: Container(
                 width: 44.w,
@@ -237,7 +235,6 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ],
         ),
-        // Date strip
         SizedBox(height: 14.h),
         Container(
           width: double.infinity,
@@ -273,6 +270,15 @@ class _HomeScreenState extends State<HomeScreen> {
       ],
     );
   }
+
+  // Helper: get time of day for greeting
+  String _timeOfDay() {
+    final hour = DateTime.now().hour;
+    if (hour < 12) return 'Morning';
+    if (hour < 18) return 'Afternoon';
+    return 'Evening';
+  }
+
 
   // ─── DASHBOARD STATS ──────────────────────────────────
   Widget _buildDashboardStats() {

@@ -4,10 +4,13 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import '../password/create_new_password_screen.dart';
 
 class OtpVerificationScreen extends StatefulWidget {
-  const OtpVerificationScreen({super.key});
+  final String email; // email passed from ForgotPasswordScreen
+
+  const OtpVerificationScreen({super.key, required this.email});
 
   @override
   State<OtpVerificationScreen> createState() => _OtpVerificationScreenState();
@@ -16,37 +19,38 @@ class OtpVerificationScreen extends StatefulWidget {
 class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
   final List<TextEditingController> controllers =
       List.generate(6, (_) => TextEditingController());
-
   final List<FocusNode> focusNodes = List.generate(6, (_) => FocusNode());
 
   int secondsRemaining = 59;
   Timer? timer;
+  bool _isLoading = false;
+  String? _errorMessage;
+
+  SupabaseClient get _client => Supabase.instance.client;
 
   @override
   void initState() {
     super.initState();
     startTimer();
-
     Future.delayed(const Duration(milliseconds: 300), () {
-      if (focusNodes.isNotEmpty) {
-        focusNodes[0].requestFocus();
-      }
+      if (mounted && focusNodes.isNotEmpty) focusNodes[0].requestFocus();
     });
   }
 
   void startTimer() {
-    timer = Timer.periodic(const Duration(seconds: 1), (timer) {
+    timer?.cancel();
+    timer = Timer.periodic(const Duration(seconds: 1), (t) {
+      if (!mounted) { t.cancel(); return; }
       if (secondsRemaining == 0) {
-        timer.cancel();
+        t.cancel();
       } else {
-        setState(() {
-          secondsRemaining--;
-        });
+        setState(() => secondsRemaining--);
       }
     });
   }
 
   void _onOtpChanged(String value, int index) {
+    setState(() => _errorMessage = null);
     if (value.isNotEmpty && index < 5) {
       focusNodes[index + 1].requestFocus();
     } else if (value.isEmpty && index > 0) {
@@ -54,23 +58,85 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
     }
   }
 
-  void _resendCode() {
-    if (secondsRemaining == 0) {
-      setState(() {
-        secondsRemaining = 59;
-      });
-      startTimer();
-      // Show a snackbar or toast (optional)
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Verification code resent'),
-          duration: Duration(seconds: 2),
-        ),
-      );
+  Future<void> _resendCode() async {
+    if (secondsRemaining > 0) return;
+    setState(() { _isLoading = true; _errorMessage = null; });
+    try {
+      await _client.auth.resetPasswordForEmail(widget.email);
+      if (mounted) {
+        setState(() { secondsRemaining = 59; _isLoading = false; });
+        startTimer();
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Code resent to ${widget.email}'),
+            backgroundColor: const Color(0xFF4C229C),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() { _isLoading = false; _errorMessage = 'Failed to resend. Try again.'; });
+      }
     }
   }
 
-  Widget otpBox(int index) {
+  Future<void> _verifyOtp() async {
+    final code = controllers.map((c) => c.text).join();
+    if (code.length < 6) {
+      setState(() => _errorMessage = 'Please enter the complete 6-digit code.');
+      return;
+    }
+
+    setState(() { _isLoading = true; _errorMessage = null; });
+
+    try {
+      final response = await _client.auth.verifyOTP(
+        email: widget.email,
+        token: code,
+        type: OtpType.recovery,
+      );
+
+      if (!mounted) return;
+
+      if (response.session != null) {
+        // OTP verified — go to create new password screen
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (_) => const CreateNewPasswordScreen()),
+        );
+      } else {
+        setState(() {
+          _isLoading = false;
+          _errorMessage = 'Invalid or expired code. Please try again.';
+        });
+      }
+    } on AuthException catch (e) {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+          _errorMessage = e.message;
+        });
+      }
+    } catch (_) {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+          _errorMessage = 'Something went wrong. Please try again.';
+        });
+      }
+    }
+  }
+
+  @override
+  void dispose() {
+    timer?.cancel();
+    for (var c in controllers) c.dispose();
+    for (var f in focusNodes) f.dispose();
+    super.dispose();
+  }
+
+  Widget _otpBox(int index) {
     return Container(
       width: 60.w,
       height: 60.h,
@@ -79,9 +145,11 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
         color: Colors.white,
         borderRadius: BorderRadius.circular(12.r),
         border: Border.all(
-          color: focusNodes[index].hasFocus
-              ? const Color(0xFF6A4FB6)
-              : const Color(0xFFE0E0E0),
+          color: _errorMessage != null
+              ? Colors.red.shade300
+              : focusNodes[index].hasFocus
+                  ? const Color(0xFF6A4FB6)
+                  : const Color(0xFFE0E0E0),
           width: focusNodes[index].hasFocus ? 2 : 1,
         ),
         boxShadow: focusNodes[index].hasFocus
@@ -108,7 +176,7 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
           color: Colors.black,
         ),
         decoration: const InputDecoration(
-          counterText: "",
+          counterText: '',
           border: InputBorder.none,
           contentPadding: EdgeInsets.zero,
         ),
@@ -118,24 +186,11 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
   }
 
   @override
-  void dispose() {
-    timer?.cancel();
-    for (var c in controllers) {
-      c.dispose();
-    }
-    for (var f in focusNodes) {
-      f.dispose();
-    }
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
       body: Stack(
         children: [
-          /// TOP LEFT SOFT CIRCLE (same as verified screen)
           Positioned(
             top: -120.h,
             left: -120.w,
@@ -148,8 +203,6 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
               ),
             ),
           ),
-
-          /// TOP RIGHT LIGHT GLOW (from verification screen)
           Positioned(
             top: 100.h,
             right: -60.w,
@@ -167,8 +220,6 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
               ),
             ),
           ),
-
-          /// BOTTOM RIGHT GLOW (from verification screen)
           Positioned(
             bottom: 180.h,
             right: -80.w,
@@ -186,19 +237,14 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
               ),
             ),
           ),
-
-          /// BOTTOM WAVES (from verification screen)
           Align(
             alignment: Alignment.bottomCenter,
             child: SizedBox(
               height: 240.h,
               width: double.infinity,
-              child: CustomPaint(
-                painter: MilaudWavePainter(),
-              ),
+              child: CustomPaint(painter: _MilaudWavePainter()),
             ),
           ),
-
           SafeArea(
             child: SingleChildScrollView(
               child: Padding(
@@ -207,7 +253,7 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
                   children: [
                     SizedBox(height: 16.h),
 
-                    /// Back + Title (centered like verification screen)
+                    // Back + Title
                     Stack(
                       alignment: Alignment.center,
                       children: [
@@ -220,7 +266,7 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
                           ),
                         ),
                         Text(
-                          "Reset Password",
+                          'Reset Password',
                           style: TextStyle(
                             fontSize: 20.sp,
                             fontWeight: FontWeight.w600,
@@ -232,7 +278,7 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
 
                     SizedBox(height: 48.h),
 
-                    /// Icon (lock with gradient circle)
+                    // Icon
                     Container(
                       width: 100.w,
                       height: 100.w,
@@ -246,7 +292,7 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
                             color: const Color(0xFF643EB5).withOpacity(0.4),
                             blurRadius: 20,
                             offset: const Offset(0, 8),
-                          )
+                          ),
                         ],
                       ),
                       child: Icon(
@@ -258,9 +304,8 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
 
                     SizedBox(height: 32.h),
 
-                    /// Title
                     Text(
-                      "Enter Verification Code",
+                      'Enter Verification Code',
                       style: TextStyle(
                         fontSize: 28.sp,
                         fontWeight: FontWeight.w700,
@@ -270,32 +315,56 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
 
                     SizedBox(height: 12.h),
 
-                    /// Subtitle
-                    Text(
-                      "We've sent a 6‑digit code to your\n"
-                      "phone number for security verification.",
+                    // Show the email the code was sent to
+                    RichText(
                       textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontSize: 16.sp,
-                        color: const Color(0xFF666666),
-                        height: 1.5,
+                      text: TextSpan(
+                        style: TextStyle(
+                          fontSize: 15.sp,
+                          color: const Color(0xFF666666),
+                          height: 1.6,
+                        ),
+                        children: [
+                          const TextSpan(text: "We've sent a 6-digit code to\n"),
+                          TextSpan(
+                            text: widget.email,
+                            style: const TextStyle(
+                              fontWeight: FontWeight.w700,
+                              color: Color(0xFF4C229C),
+                            ),
+                          ),
+                        ],
                       ),
                     ),
 
                     SizedBox(height: 45.h),
 
-                    /// OTP Fields
+                    // OTP Fields
                     SingleChildScrollView(
                       scrollDirection: Axis.horizontal,
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
-                        children: List.generate(6, otpBox),
+                        children: List.generate(6, _otpBox),
                       ),
                     ),
 
+                    // Error message
+                    if (_errorMessage != null) ...[
+                      SizedBox(height: 12.h),
+                      Text(
+                        _errorMessage!,
+                        style: TextStyle(
+                          color: Colors.red.shade600,
+                          fontSize: 13.sp,
+                          fontWeight: FontWeight.w500,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ],
+
                     SizedBox(height: 40.h),
 
-                    /// Verify Button
+                    // Verify Button
                     SizedBox(
                       width: double.infinity,
                       height: 56.h,
@@ -309,26 +378,8 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
                           ),
                           elevation: 0,
                         ),
-                        onPressed: () {
-                          String code = controllers.map((e) => e.text).join();
-
-                          if (code.length == 6) {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) => const CreateNewPasswordScreen(),
-                              ),
-                            );
-                          } else {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content:
-                                    Text("Please enter complete 6-digit code"),
-                              ),
-                            );
-                          }
-                        },
-                        child: Container(
+                        onPressed: _isLoading ? null : _verifyOtp,
+                        child: Ink(
                           decoration: BoxDecoration(
                             borderRadius: BorderRadius.circular(40.r),
                             gradient: const LinearGradient(
@@ -339,19 +390,28 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
                                 color: const Color(0xFF643EB5),
                                 blurRadius: 12,
                                 offset: const Offset(0, 6),
-                              )
+                              ),
                             ],
                           ),
                           child: Container(
                             alignment: Alignment.center,
-                            child: Text(
-                              "Verify & Continue",
-                              style: TextStyle(
-                                fontSize: 18.sp,
-                                fontWeight: FontWeight.w700,
-                                color: Colors.white,
-                              ),
-                            ),
+                            child: _isLoading
+                                ? const SizedBox(
+                                    width: 24,
+                                    height: 24,
+                                    child: CircularProgressIndicator(
+                                      color: Colors.white,
+                                      strokeWidth: 2.5,
+                                    ),
+                                  )
+                                : Text(
+                                    'Verify & Continue',
+                                    style: TextStyle(
+                                      fontSize: 18.sp,
+                                      fontWeight: FontWeight.w700,
+                                      color: Colors.white,
+                                    ),
+                                  ),
                           ),
                         ),
                       ),
@@ -359,7 +419,7 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
 
                     SizedBox(height: 24.h),
 
-                    /// Resend Row
+                    // Resend Row
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
@@ -373,7 +433,7 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
                         SizedBox(width: 6.w),
                         secondsRemaining > 0
                             ? Text(
-                                "Resend in 00:${secondsRemaining.toString().padLeft(2, '0')}",
+                                'Resend in 00:${secondsRemaining.toString().padLeft(2, '0')}',
                                 style: TextStyle(
                                   color: const Color(0xFF6A4FB6),
                                   fontWeight: FontWeight.w700,
@@ -381,7 +441,7 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
                                 ),
                               )
                             : TextButton(
-                                onPressed: _resendCode,
+                                onPressed: _isLoading ? null : _resendCode,
                                 style: TextButton.styleFrom(
                                   padding: EdgeInsets.zero,
                                   minimumSize: Size.zero,
@@ -389,7 +449,7 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
                                       MaterialTapTargetSize.shrinkWrap,
                                 ),
                                 child: Text(
-                                  "Resend now",
+                                  'Resend now',
                                   style: TextStyle(
                                     color: const Color(0xFF6A4FB6),
                                     fontWeight: FontWeight.w700,
@@ -403,27 +463,25 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
 
                     SizedBox(height: 20.h),
 
-                    /// Security note
-                    Center(
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(
-                            Icons.lock_outline,
-                            size: 16.w,
+                    // Security note
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.lock_outline,
+                          size: 16.w,
+                          color: const Color(0xFF6A4FB6).withOpacity(0.6),
+                        ),
+                        SizedBox(width: 8.w),
+                        Text(
+                          'End-to-end encrypted',
+                          style: TextStyle(
                             color: const Color(0xFF6A4FB6).withOpacity(0.6),
+                            fontSize: 13.sp,
+                            fontWeight: FontWeight.w600,
                           ),
-                          SizedBox(width: 8.w),
-                          Text(
-                            "End‑to‑end encrypted",
-                            style: TextStyle(
-                              color: const Color(0xFF6A4FB6).withOpacity(0.6),
-                              fontSize: 13.sp,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ],
-                      ),
+                        ),
+                      ],
                     ),
                     SizedBox(height: 30.h),
                   ],
@@ -437,8 +495,7 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
   }
 }
 
-/// Custom wave painter (copied from verification_screen.dart)
-class MilaudWavePainter extends CustomPainter {
+class _MilaudWavePainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final fillWave = Paint()
@@ -450,40 +507,20 @@ class MilaudWavePainter extends CustomPainter {
       ..style = PaintingStyle.stroke
       ..strokeWidth = 2;
 
-    final path1 = Path();
-    path1.moveTo(0, 70);
-    path1.quadraticBezierTo(
-      size.width * 0.25,
-      20,
-      size.width * 0.5,
-      90,
-    );
-    path1.quadraticBezierTo(
-      size.width * 0.75,
-      150,
-      size.width,
-      70,
-    );
-    path1.lineTo(size.width, size.height);
-    path1.lineTo(0, size.height);
-    path1.close();
+    final path1 = Path()
+      ..moveTo(0, 70)
+      ..quadraticBezierTo(size.width * 0.25, 20, size.width * 0.5, 90)
+      ..quadraticBezierTo(size.width * 0.75, 150, size.width, 70)
+      ..lineTo(size.width, size.height)
+      ..lineTo(0, size.height)
+      ..close();
 
     canvas.drawPath(path1, fillWave);
 
-    final path2 = Path();
-    path2.moveTo(0, 90);
-    path2.quadraticBezierTo(
-      size.width * 0.3,
-      40,
-      size.width * 0.6,
-      110,
-    );
-    path2.quadraticBezierTo(
-      size.width * 0.85,
-      170,
-      size.width,
-      100,
-    );
+    final path2 = Path()
+      ..moveTo(0, 90)
+      ..quadraticBezierTo(size.width * 0.3, 40, size.width * 0.6, 110)
+      ..quadraticBezierTo(size.width * 0.85, 170, size.width, 100);
 
     canvas.drawPath(path2, lineWave);
   }

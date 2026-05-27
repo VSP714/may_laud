@@ -1,19 +1,22 @@
+// lib/screens/app_features/document/document_request_screen.dart
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 
 import '../../home/home.dart';
 import '../../home/nav_bar_button.dart';
+import '../../../utils/guest_guard.dart'; // ✅ Guest guard import
 
-class DocumentRequestScreen extends StatefulWidget {
+class DocumentRequestScreen extends ConsumerStatefulWidget {
   const DocumentRequestScreen({super.key});
 
   @override
-  State<DocumentRequestScreen> createState() => _DocumentRequestScreenState();
+  ConsumerState<DocumentRequestScreen> createState() => _DocumentRequestScreenState();
 }
 
-class _DocumentRequestScreenState extends State<DocumentRequestScreen> {
+class _DocumentRequestScreenState extends ConsumerState<DocumentRequestScreen> {
   final _formKey = GlobalKey<FormState>();
   final TextEditingController _fullNameController = TextEditingController();
   final TextEditingController _addressController = TextEditingController();
@@ -498,8 +501,14 @@ class _DocumentRequestScreenState extends State<DocumentRequestScreen> {
     );
   }
 
-  // ─── SUBMIT ───────────────────────────────────────────
+  // ─── SUBMIT REQUEST WITH GUEST CHECK ──────────────────
   Future<void> _submitRequest() async {
+    // ✅ Guest restriction: guests cannot request documents
+    if (GuestGuard.isGuest(ref)) {
+      await GuestGuard.showGuestRestrictionDialog(context);
+      return;
+    }
+
     if (!_formKey.currentState!.validate()) return;
 
     if (!_selectedIsAvailable) {
@@ -557,7 +566,6 @@ class _DocumentRequestScreenState extends State<DocumentRequestScreen> {
           mainAxisSize: MainAxisSize.min,
           children: [
             SizedBox(height: 4.h),
-            // Success icon
             TweenAnimationBuilder<double>(
               tween: Tween(begin: 0.0, end: 1.0),
               duration: const Duration(milliseconds: 500),
@@ -610,7 +618,6 @@ class _DocumentRequestScreenState extends State<DocumentRequestScreen> {
               ),
             ),
             SizedBox(height: 20.h),
-            // Reference number card
             Container(
               width: double.infinity,
               padding: EdgeInsets.symmetric(vertical: 14.h),
@@ -644,7 +651,6 @@ class _DocumentRequestScreenState extends State<DocumentRequestScreen> {
               ),
             ),
             SizedBox(height: 20.h),
-            // Detail rows
             _successDetailRow(
                 Icons.description_outlined, 'Document', _selectedDocumentType),
             SizedBox(height: 10.h),
@@ -657,7 +663,6 @@ class _DocumentRequestScreenState extends State<DocumentRequestScreen> {
               _isFree ? 'Free of Charge' : '₱${_fee.toStringAsFixed(2)}',
             ),
             SizedBox(height: 20.h),
-            // Tip box
             Container(
               padding: EdgeInsets.all(14.w),
               decoration: BoxDecoration(
@@ -802,7 +807,7 @@ class _DocumentRequestScreenState extends State<DocumentRequestScreen> {
     );
   }
 
-  // ─── SLIVER APP BAR (back button — plain icon, no box) ────────────────────
+  // ─── SLIVER APP BAR ─────────────────────────────────────
   Widget _buildSliverAppBar() {
     return SliverAppBar(
       expandedHeight: 210.h,
@@ -842,8 +847,7 @@ class _DocumentRequestScreenState extends State<DocumentRequestScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  SizedBox(
-                      height: 40.h), // space for leading back button overlap
+                  SizedBox(height: 40.h),
                   Row(
                     children: [
                       Container(
@@ -1015,7 +1019,6 @@ class _DocumentRequestScreenState extends State<DocumentRequestScreen> {
             style: TextStyle(fontSize: 13.sp, color: const Color(0xFF9CA3AF)),
           ),
           SizedBox(height: 14.h),
-          // Tappable document type preview
           Material(
             color: Colors.transparent,
             child: InkWell(
@@ -1117,7 +1120,6 @@ class _DocumentRequestScreenState extends State<DocumentRequestScreen> {
             ),
           ),
           SizedBox(height: 16.h),
-          // Purpose field
           TextFormField(
             controller: _purposeController,
             maxLines: 3,

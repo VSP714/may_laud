@@ -5,8 +5,6 @@ import 'package:may_laud/providers/auth_provider.dart';
 import 'package:may_laud/screens/signin__signup_screen.dart';
 import 'package:may_laud/theme/app_theme.dart';
 
-/// OPENING SCREEN 2ND CHOICE AFTER TEHY SUCCESS SIGN IN,
-/// IT WILL AUTOMATICALLY SKIP THE ONBOARDING SCREEN AND GO TO THE SIGN IN OR HOME SCREEN
 class SplashScreen extends ConsumerStatefulWidget {
   const SplashScreen({super.key});
 
@@ -56,37 +54,41 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
 
     _controller.forward();
 
-    // Navigate after animation completes
-    Future.delayed(const Duration(seconds: 3), () {
-      _navigateToNextScreen();
+    // Wait for auth to resolve, then navigate
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _waitForAuthAndNavigate();
     });
   }
 
-  Future<void> _navigateToNextScreen() async {
-    final authState = ref.read(authProvider);
+  Future<void> _waitForAuthAndNavigate() async {
+    // Minimum splash display duration (2 seconds)
+    await Future.delayed(const Duration(seconds: 2));
 
-    if (mounted) {
-      if (authState.isAuthenticated) {
-        // Navigate to main app if authenticated
-        Navigator.pushReplacementNamed(context, '/main');
-      } else {
-        // Navigate to login screen if not authenticated
-        Navigator.pushReplacement(
-          context,
-          PageRouteBuilder(
-            pageBuilder: (context, animation, secondaryAnimation) =>
-                const LoginScreen(),
-            transitionsBuilder:
-                (context, animation, secondaryAnimation, child) {
-              return FadeTransition(
-                opacity: animation,
-                child: child,
-              );
-            },
-            transitionDuration: const Duration(milliseconds: 500),
-          ),
-        );
-      }
+    // Wait until auth is no longer loading
+    while (mounted && ref.read(authProvider).isLoading) {
+      await Future.delayed(const Duration(milliseconds: 100));
+    }
+
+    if (!mounted) return;
+
+    final authState = ref.read(authProvider);
+    if (authState.isAuthenticated) {
+      // Navigate to main app
+      Navigator.pushReplacementNamed(context, '/main');
+    } else {
+      // Navigate to login screen
+      Navigator.pushReplacement(
+        context,
+        PageRouteBuilder(
+          pageBuilder: (context, animation, secondaryAnimation) =>
+              const LoginScreen(),
+          transitionsBuilder:
+              (context, animation, secondaryAnimation, child) {
+            return FadeTransition(opacity: animation, child: child);
+          },
+          transitionDuration: const Duration(milliseconds: 500),
+        ),
+      );
     }
   }
 
@@ -100,130 +102,121 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppTheme.milaorBlue,
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            // Logo with scale animation
-            ScaleTransition(
-              scale: _scaleAnimation,
-              child: Container(
-                width: 150.w,
-                height: 150.h,
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(30.r),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.2),
-                      blurRadius: 20.r,
-                      spreadRadius: 2.r,
-                      offset: Offset(0, 10.h),
+      body: Stack(
+        children: [
+          // Animated background painter
+          AnimatedBuilder(
+            animation: _controller,
+            builder: (context, child) {
+              return CustomPaint(
+                painter: _SplashBackgroundPainter(progress: _controller.value),
+                size: Size.infinite,
+              );
+            },
+          ),
+          // Centered content
+          Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                // Logo with scale animation
+                ScaleTransition(
+                  scale: _scaleAnimation,
+                  child: Container(
+                    width: 150.w,
+                    height: 150.h,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(30.r),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.2),
+                          blurRadius: 20.r,
+                          spreadRadius: 2.r,
+                          offset: Offset(0, 10.h),
+                        ),
+                      ],
                     ),
-                  ],
-                ),
-                child: Center(
-                  child: Image.asset(
-                    'assets/images/milaudlogo.png',
-                    width: 120.w,
-                    height: 120.h,
-                    fit: BoxFit.contain,
-                  ),
-                ),
-              ),
-            ),
-
-            SizedBox(height: 40.h),
-
-            // App name with slide and fade animation
-            SlideTransition(
-              position: _slideAnimation,
-              child: FadeTransition(
-                opacity: _fadeAnimation,
-                child: Text(
-                  'MILAUD',
-                  style: TextStyle(
-                    fontSize: 42.sp,
-                    fontWeight: FontWeight.w800,
-                    color: Colors.white,
-                    letterSpacing: 2.w,
-                    shadows: [
-                      Shadow(
-                        color: Colors.black.withOpacity(0.3),
-                        blurRadius: 10.r,
-                        offset: Offset(0, 5.h),
+                    child: Center(
+                      child: Image.asset(
+                        'assets/images/milaudlogo.png',
+                        width: 120.w,
+                        height: 120.h,
+                        fit: BoxFit.contain,
                       ),
-                    ],
+                    ),
                   ),
                 ),
-              ),
-            ),
-
-            SizedBox(height: 10.h),
-
-            // Tagline with fade animation
-            FadeTransition(
-              opacity: _fadeAnimation,
-              child: Text(
-                'Participatory Governance for Milaor',
-                style: TextStyle(
-                  fontSize: 16.sp,
-                  fontWeight: FontWeight.w500,
-                  color: Colors.white.withOpacity(0.9),
-                  letterSpacing: 0.5.w,
-                ),
-              ),
-            ),
-
-            SizedBox(height: 60.h),
-
-            // Loading indicator with fade animation
-            FadeTransition(
-              opacity: _fadeAnimation,
-              child: SizedBox(
-                width: 50.w,
-                height: 50.h,
-                child: CircularProgressIndicator(
-                  strokeWidth: 3.w,
-                  valueColor: AlwaysStoppedAnimation<Color>(
-                    AppTheme.philippineGold,
-                  ),
-                  backgroundColor: Colors.white.withOpacity(0.2),
-                ),
-              ),
-            ),
-
-            SizedBox(height: 20.h),
-
-            // Loading text with fade animation
-            FadeTransition(
-              opacity: _fadeAnimation,
-              child: Text(
-                'Loading...',
-                style: TextStyle(
-                  fontSize: 14.sp,
-                  color: Colors.white.withOpacity(0.7),
-                ),
-              ),
-            ),
-
-            // Animated background elements
-            Positioned.fill(
-              child: IgnorePointer(
-                child: AnimatedBuilder(
-                  animation: _controller,
-                  builder: (context, child) {
-                    return CustomPaint(
-                      painter: _SplashBackgroundPainter(
-                        progress: _controller.value,
+                SizedBox(height: 40.h),
+                // App name
+                SlideTransition(
+                  position: _slideAnimation,
+                  child: FadeTransition(
+                    opacity: _fadeAnimation,
+                    child: Text(
+                      'MILAUD',
+                      style: TextStyle(
+                        fontSize: 42.sp,
+                        fontWeight: FontWeight.w800,
+                        color: Colors.white,
+                        letterSpacing: 2.w,
+                        shadows: [
+                          Shadow(
+                            color: Colors.black.withOpacity(0.3),
+                            blurRadius: 10.r,
+                            offset: Offset(0, 5.h),
+                          ),
+                        ],
                       ),
-                    );
-                  },
+                    ),
+                  ),
                 ),
-              ),
+                SizedBox(height: 10.h),
+                // Tagline
+                FadeTransition(
+                  opacity: _fadeAnimation,
+                  child: Text(
+                    'Participatory Governance for Milaor',
+                    style: TextStyle(
+                      fontSize: 16.sp,
+                      fontWeight: FontWeight.w500,
+                      color: Colors.white.withOpacity(0.9),
+                      letterSpacing: 0.5.w,
+                    ),
+                  ),
+                ),
+                SizedBox(height: 60.h),
+                // Loading indicator
+                FadeTransition(
+                  opacity: _fadeAnimation,
+                  child: SizedBox(
+                    width: 50.w,
+                    height: 50.h,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 3.w,
+                      valueColor: AlwaysStoppedAnimation<Color>(
+                        AppTheme.philippineGold,
+                      ),
+                      backgroundColor: Colors.white.withOpacity(0.2),
+                    ),
+                  ),
+                ),
+                SizedBox(height: 20.h),
+                // Loading text
+                FadeTransition(
+                  opacity: _fadeAnimation,
+                  child: Text(
+                    'Loading...',
+                    style: TextStyle(
+                      fontSize: 14.sp,
+                      color: Colors.white.withOpacity(0.7),
+                    ),
+                  ),
+                ),
+              ],
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

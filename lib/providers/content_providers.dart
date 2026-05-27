@@ -1,7 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:may_laud/services/supabase_service.dart';
 
-/// Announcement model
 class Announcement {
   final String id;
   final String title;
@@ -10,7 +11,7 @@ class Announcement {
   final DateTime date;
   final String? imageUrl;
   final bool isImportant;
-  final bool isRead;
+  bool isRead;
 
   Announcement({
     required this.id,
@@ -23,68 +24,45 @@ class Announcement {
     this.isRead = false,
   });
 
-  String get formattedDate {
-    return DateFormat('MMM dd, yyyy • hh:mm a').format(date);
-  }
+  String get formattedDate =>
+      DateFormat('MMM dd, yyyy • hh:mm a').format(date);
 
   factory Announcement.fromJson(Map<String, dynamic> json) {
     return Announcement(
-      id: json['id'] ?? '',
-      title: json['title'] ?? '',
+      id:          json['id'] ?? '',
+      title:       json['title'] ?? '',
       description: json['description'] ?? '',
-      category: json['category'] ?? 'General',
-      date:
-          json['date'] != null ? DateTime.parse(json['date']) : DateTime.now(),
-      imageUrl: json['imageUrl'],
-      isImportant: json['isImportant'] ?? false,
-      isRead: json['isRead'] ?? false,
+      category:    json['category'] ?? 'General',
+      date:        json['created_at'] != null
+                     ? DateTime.parse(json['created_at'])
+                     : DateTime.now(),
+      imageUrl:    json['image_url'],
+      isImportant: json['is_important'] ?? false,
+      isRead:      json['is_read'] ?? false,
     );
   }
 
-  Map<String, dynamic> toJson() {
-    return {
-      'id': id,
-      'title': title,
-      'description': description,
-      'category': category,
-      'date': date.toIso8601String(),
-      'imageUrl': imageUrl,
-      'isImportant': isImportant,
-      'isRead': isRead,
-    };
-  }
-
-  Announcement copyWith({
-    String? id,
-    String? title,
-    String? description,
-    String? category,
-    DateTime? date,
-    String? imageUrl,
-    bool? isImportant,
-    bool? isRead,
-  }) {
+  Announcement copyWith({bool? isRead}) {
     return Announcement(
-      id: id ?? this.id,
-      title: title ?? this.title,
-      description: description ?? this.description,
-      category: category ?? this.category,
-      date: date ?? this.date,
-      imageUrl: imageUrl ?? this.imageUrl,
-      isImportant: isImportant ?? this.isImportant,
-      isRead: isRead ?? this.isRead,
+      id:          id,
+      title:       title,
+      description: description,
+      category:    category,
+      date:        date,
+      imageUrl:    imageUrl,
+      isImportant: isImportant,
+      isRead:      isRead ?? this.isRead,
     );
   }
 }
 
-/// Notification model
 class AppNotification {
   final String id;
   final String title;
   final String message;
   final DateTime timestamp;
-  final String type; // 'announcement', 'alert', 'reminder', 'system'
-  final bool isRead;
+  final String type;
+  bool isRead;
   final Map<String, dynamic>? data;
 
   AppNotification({
@@ -98,221 +76,151 @@ class AppNotification {
   });
 
   String get formattedTime {
-    final now = DateTime.now();
-    final difference = now.difference(timestamp);
-
-    if (difference.inMinutes < 1) {
-      return 'Just now';
-    } else if (difference.inHours < 1) {
-      return '${difference.inMinutes}m ago';
-    } else if (difference.inDays < 1) {
-      return '${difference.inHours}h ago';
-    } else if (difference.inDays < 7) {
-      return '${difference.inDays}d ago';
-    } else {
-      return DateFormat('MMM dd').format(timestamp);
-    }
+    final diff = DateTime.now().difference(timestamp);
+    if (diff.inMinutes < 1) return 'Just now';
+    if (diff.inHours   < 1) return '${diff.inMinutes}m ago';
+    if (diff.inDays    < 1) return '${diff.inHours}h ago';
+    if (diff.inDays    < 7) return '${diff.inDays}d ago';
+    return DateFormat('MMM dd').format(timestamp);
   }
 
   factory AppNotification.fromJson(Map<String, dynamic> json) {
     return AppNotification(
-      id: json['id'] ?? '',
-      title: json['title'] ?? '',
-      message: json['message'] ?? '',
-      timestamp: json['timestamp'] != null
-          ? DateTime.parse(json['timestamp'])
-          : DateTime.now(),
-      type: json['type'] ?? 'system',
-      isRead: json['isRead'] ?? false,
-      data: json['data'],
+      id:        json['id'] ?? '',
+      title:     json['title'] ?? '',
+      message:   json['message'] ?? '',
+      timestamp: json['created_at'] != null
+                   ? DateTime.parse(json['created_at'])
+                   : DateTime.now(),
+      type:      json['type'] ?? 'system',
+      isRead:    json['is_read'] ?? false,
+      data:      json['data'],
     );
   }
 }
 
-/// Announcements provider
 class AnnouncementsProvider extends StateNotifier<List<Announcement>> {
-  AnnouncementsProvider() : super(_mockAnnouncements);
+  AnnouncementsProvider() : super([]) {
+    try {
+      fetchAnnouncements();
+    } catch (_) {}
+  }
 
-  static final List<Announcement> _mockAnnouncements = [
-    Announcement(
-      id: '1',
-      title: 'Community Townhall Meeting',
-      description:
-          'Join us for the monthly community townhall meeting at the Milaor Municipal Hall. Discuss local issues and upcoming projects.',
-      category: 'Community',
-      date: DateTime.now().subtract(const Duration(days: 1)),
-      imageUrl: 'assets/images/home_screen/Community_Townhall.png',
-      isImportant: true,
-    ),
-    Announcement(
-      id: '2',
-      title: 'Road Closure: San Jose Street',
-      description:
-          'San Jose Street will be closed for road repairs from April 25-30. Please use alternate routes.',
-      category: 'Infrastructure',
-      date: DateTime.now().subtract(const Duration(days: 2)),
-      imageUrl: 'assets/images/home_screen/Road_Announcement.png',
-    ),
-    Announcement(
-      id: '3',
-      title: 'Free Vaccination Drive',
-      description:
-          'Free flu vaccination drive at Milaor Health Center from April 28-30. All residents are encouraged to participate.',
-      category: 'Health',
-      date: DateTime.now().subtract(const Duration(days: 3)),
-      imageUrl: 'assets/images/home_screen/Vacine _Announcement.png',
-      isImportant: true,
-    ),
-    Announcement(
-      id: '4',
-      title: 'Water Interruption Schedule',
-      description:
-          'Water supply will be interrupted on April 26, 9 AM to 5 PM for pipeline maintenance.',
-      category: 'Utilities',
-      date: DateTime.now().subtract(const Duration(days: 4)),
-    ),
-    Announcement(
-      id: '5',
-      title: 'New Business Permit Process',
-      description:
-          'Streamlined business permit application process now available online through the Milaud app.',
-      category: 'Government',
-      date: DateTime.now().subtract(const Duration(days: 5)),
-    ),
-    Announcement(
-      id: '6',
-      title: 'Cultural Festival 2024',
-      description:
-          'Milaor Cultural Festival returns this May 15-20. Join us for traditional dances, food, and music.',
-      category: 'Events',
-      date: DateTime.now().subtract(const Duration(days: 6)),
-      imageUrl: 'assets/images/home_screen/Greetings.png',
-    ),
-  ];
+  SupabaseClient get _client => SupabaseService.client;
 
-  void markAsRead(String id) {
-    state = state.map((announcement) {
-      if (announcement.id == id) {
-        return announcement.copyWith(isRead: true);
+  Future<void> fetchAnnouncements() async {
+    try {
+      final uid = SupabaseService.userId;
+
+      final rows = await _client
+          .from('announcements')
+          .select()
+          .order('created_at', ascending: false);
+
+      Set<String> readIds = {};
+      if (uid != null) {
+        final reads = await _client
+            .from('announcement_reads')
+            .select('announcement_id')
+            .eq('user_id', uid);
+        readIds = {for (final r in reads) r['announcement_id'] as String};
       }
-      return announcement;
-    }).toList();
+
+      state = (rows as List).map((row) {
+        final a = Announcement.fromJson(row as Map<String, dynamic>);
+        return a.copyWith(isRead: readIds.contains(a.id));
+      }).toList();
+    } catch (_) {}
   }
 
-  void markAllAsRead() {
-    state = state
-        .map((announcement) => announcement.copyWith(isRead: true))
-        .toList();
+  Future<void> markAsRead(String id) async {
+    final uid = SupabaseService.userId;
+    if (uid == null) return;
+
+    await _client.from('announcement_reads').upsert({
+      'user_id':         uid,
+      'announcement_id': id,
+    });
+
+    state = state.map((a) => a.id == id ? a.copyWith(isRead: true) : a).toList();
   }
 
-  void addAnnouncement(Announcement announcement) {
-    state = [announcement, ...state];
+  Future<void> markAllAsRead() async {
+    final uid = SupabaseService.userId;
+    if (uid == null) return;
+
+    final unread = state.where((a) => !a.isRead).toList();
+    for (final a in unread) {
+      await _client.from('announcement_reads').upsert({
+        'user_id':         uid,
+        'announcement_id': a.id,
+      });
+    }
+
+    state = state.map((a) => a.copyWith(isRead: true)).toList();
   }
 
-  void deleteAnnouncement(String id) {
-    state = state.where((announcement) => announcement.id != id).toList();
-  }
-
-  List<Announcement> get importantAnnouncements {
-    return state.where((a) => a.isImportant).toList();
-  }
-
-  List<Announcement> get unreadAnnouncements {
-    return state.where((a) => !a.isRead).toList();
-  }
+  void addAnnouncement(Announcement a) => state = [a, ...state];
+  void deleteAnnouncement(String id) =>
+      state = state.where((a) => a.id != id).toList();
 }
 
-/// Notifications provider
 class NotificationsProvider extends StateNotifier<List<AppNotification>> {
-  NotificationsProvider() : super(_mockNotifications);
+  NotificationsProvider() : super([]) {
+    try {
+      fetchNotifications();
+    } catch (_) {}
+  }
 
-  static final List<AppNotification> _mockNotifications = [
-    AppNotification(
-      id: '1',
-      title: 'New Announcement',
-      message: 'Community Townhall Meeting has been scheduled',
-      timestamp: DateTime.now().subtract(const Duration(minutes: 15)),
-      type: 'announcement',
-    ),
-    AppNotification(
-      id: '2',
-      title: 'Flood Alert',
-      message: 'Heavy rainfall expected in Milaor area. Stay safe.',
-      timestamp: DateTime.now().subtract(const Duration(hours: 2)),
-      type: 'alert',
-      isRead: true,
-    ),
-    AppNotification(
-      id: '3',
-      title: 'Document Ready',
-      message: 'Your Barangay Clearance is ready for pickup',
-      timestamp: DateTime.now().subtract(const Duration(hours: 5)),
-      type: 'reminder',
-    ),
-    AppNotification(
-      id: '4',
-      title: 'Report Submitted',
-      message: 'Your citizen report #CR-2024-001 has been received',
-      timestamp: DateTime.now().subtract(const Duration(days: 1)),
-      type: 'system',
-      isRead: true,
-    ),
-    AppNotification(
-      id: '5',
-      title: 'Welcome to Milaud',
-      message:
-          'Thank you for joining Milaud! Explore features to stay connected.',
-      timestamp: DateTime.now().subtract(const Duration(days: 2)),
-      type: 'system',
-      isRead: true,
-    ),
-  ];
+  SupabaseClient get _client => SupabaseService.client;
 
-  void markAsRead(String id) {
-    state = state.map((notification) {
-      if (notification.id == id) {
-        return AppNotification(
-          id: notification.id,
-          title: notification.title,
-          message: notification.message,
-          timestamp: notification.timestamp,
-          type: notification.type,
-          isRead: true,
-          data: notification.data,
-        );
-      }
-      return notification;
+  Future<void> fetchNotifications() async {
+    final uid = SupabaseService.userId;
+    if (uid == null) return;
+
+    try {
+      final rows = await _client
+          .from('notifications')
+          .select()
+          .eq('user_id', uid)
+          .order('created_at', ascending: false);
+
+      state = (rows as List)
+          .map((r) => AppNotification.fromJson(r as Map<String, dynamic>))
+          .toList();
+    } catch (_) {}
+  }
+
+  Future<void> markAsRead(String id) async {
+    await _client
+        .from('notifications')
+        .update({'is_read': true})
+        .eq('id', id);
+
+    state = state.map((n) {
+      if (n.id == id) n.isRead = true;
+      return n;
     }).toList();
   }
 
-  void markAllAsRead() {
-    state = state
-        .map((notification) => AppNotification(
-              id: notification.id,
-              title: notification.title,
-              message: notification.message,
-              timestamp: notification.timestamp,
-              type: notification.type,
-              isRead: true,
-              data: notification.data,
-            ))
-        .toList();
+  Future<void> markAllAsRead() async {
+    final uid = SupabaseService.userId;
+    if (uid == null) return;
+
+    await _client
+        .from('notifications')
+        .update({'is_read': true})
+        .eq('user_id', uid);
+
+    state = state.map((n) { n.isRead = true; return n; }).toList();
   }
 
-  void addNotification(AppNotification notification) {
-    state = [notification, ...state];
-  }
-
-  void deleteNotification(String id) {
-    state = state.where((notification) => notification.id != id).toList();
-  }
-
-  int get unreadCount {
-    return state.where((n) => !n.isRead).length;
-  }
+  void addNotification(AppNotification n) => state = [n, ...state];
+  void deleteNotification(String id) =>
+      state = state.where((n) => n.id != id).toList();
+  int get unreadCount => state.where((n) => !n.isRead).length;
 }
 
-/// Provider instances
 final announcementsProvider =
     StateNotifierProvider<AnnouncementsProvider, List<Announcement>>(
   (ref) => AnnouncementsProvider(),
@@ -324,11 +232,9 @@ final notificationsProvider =
 );
 
 final unreadNotificationsCountProvider = Provider<int>((ref) {
-  final notifications = ref.watch(notificationsProvider);
-  return notifications.where((n) => !n.isRead).length;
+  return ref.watch(notificationsProvider).where((n) => !n.isRead).length;
 });
 
 final importantAnnouncementsProvider = Provider<List<Announcement>>((ref) {
-  final announcements = ref.watch(announcementsProvider);
-  return announcements.where((a) => a.isImportant).toList();
+  return ref.watch(announcementsProvider).where((a) => a.isImportant).toList();
 });

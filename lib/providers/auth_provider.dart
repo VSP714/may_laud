@@ -1,7 +1,9 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:supabase_flutter/supabase_flutter.dart' hide LocalStorage;
 import 'package:may_laud/core/local_storage.dart';
+import 'package:may_laud/services/supabase_service.dart';
 
-/// User model for authentication
 class User {
   final String id;
   final String name;
@@ -23,31 +25,29 @@ class User {
 
   factory User.fromJson(Map<String, dynamic> json) {
     return User(
-      id: json['id'] ?? '',
-      name: json['name'] ?? '',
-      email: json['email'] ?? '',
-      phone: json['phone'],
-      profileImage: json['profileImage'],
-      address: json['address'],
-      createdAt:
-          json['createdAt'] != null ? DateTime.parse(json['createdAt']) : null,
+      id:           json['id'] ?? '',
+      name:         json['name'] ?? '',
+      email:        json['email'] ?? '',
+      phone:        json['phone'],
+      profileImage: json['avatar_url'],
+      address:      json['address'],
+      createdAt:    json['created_at'] != null
+                      ? DateTime.parse(json['created_at'])
+                      : null,
     );
   }
 
-  Map<String, dynamic> toJson() {
-    return {
-      'id': id,
-      'name': name,
-      'email': email,
-      'phone': phone,
-      'profileImage': profileImage,
-      'address': address,
-      'createdAt': createdAt?.toIso8601String(),
-    };
-  }
+  Map<String, dynamic> toJson() => {
+    'id':         id,
+    'name':       name,
+    'email':      email,
+    'phone':      phone,
+    'avatar_url': profileImage,
+    'address':    address,
+    'created_at': createdAt?.toIso8601String(),
+  };
 }
 
-/// Authentication state
 class AuthState {
   final bool isLoading;
   final User? user;
@@ -71,113 +71,72 @@ class AuthState {
     bool? isGuest,
   }) {
     return AuthState(
-      isLoading: isLoading ?? this.isLoading,
-      user: user ?? this.user,
-      error: error ?? this.error,
+      isLoading:       isLoading       ?? this.isLoading,
+      user:            user            ?? this.user,
+      error:           error           ?? this.error,
       isAuthenticated: isAuthenticated ?? this.isAuthenticated,
-      isGuest: isGuest ?? this.isGuest,
+      isGuest:         isGuest         ?? this.isGuest,
     );
   }
 }
 
-/// Authentication provider
 class AuthProvider extends StateNotifier<AuthState> {
   AuthProvider() : super(const AuthState()) {
     _checkAuthStatus();
   }
 
-  /// Check if user is already authenticated from local storage
-  Future<void> _checkAuthStatus() async {
-    final userData = LocalStorage.getUserData();
-    final token = LocalStorage.getAuthToken();
+  SupabaseClient get _client => SupabaseService.client;
 
-    if (token != null &&
-        userData['userId'] != null &&
-        userData['userName'] != null) {
-      state = state.copyWith(
-        user: User(
-          id: userData['userId']!,
-          name: userData['userName']!,
-          email: userData['userEmail'] ?? '',
-        ),
-        isAuthenticated: true,
-      );
+  Future<void> _checkAuthStatus() async {
+    try {
+      final session = _client.auth.currentSession;
+      if (session != null) {
+        await _loadProfile(session.user.id, session.user.email ?? '');
+      }
+    } catch (e) {
+      // Supabase not yet initialized (e.g. test environment) — stay unauthenticated
+      debugPrint('[AuthProvider] _checkAuthStatus skipped: $e');
     }
   }
 
-  /// Mock login with email and password
+  Future<void> _loadProfile(String uid, String email) async {
+    try {
+      final data = await _client
+          .from('profiles')
+          .select()
+          .eq('id', uid)
+          .single();
+
+      final user = User.fromJson({...data, 'email': email});
+      state = state.copyWith(user: user, isAuthenticated: true, isLoading: false);
+
+      await LocalStorage.saveUserData(
+        userId:    user.id,
+        userName:  user.name,
+        userEmail: user.email,
+      );
+    } catch (_) {
+      state = state.copyWith(isAuthenticated: false, isLoading: false);
+    }
+  }
+
   Future<void> login(String email, String password) async {
     state = state.copyWith(isLoading: true, error: null);
-
-    // Simulate API call delay
-    await Future.delayed(const Duration(seconds: 1));
-
-    // Mock authentication - in real app, this would call an API
-    if (email.isNotEmpty && password.isNotEmpty) {
-      final mockUser = User(
-        id: 'user_001',
-        name: 'Juan Dela Cruz',
-        email: email,
-        phone: '+639123456789',
-        address: 'Milaor, Camarines Sur',
-        profileImage: null,
-        createdAt: DateTime.now(),
+    try {
+      final response = await _client.auth.signInWithPassword(
+        email:    email,
+        password: password,
       );
-
-      // Save to local storage
-      await LocalStorage.saveAuthToken(
-          'mock_jwt_token_${DateTime.now().millisecondsSinceEpoch}');
-      await LocalStorage.saveUserData(
-        userId: mockUser.id,
-        userName: mockUser.name,
-        userEmail: mockUser.email,
-      );
-
-      state = state.copyWith(
-        isLoading: false,
-        user: mockUser,
-        isAuthenticated: true,
-        isGuest: false,
-      );
-    } else {
-      state = state.copyWith(
-        isLoading: false,
-        error: 'Invalid email or password',
-      );
+      if (response.user != null) {
+        await _loadProfile(response.user!.id, email);
+      }
+    } on AuthException catch (e) {
+      state = state.copyWith(isLoading: false, error: e.message);
+    } catch (_) {
+      state = state.copyWith(isLoading: false, error: 'Login failed. Please try again.');
     }
   }
 
-  /// Login as guest user
-  Future<void> loginAsGuest() async {
-    state = state.copyWith(isLoading: true, error: null);
-
-    // Simulate API call delay
-    await Future.delayed(const Duration(milliseconds: 500));
-
-    // Create a guest user
-    final guestUser = User(
-      id: 'guest_${DateTime.now().millisecondsSinceEpoch}',
-      name: 'Guest User',
-      email: 'guest@example.com',
-      phone: null,
-      address: null,
-      profileImage: null,
-      createdAt: DateTime.now(),
-    );
-
-    // Don't save guest user to local storage - guest session is temporary
-    // Clear any existing auth data
-    await LocalStorage.clearAll();
-
-    state = state.copyWith(
-      isLoading: false,
-      user: guestUser,
-      isAuthenticated: true,
-      isGuest: true,
-    );
-  }
-
-  /// Mock registration
   Future<void> register({
     required String name,
     required String email,
@@ -186,91 +145,114 @@ class AuthProvider extends StateNotifier<AuthState> {
     required String address,
   }) async {
     state = state.copyWith(isLoading: true, error: null);
+    try {
+      final response = await _client.auth.signUp(
+        email:    email,
+        password: password,
+        data: {'name': name, 'phone': phone},
+        emailRedirectTo: null,
+      );
 
-    // Simulate API call delay
-    await Future.delayed(const Duration(seconds: 1));
+      if (response.user != null) {
+        await LocalStorage.saveUserData(
+          userId:    response.user!.id,
+          userName:  name,
+          userEmail: email,
+        );
+        state = state.copyWith(isLoading: false);
+      } else {
+        state = state.copyWith(isLoading: false, error: 'Registration failed. Please try again.');
+      }
+    } on AuthException catch (e) {
+      state = state.copyWith(isLoading: false, error: e.message);
+    } catch (_) {
+      state = state.copyWith(isLoading: false, error: 'Registration failed. Please try again.');
+    }
+  }
 
-    // Mock registration
-    final mockUser = User(
-      id: 'user_${DateTime.now().millisecondsSinceEpoch}',
-      name: name,
-      email: email,
-      phone: phone,
-      address: address,
-      profileImage: null,
-      createdAt: DateTime.now(),
-    );
+  Future<void> completeRegistration({
+    required String name,
+    required String phone,
+    required String address,
+  }) async {
+    final uid = SupabaseService.userId;
+    if (uid == null) return;
+    try {
+      await _client.from('profiles').update({
+        'name':    name,
+        'phone':   phone,
+        'address': address,
+      }).eq('id', uid);
+    } catch (_) {}
+  }
 
-    // Save to local storage
-    await LocalStorage.saveAuthToken(
-        'mock_jwt_token_${DateTime.now().millisecondsSinceEpoch}');
-    await LocalStorage.saveUserData(
-      userId: mockUser.id,
-      userName: mockUser.name,
-      userEmail: mockUser.email,
-    );
-
+  Future<void> loginAsGuest() async {
+    state = state.copyWith(isLoading: true, error: null);
+    await Future.delayed(const Duration(milliseconds: 400));
+    await LocalStorage.clearAll();
     state = state.copyWith(
       isLoading: false,
-      user: mockUser,
+      user: User(
+        id:    'guest_${DateTime.now().millisecondsSinceEpoch}',
+        name:  'Guest User',
+        email: '',
+      ),
       isAuthenticated: true,
-      isGuest: false,
+      isGuest: true,
     );
   }
 
-  /// Logout
-  Future<void> logout() async {
-    state = state.copyWith(isLoading: true);
-
-    // Clear local storage
-    await LocalStorage.clearAll();
-
-    // Simulate delay
-    await Future.delayed(const Duration(milliseconds: 500));
-
-    state = const AuthState(
-      isLoading: false,
-      isAuthenticated: false,
-      isGuest: false,
-    );
+ Future<void> logout() async {
+  state = state.copyWith(isLoading: true);
+  if (!state.isGuest) {
+    await _client.auth.signOut();
   }
+  await LocalStorage.clearAll();
+  state = const AuthState(isLoading: false);
+}
 
-  /// Update user profile
   Future<void> updateProfile({
     String? name,
     String? phone,
     String? address,
     String? profileImage,
   }) async {
-    if (state.user == null) return;
+    if (state.user == null || state.isGuest) return;
 
-    final updatedUser = User(
-      id: state.user!.id,
-      name: name ?? state.user!.name,
-      email: state.user!.email,
-      phone: phone ?? state.user!.phone,
-      address: address ?? state.user!.address,
+    final updates = <String, dynamic>{};
+    if (name         != null) updates['name']       = name;
+    if (phone        != null) updates['phone']      = phone;
+    if (address      != null) updates['address']    = address;
+    if (profileImage != null) updates['avatar_url'] = profileImage;
+
+    await _client.from('profiles').update(updates).eq('id', state.user!.id);
+
+    final updated = User(
+      id:           state.user!.id,
+      name:         name         ?? state.user!.name,
+      email:        state.user!.email,
+      phone:        phone        ?? state.user!.phone,
+      address:      address      ?? state.user!.address,
       profileImage: profileImage ?? state.user!.profileImage,
-      createdAt: state.user!.createdAt,
+      createdAt:    state.user!.createdAt,
     );
 
-    // Update local storage
     await LocalStorage.saveUserData(
-      userId: updatedUser.id,
-      userName: updatedUser.name,
-      userEmail: updatedUser.email,
+      userId:    updated.id,
+      userName:  updated.name,
+      userEmail: updated.email,
     );
 
-    state = state.copyWith(user: updatedUser);
+    state = state.copyWith(user: updated);
   }
 
-  /// Clear error
-  void clearError() {
-    state = state.copyWith(error: null);
+  Future<void> sendPasswordResetEmail(String email) async {
+    await _client.auth.resetPasswordForEmail(email);
   }
+
+  void clearError() => state = state.copyWith(error: null);
 }
 
-/// Provider instance
 final authProvider = StateNotifierProvider<AuthProvider, AuthState>(
   (ref) => AuthProvider(),
 );

@@ -66,6 +66,8 @@ dependencies:
   connectivity_plus: ^5.0.0
   equatable: ^2.0.5
   uuid: ^4.4.0
+  supabase_flutter: ^2.12.4
+  flutter_dotenv: ^6.0.1
 
 dev_dependencies:
   flutter_test:
@@ -93,6 +95,7 @@ dev_dependencies:
 flutter:
   uses-material-design: true
   assets:
+    - .env
     - assets/images/
     - assets/images/home_screen/
     - assets/images/intro_page/

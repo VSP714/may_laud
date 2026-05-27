@@ -2,10 +2,75 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:may_laud/screens/otp_verification/forgot_password_otp_screen.dart';
 
-class ForgotPasswordScreen extends StatelessWidget {
+class ForgotPasswordScreen extends StatefulWidget {
   const ForgotPasswordScreen({super.key});
+
+  @override
+  State<ForgotPasswordScreen> createState() => _ForgotPasswordScreenState();
+}
+
+class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
+  final _emailController = TextEditingController();
+  bool _isLoading = false;
+  String? _errorMessage;
+
+  SupabaseClient get _client => Supabase.instance.client;
+
+  @override
+  void dispose() {
+    _emailController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _sendResetCode() async {
+    final email = _emailController.text.trim();
+
+    if (email.isEmpty) {
+      setState(() => _errorMessage = 'Please enter your email address.');
+      return;
+    }
+
+    // Basic email format check
+    final emailRegex = RegExp(r'^[\w\.\+\-]+@[\w\-]+(\.[\w\-]+)+$',
+        caseSensitive: false);
+    if (!emailRegex.hasMatch(email)) {
+      setState(() => _errorMessage = 'Please enter a valid email address.');
+      return;
+    }
+
+    setState(() { _isLoading = true; _errorMessage = null; });
+
+    try {
+      await _client.auth.resetPasswordForEmail(email);
+
+      if (!mounted) return;
+
+      // Navigate to OTP screen, passing the email
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => OtpVerificationScreen(email: email),
+        ),
+      );
+    } on AuthException catch (e) {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+          _errorMessage = e.message;
+        });
+      }
+    } catch (_) {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+          _errorMessage = 'Something went wrong. Please try again.';
+        });
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -61,7 +126,7 @@ class ForgotPasswordScreen extends StatelessWidget {
 
                   SizedBox(height: 20.h),
 
-                  /// ICON (MATCHED STYLE)
+                  /// ICON
                   Container(
                     width: 100.w,
                     height: 100.w,
@@ -75,7 +140,7 @@ class ForgotPasswordScreen extends StatelessWidget {
                           color: const Color(0xFF643EB5).withOpacity(0.4),
                           blurRadius: 15,
                           offset: const Offset(0, 6),
-                        )
+                        ),
                       ],
                     ),
                     child: Icon(
@@ -89,7 +154,7 @@ class ForgotPasswordScreen extends StatelessWidget {
 
                   /// TITLE
                   Text(
-                    "Forgot Password?",
+                    'Forgot Password?',
                     style: TextStyle(
                       fontSize: 28.sp,
                       fontWeight: FontWeight.bold,
@@ -101,8 +166,8 @@ class ForgotPasswordScreen extends StatelessWidget {
 
                   /// SUBTITLE
                   Text(
-                    "Enter your registered phone number and\n"
-                    "we’ll send you a verification code to\n"
+                    "Enter your registered email address and\n"
+                    "we'll send you a verification code to\n"
                     "reset your password.",
                     textAlign: TextAlign.center,
                     style: TextStyle(
@@ -118,7 +183,7 @@ class ForgotPasswordScreen extends StatelessWidget {
                   Align(
                     alignment: Alignment.centerLeft,
                     child: Text(
-                      "Phone Number",
+                      'Email Address',
                       style: TextStyle(
                         fontWeight: FontWeight.w600,
                         color: const Color(0xFF555555),
@@ -129,7 +194,7 @@ class ForgotPasswordScreen extends StatelessWidget {
 
                   SizedBox(height: 10.h),
 
-                  /// PHONE FIELD (MATCH REGISTER STYLE)
+                  /// EMAIL FIELD
                   Container(
                     padding:
                         EdgeInsets.symmetric(horizontal: 20.w, vertical: 4.h),
@@ -137,44 +202,29 @@ class ForgotPasswordScreen extends StatelessWidget {
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(16.r),
                       border: Border.all(
-                        color: const Color(0xFFDDDDDD),
+                        color: _errorMessage != null
+                            ? Colors.red.shade300
+                            : const Color(0xFFDDDDDD),
                         width: 1.5,
                       ),
                     ),
                     child: Row(
                       children: [
-                        Container(
-                          padding: EdgeInsets.symmetric(
-                              horizontal: 12.w, vertical: 10.h),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFFF5F5F5),
-                            borderRadius: BorderRadius.circular(12.r),
-                          ),
-                          child: Row(
-                            children: [
-                              Text("🇵🇭", style: TextStyle(fontSize: 16.sp)),
-                              SizedBox(width: 6.w),
-                              Text(
-                                "+63",
-                                style: TextStyle(
-                                  fontWeight: FontWeight.w600,
-                                  color: const Color(0xFF333333),
-                                ),
-                              ),
-                            ],
-                          ),
+                        Icon(
+                          Icons.email_outlined,
+                          color: const Color(0xFF9E9E9E),
+                          size: 22.sp,
                         ),
-                        SizedBox(width: 12.w),
-                        Container(
-                            width: 1.w,
-                            height: 24.h,
-                            color: Colors.grey.shade300),
                         SizedBox(width: 12.w),
                         Expanded(
                           child: TextField(
-                            keyboardType: TextInputType.phone,
+                            controller: _emailController,
+                            keyboardType: TextInputType.emailAddress,
+                            autocorrect: false,
+                            onChanged: (_) =>
+                                setState(() => _errorMessage = null),
                             decoration: InputDecoration(
-                              hintText: "9123456789",
+                              hintText: 'yourname@email.com',
                               border: InputBorder.none,
                               hintStyle:
                                   const TextStyle(color: Color(0xFFAAAAAA)),
@@ -185,77 +235,70 @@ class ForgotPasswordScreen extends StatelessWidget {
                     ),
                   ),
 
+                  // Error message
+                  if (_errorMessage != null) ...[
+                    SizedBox(height: 10.h),
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        _errorMessage!,
+                        style: TextStyle(
+                          color: Colors.red.shade600,
+                          fontSize: 13.sp,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ),
+                  ],
+
                   SizedBox(height: 35.h),
 
-                  /// BUTTON (MATCH REGISTER)
+                  /// SEND RESET CODE BUTTON
                   GestureDetector(
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => const OtpVerificationScreen(),
-                        ),
-                      );
-                    },
+                    onTap: _isLoading ? null : _sendResetCode,
                     child: Container(
                       width: double.infinity,
                       padding: EdgeInsets.symmetric(vertical: 16.h),
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(40.r),
-                        gradient: const LinearGradient(
-                          colors: [Color(0xFF4C229C), Color(0xFF643EB5)],
+                        gradient: LinearGradient(
+                          colors: _isLoading
+                              ? [Colors.grey.shade400, Colors.grey.shade500]
+                              : const [Color(0xFF4C229C), Color(0xFF643EB5)],
                         ),
-                        boxShadow: [
-                          BoxShadow(
-                            color: const Color(0xFF643EB5),
-                            blurRadius: 12,
-                            offset: const Offset(0, 6),
-                          )
-                        ],
+                        boxShadow: _isLoading
+                            ? []
+                            : [
+                                BoxShadow(
+                                  color: const Color(0xFF643EB5),
+                                  blurRadius: 12,
+                                  offset: const Offset(0, 6),
+                                ),
+                              ],
                       ),
                       child: Center(
-                        child: Text(
-                          "Send Reset Code",
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 18.sp,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
+                        child: _isLoading
+                            ? const SizedBox(
+                                width: 24,
+                                height: 24,
+                                child: CircularProgressIndicator(
+                                  color: Colors.white,
+                                  strokeWidth: 2.5,
+                                ),
+                              )
+                            : Text(
+                                'Send Reset Code',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 18.sp,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
                       ),
                     ),
                   ),
 
                   SizedBox(height: 20.h),
-
-                  // /// BACK TO LOGIN
-                  // TextButton(
-                  //   onPressed: () => Navigator.pop(context),
-                  //   child: const Text(
-                  //     "Contact the admin officials\n"
-                  //     "if your sim card lost\n"
-                  //     "to reset your password.",
-                  //     textAlign: TextAlign.center,
-                  //     style: TextStyle(
-                  //       color: Color(0xFF5E35B1),
-                  //       fontWeight: FontWeight.w600,
-                  //     ),
-                  //   ),
-                  // ),
-
-                  // SizedBox(height: 30.h),
-
-                  // /// FOOTER
-                  // Text(
-                  //   "Secure civic identity portal for Milaor residents.",
-                  //   textAlign: TextAlign.center,
-                  //   style: TextStyle(
-                  //     fontSize: 13.sp,
-                  //     color: Colors.grey[600],
-                  //   ),
-                  // ),
-
-                  // SizedBox(height: 20.h),
                 ],
               ),
             ),

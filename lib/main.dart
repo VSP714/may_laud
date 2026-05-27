@@ -6,16 +6,24 @@ import 'package:may_laud/core/performance_optimization.dart';
 import 'package:may_laud/providers/app_providers.dart';
 import 'package:may_laud/screens/intro_pages/opening_milaud.dart';
 import 'package:may_laud/screens/home/nav_bar_button.dart';
-//import 'package:may_laud/screens/splash_screen.dart';
+import 'package:may_laud/services/supabase_service.dart';
 import 'theme/app_theme.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Initialize local storage
-  await LocalStorage.init();
+  try {
+    await SupabaseService.init();
+  } catch (e) {
+    debugPrint('[SupabaseService] Failed to initialize: $e');
+  }
 
-  // Configure performance optimizations
+  try {
+    await LocalStorage.init();
+  } catch (e) {
+    debugPrint('[LocalStorage] Failed to initialize: $e');
+  }
+
   PerformanceOptimization.configureImageCache();
 
   runApp(
@@ -30,8 +38,8 @@ class MyApp extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final isDarkMode = ref
-        .watch(appSettingsProvider.select((settings) => settings.isDarkMode));
+    final isDarkMode =
+        ref.watch(appSettingsProvider.select((s) => s.isDarkMode));
 
     return ScreenUtilInit(
       designSize: const Size(430, 932),
@@ -44,8 +52,9 @@ class MyApp extends ConsumerWidget {
           theme: AppTheme.lightTheme(),
           darkTheme: AppTheme.darkTheme(),
           themeMode: isDarkMode ? ThemeMode.dark : ThemeMode.light,
-          home: const OpeningScreen(),
+          initialRoute: '/',
           routes: {
+            '/': (context) => const OpeningScreen(),
             '/main': (context) => const MainApp(),
           },
         );

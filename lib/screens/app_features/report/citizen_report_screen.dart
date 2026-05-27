@@ -1,6 +1,8 @@
+// lib/screens/app_features/report/citizen_report_screen.dart
 // ignore_for_file: deprecated_member_use
 
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -10,6 +12,7 @@ import 'dart:io';
 import '../../home/home.dart';
 import '../../home/nav_bar_button.dart';
 import '../../../services/app_services.dart';
+import '../../../utils/guest_guard.dart'; // ✅ Import guest guard
 
 // ─── REPORT COLOR PALETTE ─────────────────────────────
 class ReportColors {
@@ -37,14 +40,14 @@ class ReportColors {
   );
 }
 
-class CitizenReportScreen extends StatefulWidget {
+class CitizenReportScreen extends ConsumerStatefulWidget {
   const CitizenReportScreen({super.key});
 
   @override
-  State<CitizenReportScreen> createState() => _CitizenReportScreenState();
+  ConsumerState<CitizenReportScreen> createState() => _CitizenReportScreenState();
 }
 
-class _CitizenReportScreenState extends State<CitizenReportScreen> {
+class _CitizenReportScreenState extends ConsumerState<CitizenReportScreen> {
   final _formKey = GlobalKey<FormState>();
   final TextEditingController _titleController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
@@ -145,6 +148,147 @@ class _CitizenReportScreenState extends State<CitizenReportScreen> {
 
   void _removePhoto(int index) =>
       setState(() => _attachedPhotos.removeAt(index));
+
+  // ─── SUBMIT REPORT WITH GUEST CHECK ──────────────────
+  Future<void> _submitReport() async {
+    // ✅ Guest restriction: guests cannot submit reports
+    if (GuestGuard.isGuest(ref)) {
+      await GuestGuard.showGuestRestrictionDialog(context);
+      return;
+    }
+
+    if (!_formKey.currentState!.validate()) return;
+    setState(() => _isSubmitting = true);
+
+    try {
+      final result = await _reportService.submitReport(
+        categoryId: _selectedCategory,
+        subcategory: _titleController.text.trim(),
+        description: _descriptionController.text.trim(),
+        location: _locationController.text.trim(),
+        photoFiles: _attachedPhotos,
+      );
+
+      if (!mounted) return;
+      _showSuccessDialog(
+        reportId: result['reportId'] as String,
+        assignedTo: result['assignedTo'] as String,
+        estimatedResolution: result['estimatedResolution'] as String,
+      );
+    } catch (e) {
+      if (!mounted) return;
+      _showSnack('Something went wrong. Please try again.');
+    } finally {
+      if (mounted) setState(() => _isSubmitting = false);
+    }
+  }
+
+  void _showSuccessDialog({
+    required String reportId,
+    required String assignedTo,
+    required String estimatedResolution,
+  }) {
+    showDialog(
+      context: context,
+      builder: (ctx) => Dialog(
+        backgroundColor: Colors.transparent,
+        child: Container(
+          padding: EdgeInsets.all(28.w),
+          decoration: BoxDecoration(
+            color: ReportColors.cardWhite,
+            borderRadius: BorderRadius.circular(28.r),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 72.w,
+                height: 72.w,
+                decoration: BoxDecoration(
+                  color: const Color(0xFFE8F5E9),
+                  borderRadius: BorderRadius.circular(20.r),
+                ),
+                child: const Icon(Icons.check_circle_rounded,
+                    size: 40, color: Color(0xFF2E7D32)),
+              ),
+              SizedBox(height: 20.h),
+              Text(
+                'Report Submitted!',
+                style: GoogleFonts.poppins(
+                    fontSize: 22.sp,
+                    fontWeight: FontWeight.w700,
+                    color: ReportColors.deepAnchor),
+              ),
+              SizedBox(height: 8.h),
+              Container(
+                padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
+                decoration: BoxDecoration(
+                  color: ReportColors.warmHearth,
+                  borderRadius: BorderRadius.circular(12.r),
+                ),
+                child: Text(
+                  reportId,
+                  style: GoogleFonts.poppins(
+                    fontSize: 15.sp,
+                    fontWeight: FontWeight.w700,
+                    color: ReportColors.heritagePurple,
+                    letterSpacing: 0.5,
+                  ),
+                ),
+              ),
+              SizedBox(height: 16.h),
+              Text(
+                'Thank you, kababayan! Your concern has been forwarded to $assignedTo. Estimated resolution: $estimatedResolution.',
+                textAlign: TextAlign.center,
+                style: GoogleFonts.inter(
+                    fontSize: 14.sp, color: Colors.grey[600], height: 1.6),
+              ),
+              SizedBox(height: 24.h),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () {
+                    Navigator.pop(ctx);
+                    Navigator.pushAndRemoveUntil(
+                      context,
+                      MaterialPageRoute(builder: (_) => const MainApp()),
+                      (route) => false,
+                    );
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: ReportColors.heritagePurple,
+                    foregroundColor: Colors.white,
+                    padding: EdgeInsets.symmetric(vertical: 16.h),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14.r)),
+                    elevation: 0,
+                  ),
+                  child: Text(
+                    'OK, understood',
+                    style: GoogleFonts.inter(
+                        fontSize: 15.sp, fontWeight: FontWeight.w600),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ).animate().scale(duration: 300.ms, curve: Curves.easeOutBack),
+    );
+  }
+
+  void _showSnack(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        behavior: SnackBarBehavior.floating,
+        duration: const Duration(seconds: 2),
+        shape:
+            RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
+        margin: EdgeInsets.all(12.w),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -926,141 +1070,6 @@ class _CitizenReportScreenState extends State<CitizenReportScreen> {
             horizontal: 16.w, vertical: maxLines > 1 ? 16.h : 14.h),
       ),
       validator: validator,
-    );
-  }
-
-  // ─── SUBMIT LOGIC ───────────────────────────────────
-  Future<void> _submitReport() async {
-    if (!_formKey.currentState!.validate()) return;
-    setState(() => _isSubmitting = true);
-
-    try {
-      final result = await _reportService.submitReport(
-        categoryId: _selectedCategory,
-        subcategory: _titleController.text.trim(),
-        description: _descriptionController.text.trim(),
-        location: _locationController.text.trim(),
-        photos: _attachedPhotos.map((file) => file.path).toList(),
-      );
-
-      if (!mounted) return;
-      _showSuccessDialog(
-        reportId: result['reportId'] as String,
-        assignedTo: result['assignedTo'] as String,
-        estimatedResolution: result['estimatedResolution'] as String,
-      );
-    } catch (e) {
-      if (!mounted) return;
-      _showSnack('Something went wrong. Please try again.');
-    } finally {
-      if (mounted) setState(() => _isSubmitting = false);
-    }
-  }
-
-  void _showSuccessDialog({
-    required String reportId,
-    required String assignedTo,
-    required String estimatedResolution,
-  }) {
-    showDialog(
-      context: context,
-      builder: (ctx) => Dialog(
-        backgroundColor: Colors.transparent,
-        child: Container(
-          padding: EdgeInsets.all(28.w),
-          decoration: BoxDecoration(
-            color: ReportColors.cardWhite,
-            borderRadius: BorderRadius.circular(28.r),
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                width: 72.w,
-                height: 72.w,
-                decoration: BoxDecoration(
-                  color: const Color(0xFFE8F5E9),
-                  borderRadius: BorderRadius.circular(20.r),
-                ),
-                child: const Icon(Icons.check_circle_rounded,
-                    size: 40, color: Color(0xFF2E7D32)),
-              ),
-              SizedBox(height: 20.h),
-              Text(
-                'Report Submitted!',
-                style: GoogleFonts.poppins(
-                    fontSize: 22.sp,
-                    fontWeight: FontWeight.w700,
-                    color: ReportColors.deepAnchor),
-              ),
-              SizedBox(height: 8.h),
-              Container(
-                padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
-                decoration: BoxDecoration(
-                  color: ReportColors.warmHearth,
-                  borderRadius: BorderRadius.circular(12.r),
-                ),
-                child: Text(
-                  reportId,
-                  style: GoogleFonts.poppins(
-                    fontSize: 15.sp,
-                    fontWeight: FontWeight.w700,
-                    color: ReportColors.heritagePurple,
-                    letterSpacing: 0.5,
-                  ),
-                ),
-              ),
-              SizedBox(height: 16.h),
-              Text(
-                'Thank you, kababayan! Your concern has been forwarded to $assignedTo. Estimated resolution: $estimatedResolution.',
-                textAlign: TextAlign.center,
-                style: GoogleFonts.inter(
-                    fontSize: 14.sp, color: Colors.grey[600], height: 1.6),
-              ),
-              SizedBox(height: 24.h),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: () {
-                    Navigator.pop(ctx);
-                    Navigator.pushAndRemoveUntil(
-                      context,
-                      MaterialPageRoute(builder: (_) => const MainApp()),
-                      (route) => false,
-                    );
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: ReportColors.heritagePurple,
-                    foregroundColor: Colors.white,
-                    padding: EdgeInsets.symmetric(vertical: 16.h),
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(14.r)),
-                    elevation: 0,
-                  ),
-                  child: Text(
-                    'OK, understood',
-                    style: GoogleFonts.inter(
-                        fontSize: 15.sp, fontWeight: FontWeight.w600),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ).animate().scale(duration: 300.ms, curve: Curves.easeOutBack),
-    );
-  }
-
-  void _showSnack(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        behavior: SnackBarBehavior.floating,
-        duration: const Duration(seconds: 2),
-        shape:
-            RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
-        margin: EdgeInsets.all(12.w),
-      ),
     );
   }
 }

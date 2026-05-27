@@ -1,30 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import 'home/home.dart';
+import '../providers/auth_provider.dart';
 
-class ProfileScreen extends StatefulWidget {
+class ProfileScreen extends ConsumerStatefulWidget {
   const ProfileScreen({super.key});
 
   @override
-  State<ProfileScreen> createState() => _ProfileScreenState();
+  ConsumerState<ProfileScreen> createState() => _ProfileScreenState();
 }
 
-class _ProfileScreenState extends State<ProfileScreen> {
-  // ─── Mock resident data ────────────────────────────────
-  final Map<String, dynamic> _resident = {
-    'name': 'Juan Dela Cruz',
-    'residentId': 'MLR-2022-0847',
-    'email': 'juan.delacruz@example.com',
-    'phone': '+63 912 345 6789',
-    'address':
-        '123 Milaor Street, Barangay San Francisco,\nMilaor, Camarines Sur',
-    'birthdate': 'January 15, 1985',
-    'civilStatus': 'Married',
-    'occupation': 'Government Employee',
-    'memberSince': '2022',
-  };
-
+class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   final Map<String, int> _docStats = {
     'total': 12,
     'approved': 8,
@@ -35,6 +23,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final authState = ref.watch(authProvider);
+    final user = authState.user;
+
     return Scaffold(
       backgroundColor: HomeColors.warmHearth,
       body: SafeArea(
@@ -47,11 +38,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
               sliver: SliverList(
                 delegate: SliverChildListDelegate([
                   SizedBox(height: 12.h),
-                  _buildProfileHeaderCard(),
+                  _buildProfileHeaderCard(user),
                   SizedBox(height: 20.h),
                   _buildStatsRow(),
                   SizedBox(height: 20.h),
-                  _buildPersonalInfoCard(),
+                  _buildPersonalInfoCard(user),
                   SizedBox(height: 20.h),
                   _buildAccountActionsCard(),
                   SizedBox(height: 20.h),
@@ -73,6 +64,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     return SliverAppBar(
       pinned: true,
       floating: false,
+      automaticallyImplyLeading: false, // ← removes unwanted back arrow
       backgroundColor: HomeColors.warmHearth,
       elevation: 0,
       centerTitle: false,
@@ -100,7 +92,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   // ─── PROFILE HEADER CARD ───────────────────────────────
-  Widget _buildProfileHeaderCard() {
+  Widget _buildProfileHeaderCard(User? user) {
+    final name = user?.name ?? 'Resident';
+    final memberYear = user?.createdAt?.year.toString() ?? '2022';
+
     return Container(
       padding: EdgeInsets.all(24.w),
       decoration: BoxDecoration(
@@ -143,11 +138,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 child: CircleAvatar(
                   radius: 45.r,
                   backgroundColor: Colors.white.withOpacity(0.15),
-                  child: Icon(
-                    Icons.person,
-                    size: 48.sp,
-                    color: Colors.white,
-                  ),
+                  backgroundImage: user?.profileImage != null
+                      ? NetworkImage(user!.profileImage!)
+                      : null,
+                  child: user?.profileImage == null
+                      ? Icon(Icons.person, size: 48.sp, color: Colors.white)
+                      : null,
                 ),
               ),
               Positioned(
@@ -175,7 +171,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           SizedBox(height: 16.h),
           // Name
           Text(
-            _resident['name'] ?? 'Resident',
+            name,
             style: TextStyle(
               fontSize: 22.sp,
               fontWeight: FontWeight.w700,
@@ -184,7 +180,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ),
           ),
           SizedBox(height: 6.h),
-          // Resident ID badge
+          // Email badge
           Container(
             padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 6.h),
             decoration: BoxDecoration(
@@ -194,15 +190,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(Icons.badge_outlined, size: 15.sp, color: Colors.white70),
+                Icon(Icons.email_outlined, size: 15.sp, color: Colors.white70),
                 SizedBox(width: 6.w),
                 Text(
-                  _resident['residentId'] ?? '',
+                  user?.email ?? '',
                   style: TextStyle(
                     fontSize: 13.sp,
                     fontWeight: FontWeight.w600,
                     color: Colors.white,
-                    letterSpacing: 0.5,
+                    letterSpacing: 0.3,
                   ),
                 ),
               ],
@@ -210,7 +206,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ),
           SizedBox(height: 6.h),
           Text(
-            'Member since ${_resident['memberSince'] ?? 'N/A'}',
+            'Member since $memberYear',
             style: TextStyle(
               fontSize: 13.sp,
               color: Colors.white60,
@@ -307,7 +303,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   // ─── PERSONAL INFO CARD ────────────────────────────────
-  Widget _buildPersonalInfoCard() {
+  Widget _buildPersonalInfoCard(User? user) {
     return _buildWhiteCard(
       title: 'Personal Information',
       trailing: TextButton.icon(
@@ -325,20 +321,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
         ),
       ),
       children: [
+        _buildInfoRow(Icons.person_outline, 'Full Name', user?.name ?? '—'),
+        _buildInfoRow(Icons.email_outlined, 'Email', user?.email ?? '—'),
+        _buildInfoRow(Icons.phone_outlined, 'Phone', user?.phone ?? '—'),
         _buildInfoRow(
-            Icons.person_outline, 'Full Name', _resident['name'] ?? ''),
-        _buildInfoRow(
-            Icons.badge_outlined, 'Resident ID', _resident['residentId'] ?? ''),
-        _buildInfoRow(Icons.email_outlined, 'Email', _resident['email'] ?? ''),
-        _buildInfoRow(Icons.phone_outlined, 'Phone', _resident['phone'] ?? ''),
-        _buildInfoRow(
-            Icons.location_on_outlined, 'Address', _resident['address'] ?? ''),
-        _buildInfoRow(
-            Icons.cake_outlined, 'Birthdate', _resident['birthdate'] ?? ''),
-        _buildInfoRow(Icons.favorite_border, 'Civil Status',
-            _resident['civilStatus'] ?? ''),
-        _buildInfoRow(
-            Icons.work_outline, 'Occupation', _resident['occupation'] ?? ''),
+            Icons.location_on_outlined, 'Address', user?.address ?? '—'),
       ],
     );
   }
@@ -589,6 +576,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   // ─── LOGOUT DIALOG ─────────────────────────────────────
   void _showLogoutConfirmation() {
+    final authState = ref.read(authProvider);
+    final userName = authState.user?.name ?? 'user';
+
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -603,7 +593,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ),
         ),
         content: Text(
-          'Are you sure you want to sign out, ${_resident['name'] ?? 'user'}? You\'ll need to sign in again to access your account.',
+          'Are you sure you want to sign out, $userName? You\'ll need to sign in again to access your account.',
           style: TextStyle(
             fontSize: 14.sp,
             color: const Color(0xFF616161),
@@ -623,9 +613,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ),
           ),
           ElevatedButton(
-            onPressed: () {
-              Navigator.pop(ctx);
-              _showMessage('Logged out successfully');
+            onPressed: () async {
+              Navigator.pop(ctx); // close dialog
+              await ref.read(authProvider.notifier).logout();
+              if (mounted) {
+                // Navigate back to the root route (opening/splash) and clear stack
+                Navigator.of(context)
+                    .pushNamedAndRemoveUntil('/', (route) => false);
+              }
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFFD32F2F),
