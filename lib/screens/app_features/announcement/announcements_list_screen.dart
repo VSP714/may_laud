@@ -14,32 +14,6 @@ class AnnouncementsListScreen extends ConsumerStatefulWidget {
 
 class _AnnouncementsListScreenState
     extends ConsumerState<AnnouncementsListScreen> {
-  final List<Announcement> _announcements = [
-    Announcement(
-      id: '1',
-      title: 'Water Utility Maintenance Schedule',
-      category: 'Public Notice',
-      date: DateTime(2023, 10, 25),
-      description:
-          'The Municipal Engineering Office has announced upcoming water utility upgrades for Milaor residential clusters. To ensure the continued reliability of our municipal water supply and improve pressure in higher-elevation zones, the Milaor Water District will be conducting essential maintenance and infrastructure upgrades over the next two weeks.\n\nAffected areas include Central Square and Riverbank District, covering all residential and commercial blocks within the historic center. Intermittent interruptions are expected daily between 1:00 PM and 4:00 PM from October 30 to November 12, 2023.\n\nWe advise all residents to store adequate water supplies during the morning hours. The upgrades include the installation of high-efficiency filtration nodes and the replacement of heritage piping sections that have served the community since the late 1980s.',
-      imageUrl:
-          'https://images.unsplash.com/photo-1500375592092-40eb2168fd21?q=80&w=1200&auto=format&fit=crop',
-      isImportant: true,
-      isRead: false,
-    ),
-    Announcement(
-      id: '2',
-      title: 'Road Closure: Heritage Street',
-      category: 'Traffic Advisory',
-      date: DateTime(2023, 10, 20),
-      description:
-          'The Milaor Municipal Government, in coordination with the Department of Public Works and Highways (DPWH) and the Milaor Traffic Management Office, hereby informs all residents and motorists that Heritage Street will be temporarily closed to vehicular traffic from November 1 to November 5, 2023.\n\nThis closure is necessary to facilitate the preparation and staging of the annual Milaor Cultural Heritage Festival. Road closures will be enforced daily from 6:00 AM to 10:00 PM throughout the five-day period.',
-      imageUrl:
-          'https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?q=80&w=1200&auto=format&fit=crop',
-      isImportant: true,
-      isRead: true,
-    ),
-  ];
 
   final List<String> _categories = [
     'All',
@@ -57,54 +31,45 @@ class _AnnouncementsListScreenState
   String _searchQuery = '';
   bool _showImportantOnly = false;
 
-  List<Announcement> get _filteredAnnouncements {
-    var filtered = _announcements;
+  // Filters applied on top of the live Supabase data
+  List<Announcement> _filtered(List<Announcement> all) {
+    var list = all;
     if (_selectedCategory != 'All') {
-      filtered =
-          filtered.where((a) => a.category == _selectedCategory).toList();
+      list = list.where((a) => a.category == _selectedCategory).toList();
     }
     if (_searchQuery.isNotEmpty) {
-      filtered = filtered
+      final q = _searchQuery.toLowerCase();
+      list = list
           .where((a) =>
-              a.title.toLowerCase().contains(_searchQuery.toLowerCase()) ||
-              a.description.toLowerCase().contains(_searchQuery.toLowerCase()))
+              a.title.toLowerCase().contains(q) ||
+              a.description.toLowerCase().contains(q))
           .toList();
     }
     if (_showImportantOnly) {
-      filtered = filtered.where((a) => a.isImportant).toList();
+      list = list.where((a) => a.isImportant).toList();
     }
-    return filtered;
+    return list;
   }
 
-  // FIX — use copyWith + list replacement instead of direct mutation
-  void _markAsRead(String id) async {
-    await ref.read(announcementsProvider.notifier).markAsRead(id);
-    setState(() {
-      final idx = _announcements.indexWhere((a) => a.id == id);
-      if (idx != -1) {
-        _announcements[idx] = _announcements[idx].copyWith(isRead: true);
-      }
-    });
+  void _markAsRead(String id) {
+    ref.read(announcementsProvider.notifier).markAsRead(id);
   }
 
-  void _toggleImportantFilter() {
-    setState(() => _showImportantOnly = !_showImportantOnly);
-  }
-
-  void _viewAnnouncementDetails(Announcement announcement) {
+  void _viewDetails(Announcement announcement) {
     _markAsRead(announcement.id);
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) =>
-            AnnouncementDetailScreen(announcement: announcement),
+        builder: (_) => AnnouncementDetailScreen(announcement: announcement),
       ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    ref.watch(announcementsProvider); // keep in sync with provider
+    // Single source of truth — live from Supabase via provider
+    final announcements = ref.watch(announcementsProvider);
+    final filtered = _filtered(announcements);
 
     return Scaffold(
       backgroundColor: const Color(0xFFF5F0F8),
@@ -113,8 +78,7 @@ class _AnnouncementsListScreenState
           children: [
             // Header
             Padding(
-              padding:
-                  EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
+              padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
               child: Row(
                 children: [
                   Icon(Icons.campaign,
@@ -131,9 +95,12 @@ class _AnnouncementsListScreenState
                     ),
                   ),
                   IconButton(
-                    onPressed: () {},
-                    icon: Icon(Icons.filter_list,
-                        size: 28.sp, color: const Color(0xFF4C229C)),
+                    onPressed: () => ref
+                        .read(announcementsProvider.notifier)
+                        .fetchAnnouncements(),
+                    icon: Icon(Icons.refresh,
+                        size: 26.sp, color: const Color(0xFF4C229C)),
+                    tooltip: 'Refresh',
                   ),
                 ],
               ),
@@ -142,7 +109,7 @@ class _AnnouncementsListScreenState
             Padding(
               padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
               child: TextField(
-                onChanged: (value) => setState(() => _searchQuery = value),
+                onChanged: (v) => setState(() => _searchQuery = v),
                 decoration: InputDecoration(
                   hintText: 'Search announcements...',
                   prefixIcon: Icon(Icons.search, size: 24.sp),
@@ -152,8 +119,8 @@ class _AnnouncementsListScreenState
                     borderRadius: BorderRadius.circular(30.r),
                     borderSide: BorderSide.none,
                   ),
-                  contentPadding: EdgeInsets.symmetric(
-                      horizontal: 20.w, vertical: 16.h),
+                  contentPadding:
+                      EdgeInsets.symmetric(horizontal: 20.w, vertical: 16.h),
                 ),
               ),
             ),
@@ -162,30 +129,30 @@ class _AnnouncementsListScreenState
               height: 60.h,
               child: ListView.builder(
                 scrollDirection: Axis.horizontal,
-                padding: EdgeInsets.symmetric(
-                    horizontal: 16.w, vertical: 8.h),
+                padding:
+                    EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
                 itemCount: _categories.length,
-                itemBuilder: (context, index) {
-                  final category = _categories[index];
-                  final isSelected = _selectedCategory == category;
+                itemBuilder: (_, i) {
+                  final cat = _categories[i];
+                  final selected = _selectedCategory == cat;
                   return Padding(
                     padding: EdgeInsets.only(right: 8.w),
                     child: ChoiceChip(
-                      label: Text(category),
-                      selected: isSelected,
+                      label: Text(cat),
+                      selected: selected,
                       onSelected: (_) =>
-                          setState(() => _selectedCategory = category),
+                          setState(() => _selectedCategory = cat),
                       selectedColor: const Color(0xFF4C229C),
                       labelStyle: TextStyle(
                         fontSize: 14.sp,
-                        color: isSelected ? Colors.white : Colors.black,
+                        color: selected ? Colors.white : Colors.black,
                       ),
                     ),
                   );
                 },
               ),
             ),
-            // Important filter
+            // Important filter + count
             Padding(
               padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
               child: Row(
@@ -193,12 +160,12 @@ class _AnnouncementsListScreenState
                   FilterChip(
                     label: const Text('Important Only'),
                     selected: _showImportantOnly,
-                    onSelected: (_) => _toggleImportantFilter(),
-                    avatar: Icon(
-                      Icons.priority_high,
-                      size: 18.sp,
-                      color: _showImportantOnly ? Colors.white : Colors.red,
-                    ),
+                    onSelected: (_) =>
+                        setState(() => _showImportantOnly = !_showImportantOnly),
+                    avatar: Icon(Icons.priority_high,
+                        size: 18.sp,
+                        color:
+                            _showImportantOnly ? Colors.white : Colors.red),
                     selectedColor: Colors.red.shade700,
                     labelStyle: TextStyle(
                       fontSize: 14.sp,
@@ -207,7 +174,7 @@ class _AnnouncementsListScreenState
                   ),
                   SizedBox(width: 12.w),
                   Text(
-                    '${_filteredAnnouncements.length} announcements',
+                    '${filtered.length} announcement${filtered.length == 1 ? '' : 's'}',
                     style: TextStyle(
                         fontSize: 14.sp, color: Colors.grey.shade600),
                   ),
@@ -216,14 +183,40 @@ class _AnnouncementsListScreenState
             ),
             // List
             Expanded(
-              child: ListView.builder(
-                padding: EdgeInsets.all(16.w),
-                itemCount: _filteredAnnouncements.length,
-                itemBuilder: (context, index) {
-                  final announcement = _filteredAnnouncements[index];
-                  return _buildAnnouncementCard(announcement);
-                },
-              ),
+              child: announcements.isEmpty
+                  ? Center(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.campaign_outlined,
+                              size: 56.sp,
+                              color: const Color(0xFF4C229C)
+                                  .withValues(alpha: 0.3)),
+                          SizedBox(height: 16.h),
+                          Text(
+                            'No announcements yet',
+                            style: TextStyle(
+                                fontSize: 16.sp,
+                                color: Colors.grey.shade500),
+                          ),
+                        ],
+                      ),
+                    )
+                  : filtered.isEmpty
+                      ? Center(
+                          child: Text(
+                            'No results for your filters.',
+                            style: TextStyle(
+                                fontSize: 14.sp,
+                                color: Colors.grey.shade500),
+                          ),
+                        )
+                      : ListView.builder(
+                          padding: EdgeInsets.all(16.w),
+                          itemCount: filtered.length,
+                          itemBuilder: (_, i) =>
+                              _buildCard(filtered[i]),
+                        ),
             ),
           ],
         ),
@@ -231,36 +224,36 @@ class _AnnouncementsListScreenState
     );
   }
 
-  Widget _buildAnnouncementCard(Announcement announcement) {
+  Widget _buildCard(Announcement a) {
     return Card(
       margin: EdgeInsets.only(bottom: 16.h),
       elevation: 2,
-      shape:
-          RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.r)),
+      shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16.r)),
       child: InkWell(
-        onTap: () => _viewAnnouncementDetails(announcement),
+        onTap: () => _viewDetails(a),
         borderRadius: BorderRadius.circular(16.r),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // Image
             ClipRRect(
               borderRadius: const BorderRadius.only(
                   topLeft: Radius.circular(16),
                   topRight: Radius.circular(16)),
               child: Stack(
                 children: [
-                  Image.network(
-                    announcement.imageUrl ?? '',
-                    height: 180.h,
-                    width: double.infinity,
-                    fit: BoxFit.cover,
-                    errorBuilder: (_, __, ___) => Container(
-                      height: 180.h,
-                      color: Colors.grey[300],
-                      child: const Icon(Icons.broken_image, size: 40),
-                    ),
-                  ),
-                  if (announcement.isImportant)
+                  a.imageUrl != null && a.imageUrl!.isNotEmpty
+                      ? Image.network(
+                          a.imageUrl!,
+                          height: 180.h,
+                          width: double.infinity,
+                          fit: BoxFit.cover,
+                          errorBuilder: (_, __, ___) =>
+                              _imageFallback(a),
+                        )
+                      : _imageFallback(a),
+                  if (a.isImportant)
                     Positioned(
                       top: 12.h,
                       left: 12.w,
@@ -289,6 +282,7 @@ class _AnnouncementsListScreenState
                 ],
               ),
             ),
+            // Body
             Padding(
               padding: EdgeInsets.all(16.w),
               child: Column(
@@ -305,14 +299,14 @@ class _AnnouncementsListScreenState
                           borderRadius: BorderRadius.circular(20.r),
                         ),
                         child: Text(
-                          announcement.category,
+                          a.category,
                           style: TextStyle(
                               fontSize: 12.sp,
                               fontWeight: FontWeight.w600,
                               color: const Color(0xFF4C229C)),
                         ),
                       ),
-                      if (!announcement.isRead)
+                      if (!a.isRead)
                         Container(
                           width: 10.w,
                           height: 10.h,
@@ -324,7 +318,7 @@ class _AnnouncementsListScreenState
                   ),
                   SizedBox(height: 12.h),
                   Text(
-                    announcement.title,
+                    a.title,
                     style: TextStyle(
                         fontSize: 20.sp,
                         fontWeight: FontWeight.bold,
@@ -334,7 +328,7 @@ class _AnnouncementsListScreenState
                   ),
                   SizedBox(height: 8.h),
                   Text(
-                    announcement.description,
+                    a.description,
                     style: TextStyle(
                         fontSize: 14.sp,
                         color: const Color(0xFF6F6878),
@@ -349,7 +343,7 @@ class _AnnouncementsListScreenState
                           size: 16.sp, color: const Color(0xFF6F6878)),
                       SizedBox(width: 6.w),
                       Text(
-                        announcement.formattedDate,
+                        a.formattedDate,
                         style: TextStyle(
                             fontSize: 14.sp,
                             color: const Color(0xFF6F6878)),
@@ -377,11 +371,26 @@ class _AnnouncementsListScreenState
       ),
     );
   }
+
+  Widget _imageFallback(Announcement a) {
+    return Container(
+      height: 180.h,
+      width: double.infinity,
+      color: const Color(0xFFEADCFB),
+      child: Center(
+        child: Icon(
+          a.isImportant ? Icons.priority_high : Icons.campaign_outlined,
+          size: 48.sp,
+          color: const Color(0xFF4C229C).withValues(alpha: 0.4),
+        ),
+      ),
+    );
+  }
 }
 
+// ── Detail screen ─────────────────────────────────────────────────────────────
 class AnnouncementDetailScreen extends StatelessWidget {
   final Announcement announcement;
-
   const AnnouncementDetailScreen({super.key, required this.announcement});
 
   @override
@@ -392,25 +401,30 @@ class AnnouncementDetailScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Hero image
             Stack(
               children: [
-                Image.network(
-                  announcement.imageUrl ?? '',
-                  height: 260.h,
-                  width: double.infinity,
-                  fit: BoxFit.cover,
-                  errorBuilder: (_, __, ___) => Container(
-                    height: 260.h,
-                    color: Colors.grey[300],
-                    child: const Icon(Icons.broken_image, size: 48),
-                  ),
-                ),
+                announcement.imageUrl != null &&
+                        announcement.imageUrl!.isNotEmpty
+                    ? Image.network(
+                        announcement.imageUrl!,
+                        height: 260.h,
+                        width: double.infinity,
+                        fit: BoxFit.cover,
+                        errorBuilder: (_, __, ___) => Container(
+                          height: 260.h,
+                          color: const Color(0xFFEADCFB),
+                        ),
+                      )
+                    : Container(
+                        height: 260.h,
+                        color: const Color(0xFFEADCFB),
+                      ),
                 SafeArea(
                   child: Padding(
                     padding: EdgeInsets.all(8.w),
                     child: CircleAvatar(
-                      backgroundColor: Colors.white.withValues(alpha: 0.9),
+                      backgroundColor:
+                          Colors.white.withValues(alpha: 0.9),
                       child: IconButton(
                         icon: const Icon(Icons.arrow_back,
                             color: Color(0xFF4C229C)),

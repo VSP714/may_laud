@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:may_laud/providers/auth_provider.dart';
+import 'package:may_laud/providers/content_providers.dart';
+import '../app_features/announcement/announcements_list_screen.dart';
 import '../app_features/flood_alert/flood_alert_screen.dart';
 
 // ===== MUNICIPAL BRAND PALETTE (same as before) =====
@@ -72,33 +74,161 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final userName = user?.name ?? 'Resident';
     final isGuest = authState.isGuest;
 
-    return SingleChildScrollView(
+    return CustomScrollView(
       controller: _scrollController,
       physics: const BouncingScrollPhysics(),
-      padding: EdgeInsets.only(
-        left: 20.w,
-        right: 20.w,
-        top: 18.h,
-        bottom: 130.h,
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _buildHeader(userName, isGuest),
-          SizedBox(height: 24.h),
-          _buildDashboardStats(),
-          SizedBox(height: 28.h),
-          _buildFloodStatusBanner(context),
-          SizedBox(height: 28.h),
-          _buildCitizenFeedback(context),
-          SizedBox(height: 28.h),
-          _buildSectionLabel('Announcements', 'Latest news from the LGU'),
-          SizedBox(height: 16.h),
-          _buildAnnouncementFeed(),
-          SizedBox(height: 8.h),
-          _buildViewAllButton(),
-        ],
-      ),
+      slivers: [
+        // ── Gradient header matching document/announcement screens ──
+        SliverAppBar(
+          expandedHeight: 210.h,
+          pinned: true,
+          elevation: 0,
+          automaticallyImplyLeading: false,
+          backgroundColor: HomeColors.deepAnchor,
+          flexibleSpace: FlexibleSpaceBar(
+            titlePadding: EdgeInsets.zero,
+            background: Container(
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [HomeColors.deepAnchor, HomeColors.heritagePurple],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+              ),
+              child: SafeArea(
+                child: Padding(
+                  padding: EdgeInsets.fromLTRB(20.w, 12.h, 20.w, 0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Row(
+                        children: [
+                          Container(
+                            width: 52.w,
+                            height: 52.w,
+                            decoration: BoxDecoration(
+                              color: Colors.white.withValues(alpha: 0.15),
+                              borderRadius: BorderRadius.circular(15.r),
+                            ),
+                            child: Icon(Icons.person_rounded,
+                                size: 28.sp, color: Colors.white),
+                          ),
+                          SizedBox(width: 14.w),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Good ${_timeOfDay()}, ${isGuest ? 'Guest' : userName.split(' ').first}!',
+                                  style: TextStyle(
+                                    fontSize: 14.sp,
+                                    fontWeight: FontWeight.w500,
+                                    color: Colors.white70,
+                                  ),
+                                ),
+                                SizedBox(height: 2.h),
+                                Text(
+                                  isGuest ? 'Guest Mode' : userName,
+                                  style: TextStyle(
+                                    fontSize: 22.sp,
+                                    fontWeight: FontWeight.w700,
+                                    color: Colors.white,
+                                    letterSpacing: -0.3,
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ],
+                            ),
+                          ),
+                          // Notification bell
+                          Container(
+                            width: 44.w,
+                            height: 44.w,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: Colors.white.withValues(alpha: 0.15),
+                            ),
+                            child: Stack(
+                              children: [
+                                Center(
+                                  child: Icon(Icons.notifications_outlined,
+                                      size: 22.sp, color: Colors.white),
+                                ),
+                                Positioned(
+                                  top: 10.h,
+                                  right: 10.w,
+                                  child: Container(
+                                    width: 9.w,
+                                    height: 9.w,
+                                    decoration: const BoxDecoration(
+                                      shape: BoxShape.circle,
+                                      color: HomeColors.dangerRed,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                      SizedBox(height: 14.h),
+                      Row(
+                        children: [
+                          Icon(Icons.location_on,
+                              size: 14.sp, color: Colors.white60),
+                          SizedBox(width: 4.w),
+                          Text(
+                            'Milaor, Camarines Sur',
+                            style: TextStyle(
+                                fontSize: 12.sp, color: Colors.white60),
+                          ),
+                          const Spacer(),
+                          Icon(Icons.cloud_outlined,
+                              size: 14.sp, color: Colors.white60),
+                          SizedBox(width: 4.w),
+                          Text(
+                            '32°C  •  Partly Cloudy',
+                            style: TextStyle(
+                                fontSize: 12.sp, color: Colors.white60),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+        // ── Body content ──
+        SliverPadding(
+          padding: EdgeInsets.only(
+            left: 20.w,
+            right: 20.w,
+            top: 24.h,
+            bottom: 130.h,
+          ),
+          sliver: SliverList(
+            delegate: SliverChildListDelegate([
+              _buildDashboardStats(),
+              SizedBox(height: 28.h),
+              _buildFloodStatusBanner(context),
+              SizedBox(height: 28.h),
+              _buildCitizenFeedback(context),
+              SizedBox(height: 28.h),
+              _buildSectionLabel('Announcements', 'Latest news from the LGU'),
+              SizedBox(height: 16.h),
+              _buildAnnouncementFeed(),
+              if (ref.watch(announcementsProvider).isNotEmpty) ...[
+                SizedBox(height: 8.h),
+                _buildViewAllButton(),
+              ],
+            ]),
+          ),
+        ),
+      ],
     );
   }
 
@@ -695,45 +825,54 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     }
   }
 
-  // ─── ANNOUNCEMENT FEED ────────────────────────────────
+  // ─── ANNOUNCEMENT FEED — reads the same provider as AnnouncementsListScreen ──
   Widget _buildAnnouncementFeed() {
+    final announcements = ref.watch(announcementsProvider);
+
+    if (announcements.isEmpty) {
+      return Center(
+        child: Padding(
+          padding: EdgeInsets.symmetric(vertical: 24.h),
+          child: Text(
+            'No announcements yet.',
+            style: TextStyle(fontSize: 14.sp, color: HomeColors.textMuted),
+          ),
+        ),
+      );
+    }
+
+    // Show latest 3 on home dashboard
+    final preview = announcements.take(3).toList();
+
     return Column(
       children: [
-        _buildAnnouncementCard(
-          category: 'PUBLIC ADVISORY',
-          accentColor: HomeColors.infoBlue,
-          icon: Icons.campaign_rounded,
-          title: 'Barangay Vaccination Drive — Q4 2024',
-          excerpt:
-              'Starting Monday, LGU health teams will visit San Roque, Capucnasan, and Del Rosario for the scheduled vaccination drive.',
-          date: '2 hours ago',
-          isUnread: true,
-          imageAsset: 'assets/images/home_screen/Vaccine.png',
-        ),
-        SizedBox(height: 16.h),
-        _buildAnnouncementCard(
-          category: 'INFRASTRUCTURE',
-          accentColor: HomeColors.warningAmber,
-          icon: Icons.construction_rounded,
-          title: 'Road Rehabilitation: Cabugao–Dalipay',
-          excerpt:
-              'Road concreting project begins next week. Expect minor traffic rerouting in the area. Estimated completion: 45 days.',
-          date: 'Yesterday',
-          isUnread: false,
-          imageAsset: 'assets/images/home_screen/Road_Announcement.png',
-        ),
-        SizedBox(height: 16.h),
-        _buildAnnouncementCard(
-          category: 'COMMUNITY',
-          accentColor: HomeColors.successGreen,
-          icon: Icons.groups_rounded,
-          title: 'Town Hall Meeting: Participatory Budgeting',
-          excerpt:
-              'Join the Municipal Hall forum on participatory budgeting for FY 2025. All 20 barangays are encouraged to send representatives.',
-          date: '2 days ago',
-          isUnread: false,
-          imageAsset: 'assets/images/home_screen/Community_Townhall.png',
-        ),
+        for (int i = 0; i < preview.length; i++) ...[
+          if (i > 0) SizedBox(height: 16.h),
+          _buildAnnouncementCard(
+            category: preview[i].category.toUpperCase(),
+            accentColor: preview[i].isImportant
+                ? HomeColors.dangerRed
+                : HomeColors.heritagePurple,
+            icon: preview[i].isImportant
+                ? Icons.priority_high_rounded
+                : Icons.campaign_rounded,
+            title: preview[i].title,
+            excerpt: preview[i].description,
+            date: preview[i].formattedDate,
+            isUnread: !preview[i].isRead,
+            imageUrl: preview[i].imageUrl,
+            onTap: () {
+              ref.read(announcementsProvider.notifier).markAsRead(preview[i].id);
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) =>
+                      AnnouncementDetailScreen(announcement: preview[i]),
+                ),
+              );
+            },
+          ),
+        ],
       ],
     );
   }
@@ -747,12 +886,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     required String excerpt,
     required String date,
     required bool isUnread,
-    required String imageAsset,
+    String? imageUrl,
+    VoidCallback? onTap,
   }) {
     return GestureDetector(
-      onTap: () {
-        // Navigate to announcement detail
-      },
+      onTap: onTap,
       child: Container(
         width: double.infinity,
         decoration: BoxDecoration(
@@ -778,27 +916,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   SizedBox(
                     height: 170.h,
                     width: double.infinity,
-                    child: Image.asset(
-                      imageAsset,
-                      fit: BoxFit.cover,
-                      errorBuilder: (_, __, ___) => Container(
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            begin: Alignment.topLeft,
-                            end: Alignment.bottomRight,
-                            colors: [
-                              accentColor.withValues(alpha: 0.7),
-                              accentColor.withValues(alpha: 0.35),
-                            ],
-                          ),
-                        ),
-                        child: Center(
-                          child: Icon(icon,
-                              size: 48.sp,
-                              color: Colors.white.withValues(alpha: 0.9)),
-                        ),
-                      ),
-                    ),
+                    child: imageUrl != null && imageUrl.isNotEmpty
+                        ? Image.network(
+                            imageUrl,
+                            fit: BoxFit.cover,
+                            errorBuilder: (_, __, ___) => _cardFallback(accentColor, icon),
+                          )
+                        : _cardFallback(accentColor, icon),
                   ),
                   // Gradient overlay for better text readability
                   Positioned.fill(
@@ -957,11 +1081,32 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     );
   }
 
+  Widget _cardFallback(Color accentColor, IconData icon) {
+    return Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            accentColor.withValues(alpha: 0.7),
+            accentColor.withValues(alpha: 0.35),
+          ],
+        ),
+      ),
+      child: Center(
+        child: Icon(icon, size: 48.sp, color: Colors.white.withValues(alpha: 0.9)),
+      ),
+    );
+  }
+
   // ─── VIEW ALL BUTTON ──────────────────────────────────
   Widget _buildViewAllButton() {
     return GestureDetector(
       onTap: () {
-        // Navigate to full announcements list
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (_) => const AnnouncementsListScreen()),
+        );
       },
       child: Container(
         width: double.infinity,
