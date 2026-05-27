@@ -73,7 +73,7 @@ class _MainAppState extends State<MainApp> {
           gradient: HomeColors.fabGradient,
           boxShadow: [
             BoxShadow(
-              color: HomeColors.heritagePurple.withOpacity(.35),
+              color: HomeColors.heritagePurple.withValues(alpha: .35),
               blurRadius: 18,
               offset: const Offset(0, 10),
             ),
@@ -102,7 +102,7 @@ class _MainAppState extends State<MainApp> {
         color: Colors.white,
         boxShadow: [
           BoxShadow(
-            color: HomeColors.heritagePurple.withOpacity(0.06),
+            color: HomeColors.heritagePurple.withValues(alpha: 0.06),
             blurRadius: 24,
             offset: const Offset(0, -6),
           ),
@@ -142,8 +142,8 @@ class _MainAppState extends State<MainApp> {
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 300),
           curve: Curves.easeOutCubic,
-          padding: EdgeInsets.symmetric(vertical: 6.h),
-          margin: EdgeInsets.only(top: active ? 0 : 4.h),
+          // FIX overflow: removed vertical padding
+          // FIX overflow: removed top margin
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(14.r),
           ),
@@ -155,7 +155,7 @@ class _MainAppState extends State<MainApp> {
               AnimatedContainer(
                 duration: const Duration(milliseconds: 300),
                 curve: Curves.easeOutCubic,
-                margin: EdgeInsets.only(bottom: active ? 5.h : 0),
+                margin: EdgeInsets.only(bottom: active ? 2.h : 0),
                 width: active ? 32.w : 0,
                 height: 3.h,
                 decoration: BoxDecoration(
@@ -165,17 +165,17 @@ class _MainAppState extends State<MainApp> {
               ),
               Icon(
                 icon,
-                size: active ? 26.sp : 23.sp,
+                size: active ? 23.sp : 21.sp,
                 color: active
                     ? HomeColors.heritagePurple
                     : const Color(0xFFBDBDBD),
               ),
-              SizedBox(height: active ? 3.h : 2.h),
+              SizedBox(height: 2.h),
               AnimatedDefaultTextStyle(
                 duration: const Duration(milliseconds: 300),
                 curve: Curves.easeOutCubic,
                 style: TextStyle(
-                  fontSize: active ? 11.sp : 10.sp,
+                  fontSize: 10.sp,
                   fontWeight: active ? FontWeight.w700 : FontWeight.w500,
                   color: active
                       ? HomeColors.heritagePurple
@@ -222,7 +222,7 @@ class _MainAppState extends State<MainApp> {
                   width: 42.w,
                   height: 42.w,
                   decoration: BoxDecoration(
-                    color: HomeColors.heritagePurple.withOpacity(0.08),
+                    color: HomeColors.heritagePurple.withValues(alpha: 0.08),
                     borderRadius: BorderRadius.circular(12.r),
                   ),
                   child: Icon(Icons.miscellaneous_services_rounded,
@@ -275,7 +275,7 @@ class _MainAppState extends State<MainApp> {
           color: HomeColors.warmHearth,
           borderRadius: BorderRadius.circular(20.r),
           border: Border.all(
-            color: HomeColors.heritagePurple.withOpacity(0.06),
+            color: HomeColors.heritagePurple.withValues(alpha: 0.06),
           ),
         ),
         child: Column(
@@ -289,7 +289,7 @@ class _MainAppState extends State<MainApp> {
                 borderRadius: BorderRadius.circular(16.r),
                 boxShadow: [
                   BoxShadow(
-                    color: HomeColors.heritagePurple.withOpacity(0.08),
+                    color: HomeColors.heritagePurple.withValues(alpha: 0.08),
                     blurRadius: 8,
                     offset: const Offset(0, 3),
                   ),

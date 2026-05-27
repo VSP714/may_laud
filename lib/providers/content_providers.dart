@@ -11,9 +11,9 @@ class Announcement {
   final DateTime date;
   final String? imageUrl;
   final bool isImportant;
-  bool isRead;
+  final bool isRead; // FIX #1 — immutable (was mutable `bool isRead`)
 
-  Announcement({
+  const Announcement({
     required this.id,
     required this.title,
     required this.description,
@@ -62,10 +62,10 @@ class AppNotification {
   final String message;
   final DateTime timestamp;
   final String type;
-  bool isRead;
+  final bool isRead; // FIX #1 — immutable (was mutable `bool isRead`)
   final Map<String, dynamic>? data;
 
-  AppNotification({
+  const AppNotification({
     required this.id,
     required this.title,
     required this.message,
@@ -95,6 +95,19 @@ class AppNotification {
       type:      json['type'] ?? 'system',
       isRead:    json['is_read'] ?? false,
       data:      json['data'],
+    );
+  }
+
+  // FIX #8 — add missing copyWith
+  AppNotification copyWith({bool? isRead}) {
+    return AppNotification(
+      id:        id,
+      title:     title,
+      message:   message,
+      timestamp: timestamp,
+      type:      type,
+      isRead:    isRead ?? this.isRead,
+      data:      data,
     );
   }
 }
@@ -142,6 +155,7 @@ class AnnouncementsProvider extends StateNotifier<List<Announcement>> {
       'announcement_id': id,
     });
 
+    // FIX #1 — use copyWith instead of mutating isRead directly
     state = state.map((a) => a.id == id ? a.copyWith(isRead: true) : a).toList();
   }
 
@@ -157,6 +171,7 @@ class AnnouncementsProvider extends StateNotifier<List<Announcement>> {
       });
     }
 
+    // FIX #1 — use copyWith instead of mutating
     state = state.map((a) => a.copyWith(isRead: true)).toList();
   }
 
@@ -197,10 +212,8 @@ class NotificationsProvider extends StateNotifier<List<AppNotification>> {
         .update({'is_read': true})
         .eq('id', id);
 
-    state = state.map((n) {
-      if (n.id == id) n.isRead = true;
-      return n;
-    }).toList();
+    // FIX #1 — use copyWith instead of mutating n.isRead directly
+    state = state.map((n) => n.id == id ? n.copyWith(isRead: true) : n).toList();
   }
 
   Future<void> markAllAsRead() async {
@@ -212,7 +225,8 @@ class NotificationsProvider extends StateNotifier<List<AppNotification>> {
         .update({'is_read': true})
         .eq('user_id', uid);
 
-    state = state.map((n) { n.isRead = true; return n; }).toList();
+    // FIX #1 — use copyWith instead of mutating
+    state = state.map((n) => n.copyWith(isRead: true)).toList();
   }
 
   void addNotification(AppNotification n) => state = [n, ...state];

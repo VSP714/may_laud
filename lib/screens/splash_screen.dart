@@ -130,7 +130,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
                       borderRadius: BorderRadius.circular(30.r),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.2),
+                          color: Colors.black.withValues(alpha: 0.2),
                           blurRadius: 20.r,
                           spreadRadius: 2.r,
                           offset: Offset(0, 10.h),
@@ -162,7 +162,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
                         letterSpacing: 2.w,
                         shadows: [
                           Shadow(
-                            color: Colors.black.withOpacity(0.3),
+                            color: Colors.black.withValues(alpha: 0.3),
                             blurRadius: 10.r,
                             offset: Offset(0, 5.h),
                           ),
@@ -180,7 +180,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
                     style: TextStyle(
                       fontSize: 16.sp,
                       fontWeight: FontWeight.w500,
-                      color: Colors.white.withOpacity(0.9),
+                      color: Colors.white.withValues(alpha: 0.9),
                       letterSpacing: 0.5.w,
                     ),
                   ),
@@ -197,7 +197,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
                       valueColor: AlwaysStoppedAnimation<Color>(
                         AppTheme.philippineGold,
                       ),
-                      backgroundColor: Colors.white.withOpacity(0.2),
+                      backgroundColor: Colors.white.withValues(alpha: 0.2),
                     ),
                   ),
                 ),
@@ -209,7 +209,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
                     'Loading...',
                     style: TextStyle(
                       fontSize: 14.sp,
-                      color: Colors.white.withOpacity(0.7),
+                      color: Colors.white.withValues(alpha: 0.7),
                     ),
                   ),
                 ),
@@ -233,7 +233,7 @@ class _SplashBackgroundPainter extends CustomPainter {
 
     // Animated circles
     final circlePaint = Paint()
-      ..color = AppTheme.philippineGold.withOpacity(0.1 * progress)
+      ..color = AppTheme.philippineGold.withValues(alpha: 0.1 * progress)
       ..style = PaintingStyle.fill;
 
     final radius = 100.0 * progress;
@@ -241,7 +241,7 @@ class _SplashBackgroundPainter extends CustomPainter {
 
     // Wave effect
     final wavePaint = Paint()
-      ..color = Colors.white.withOpacity(0.05 * progress)
+      ..color = Colors.white.withValues(alpha: 0.05 * progress)
       ..style = PaintingStyle.fill;
 
     final path = Path();

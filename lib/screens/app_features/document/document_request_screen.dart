@@ -261,7 +261,7 @@ class _DocumentRequestScreenState extends ConsumerState<DocumentRequestScreen> {
                   width: 48.w,
                   height: 48.w,
                   decoration: BoxDecoration(
-                    color: HomeColors.heritagePurple.withOpacity(0.08),
+                    color: HomeColors.heritagePurple.withValues(alpha: 0.08),
                     borderRadius: BorderRadius.circular(13.r),
                   ),
                   child:
@@ -344,7 +344,7 @@ class _DocumentRequestScreenState extends ConsumerState<DocumentRequestScreen> {
                       width: 40.w,
                       height: 40.w,
                       decoration: BoxDecoration(
-                        color: HomeColors.heritagePurple.withOpacity(0.08),
+                        color: HomeColors.heritagePurple.withValues(alpha: 0.08),
                         borderRadius: BorderRadius.circular(11.r),
                       ),
                       child: Icon(
@@ -408,7 +408,7 @@ class _DocumentRequestScreenState extends ConsumerState<DocumentRequestScreen> {
           padding: EdgeInsets.all(16.w),
           decoration: BoxDecoration(
             color: isSelected
-                ? accent.withOpacity(0.06)
+                ? accent.withValues(alpha: 0.06)
                 : available
                     ? HomeColors.warmHearth
                     : const Color(0xFFF5F5F5),
@@ -429,7 +429,7 @@ class _DocumentRequestScreenState extends ConsumerState<DocumentRequestScreen> {
                 height: 52.w,
                 decoration: BoxDecoration(
                   color: isSelected
-                      ? accent.withOpacity(0.12)
+                      ? accent.withValues(alpha: 0.12)
                       : available
                           ? const Color(0xFFF3F4F6)
                           : const Color(0xFFEEEEEE),
@@ -556,7 +556,7 @@ class _DocumentRequestScreenState extends ConsumerState<DocumentRequestScreen> {
           borderRadius: BorderRadius.circular(28.r),
           boxShadow: [
             BoxShadow(
-              color: HomeColors.heritagePurple.withOpacity(0.12),
+              color: HomeColors.heritagePurple.withValues(alpha: 0.12),
               blurRadius: 32,
               offset: const Offset(0, 12),
             ),
@@ -585,7 +585,7 @@ class _DocumentRequestScreenState extends ConsumerState<DocumentRequestScreen> {
                       borderRadius: BorderRadius.circular(20.r),
                       boxShadow: [
                         BoxShadow(
-                          color: const Color(0xFF22C55E).withOpacity(0.3),
+                          color: const Color(0xFF22C55E).withValues(alpha: 0.3),
                           blurRadius: 16,
                           offset: const Offset(0, 6),
                         ),
@@ -723,7 +723,7 @@ class _DocumentRequestScreenState extends ConsumerState<DocumentRequestScreen> {
     return Row(
       children: [
         Icon(icon,
-            size: 16.sp, color: HomeColors.heritagePurple.withOpacity(0.7)),
+            size: 16.sp, color: HomeColors.heritagePurple.withValues(alpha: 0.7)),
         SizedBox(width: 10.w),
         Text(
           label,
@@ -847,14 +847,14 @@ class _DocumentRequestScreenState extends ConsumerState<DocumentRequestScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  SizedBox(height: 40.h),
+                  // FIX: removed SizedBox(height: 40.h) — too tall for 160px FlexibleSpace
                   Row(
                     children: [
                       Container(
                         width: 52.w,
                         height: 52.w,
                         decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.15),
+                          color: Colors.white.withValues(alpha: 0.15),
                           borderRadius: BorderRadius.circular(15.r),
                         ),
                         child: Icon(
@@ -893,13 +893,15 @@ class _DocumentRequestScreenState extends ConsumerState<DocumentRequestScreen> {
                   ),
                   SizedBox(height: 14.h),
                   Text(
-                    'Request barangay clearances, certificates, and other official documents. Processing times vary by document type and urgency.',
+                    'Request barangay clearances, certificates, and other official documents.',
                     style: TextStyle(
-                      fontSize: 13.sp,
+                      fontSize: 12.sp,
                       fontWeight: FontWeight.w400,
                       color: Colors.white60,
-                      height: 1.5,
+                      height: 1.4,
                     ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ],
               ),
@@ -946,7 +948,7 @@ class _DocumentRequestScreenState extends ConsumerState<DocumentRequestScreen> {
               boxShadow: isActive
                   ? [
                       BoxShadow(
-                        color: HomeColors.heritagePurple.withOpacity(0.3),
+                        color: HomeColors.heritagePurple.withValues(alpha: 0.3),
                         blurRadius: 8,
                         offset: const Offset(0, 2),
                       )
@@ -1027,10 +1029,10 @@ class _DocumentRequestScreenState extends ConsumerState<DocumentRequestScreen> {
               child: Container(
                 padding: EdgeInsets.all(16.w),
                 decoration: BoxDecoration(
-                  color: accent.withOpacity(0.05),
+                  color: accent.withValues(alpha: 0.05),
                   borderRadius: BorderRadius.circular(14.r),
                   border: Border.all(
-                    color: accent.withOpacity(0.3),
+                    color: accent.withValues(alpha: 0.3),
                     width: 1.5,
                   ),
                 ),
@@ -1040,7 +1042,7 @@ class _DocumentRequestScreenState extends ConsumerState<DocumentRequestScreen> {
                       width: 48.w,
                       height: 48.w,
                       decoration: BoxDecoration(
-                        color: accent.withOpacity(0.12),
+                        color: accent.withValues(alpha: 0.12),
                         borderRadius: BorderRadius.circular(13.r),
                       ),
                       child: Icon(
@@ -1105,7 +1107,7 @@ class _DocumentRequestScreenState extends ConsumerState<DocumentRequestScreen> {
                       width: 32.w,
                       height: 32.w,
                       decoration: BoxDecoration(
-                        color: accent.withOpacity(0.1),
+                        color: accent.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(9.r),
                       ),
                       child: Icon(
@@ -1158,7 +1160,7 @@ class _DocumentRequestScreenState extends ConsumerState<DocumentRequestScreen> {
             decoration: BoxDecoration(
               color: _isFree
                   ? const Color(0xFFF0FDF4)
-                  : HomeColors.heritagePurple.withOpacity(0.08),
+                  : HomeColors.heritagePurple.withValues(alpha: 0.08),
               borderRadius: BorderRadius.circular(14.r),
             ),
             child: Icon(
@@ -1323,7 +1325,7 @@ class _DocumentRequestScreenState extends ConsumerState<DocumentRequestScreen> {
                           height: 42.w,
                           decoration: BoxDecoration(
                             color: isSelected
-                                ? color.withOpacity(0.12)
+                                ? color.withValues(alpha: 0.12)
                                 : const Color(0xFFF3F4F6),
                             borderRadius: BorderRadius.circular(11.r),
                           ),
@@ -1389,7 +1391,7 @@ class _DocumentRequestScreenState extends ConsumerState<DocumentRequestScreen> {
                   padding:
                       EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
                   decoration: BoxDecoration(
-                    color: HomeColors.heritagePurple.withOpacity(0.08),
+                    color: HomeColors.heritagePurple.withValues(alpha: 0.08),
                     borderRadius: BorderRadius.circular(20.r),
                   ),
                   child: Text(
@@ -1446,7 +1448,7 @@ class _DocumentRequestScreenState extends ConsumerState<DocumentRequestScreen> {
             color: HomeColors.warmHearth,
             borderRadius: BorderRadius.circular(16.r),
             border: Border.all(
-              color: HomeColors.heritagePurple.withOpacity(0.15),
+              color: HomeColors.heritagePurple.withValues(alpha: 0.15),
               width: 1.5,
               strokeAlign: BorderSide.strokeAlignInside,
             ),
@@ -1457,7 +1459,7 @@ class _DocumentRequestScreenState extends ConsumerState<DocumentRequestScreen> {
                 width: 52.w,
                 height: 52.w,
                 decoration: BoxDecoration(
-                  color: HomeColors.heritagePurple.withOpacity(0.08),
+                  color: HomeColors.heritagePurple.withValues(alpha: 0.08),
                   borderRadius: BorderRadius.circular(14.r),
                 ),
                 child: Icon(
@@ -1498,10 +1500,10 @@ class _DocumentRequestScreenState extends ConsumerState<DocumentRequestScreen> {
           width: 104.w,
           height: 116.h,
           decoration: BoxDecoration(
-            color: HomeColors.heritagePurple.withOpacity(0.04),
+            color: HomeColors.heritagePurple.withValues(alpha: 0.04),
             borderRadius: BorderRadius.circular(14.r),
             border: Border.all(
-              color: HomeColors.heritagePurple.withOpacity(0.2),
+              color: HomeColors.heritagePurple.withValues(alpha: 0.2),
               width: 1.5,
               strokeAlign: BorderSide.strokeAlignInside,
             ),
@@ -1579,7 +1581,7 @@ class _DocumentRequestScreenState extends ConsumerState<DocumentRequestScreen> {
               width: 24.w,
               height: 24.w,
               decoration: BoxDecoration(
-                color: const Color(0xFF374151).withOpacity(0.85),
+                color: const Color(0xFF374151).withValues(alpha: 0.85),
                 shape: BoxShape.circle,
               ),
               child:
@@ -1636,7 +1638,7 @@ class _DocumentRequestScreenState extends ConsumerState<DocumentRequestScreen> {
         style: ElevatedButton.styleFrom(
           backgroundColor: HomeColors.heritagePurple,
           foregroundColor: Colors.white,
-          disabledBackgroundColor: HomeColors.heritagePurple.withOpacity(0.5),
+          disabledBackgroundColor: HomeColors.heritagePurple.withValues(alpha: 0.5),
           disabledForegroundColor: Colors.white70,
           elevation: 0,
           shadowColor: Colors.transparent,
@@ -1693,13 +1695,13 @@ class _DocumentRequestScreenState extends ConsumerState<DocumentRequestScreen> {
             width: 36.w,
             height: 36.w,
             decoration: BoxDecoration(
-              color: HomeColors.heritagePurple.withOpacity(0.08),
+              color: HomeColors.heritagePurple.withValues(alpha: 0.08),
               borderRadius: BorderRadius.circular(10.r),
             ),
             child: Icon(
               Icons.info_outline_rounded,
               size: 18.sp,
-              color: HomeColors.heritagePurple.withOpacity(0.7),
+              color: HomeColors.heritagePurple.withValues(alpha: 0.7),
             ),
           ),
           SizedBox(width: 12.w),
@@ -1761,7 +1763,7 @@ class _DocumentRequestScreenState extends ConsumerState<DocumentRequestScreen> {
         child: Icon(
           icon,
           size: 20.sp,
-          color: HomeColors.heritagePurple.withOpacity(0.55),
+          color: HomeColors.heritagePurple.withValues(alpha: 0.55),
         ),
       ),
       prefixIconConstraints: BoxConstraints(minWidth: 0, minHeight: 0),
@@ -1799,7 +1801,7 @@ class _DocumentRequestScreenState extends ConsumerState<DocumentRequestScreen> {
       borderRadius: BorderRadius.circular(20.r),
       boxShadow: [
         BoxShadow(
-          color: Colors.black.withOpacity(0.04),
+          color: Colors.black.withValues(alpha: 0.04),
           blurRadius: 12,
           offset: const Offset(0, 3),
         ),

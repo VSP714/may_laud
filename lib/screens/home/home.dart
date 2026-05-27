@@ -116,7 +116,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 gradient: HomeColors.avatarGradient,
                 boxShadow: [
                   BoxShadow(
-                    color: HomeColors.heritagePurple.withOpacity(0.3),
+                    color: HomeColors.heritagePurple.withValues(alpha: 0.3),
                     blurRadius: 12,
                     offset: const Offset(0, 4),
                   ),
@@ -148,7 +148,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                           color: HomeColors.warmHearth,
                           borderRadius: BorderRadius.circular(20.r),
                           border: Border.all(
-                            color: HomeColors.heritagePurple.withOpacity(0.15),
+                            color: HomeColors.heritagePurple.withValues(alpha: 0.15),
                           ),
                         ),
                         child: Row(
@@ -208,7 +208,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   shape: BoxShape.circle,
                   color: HomeColors.warmHearth,
                   border: Border.all(
-                    color: HomeColors.riverFlow.withOpacity(0.1),
+                    color: HomeColors.riverFlow.withValues(alpha: 0.1),
                   ),
                 ),
                 child: Stack(
@@ -289,7 +289,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           label: 'Active\nProjects',
           value: '12',
           color: HomeColors.heritagePurple,
-          bgColor: HomeColors.heritagePurple.withOpacity(0.08),
+          bgColor: HomeColors.heritagePurple.withValues(alpha: 0.08),
         ),
         SizedBox(width: 12.w),
         _statCard(
@@ -297,7 +297,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           label: 'Budget\nUtilized',
           value: '78%',
           color: HomeColors.successGreen,
-          bgColor: HomeColors.successGreen.withOpacity(0.08),
+          bgColor: HomeColors.successGreen.withValues(alpha: 0.08),
         ),
         SizedBox(width: 12.w),
         _statCard(
@@ -305,7 +305,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           label: 'Resolved\nReports',
           value: '243',
           color: HomeColors.infoBlue,
-          bgColor: HomeColors.infoBlue.withOpacity(0.08),
+          bgColor: HomeColors.infoBlue.withValues(alpha: 0.08),
         ),
         SizedBox(width: 12.w),
         _statCard(
@@ -313,7 +313,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           label: 'Barangay\nAssemblies',
           value: '18',
           color: HomeColors.warningAmber,
-          bgColor: HomeColors.warningAmber.withOpacity(0.08),
+          bgColor: HomeColors.warningAmber.withValues(alpha: 0.08),
         ),
       ],
     );
@@ -335,7 +335,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           border: Border.all(color: Colors.grey.shade100),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.03),
+              color: Colors.black.withValues(alpha: 0.03),
               blurRadius: 10,
               offset: const Offset(0, 4),
             ),
@@ -421,7 +421,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           ),
           boxShadow: [
             BoxShadow(
-              color: HomeColors.successGreen.withOpacity(0.25),
+              color: HomeColors.successGreen.withValues(alpha: 0.25),
               blurRadius: 16,
               offset: const Offset(0, 8),
             ),
@@ -433,7 +433,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               width: 50.w,
               height: 50.w,
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.2),
+                color: Colors.white.withValues(alpha: 0.2),
                 borderRadius: BorderRadius.circular(16.r),
               ),
               child: Icon(Icons.water_drop_rounded,
@@ -449,7 +449,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     style: TextStyle(
                       fontSize: 11.sp,
                       fontWeight: FontWeight.w600,
-                      color: Colors.white.withOpacity(0.8),
+                      color: Colors.white.withValues(alpha: 0.8),
                       letterSpacing: 1.2,
                     ),
                   ),
@@ -467,14 +467,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     'Safely within limits • All routes clear • Updated 14m ago',
                     style: TextStyle(
                       fontSize: 12.sp,
-                      color: Colors.white.withOpacity(0.8),
+                      color: Colors.white.withValues(alpha: 0.8),
                     ),
                   ),
                 ],
               ),
             ),
             Icon(Icons.arrow_forward_ios_rounded,
-                size: 18.sp, color: Colors.white.withOpacity(0.7)),
+                size: 18.sp, color: Colors.white.withValues(alpha: 0.7)),
           ],
         ),
       ),
@@ -492,7 +492,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         border: Border.all(color: Colors.grey.shade100),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.03),
+            color: Colors.black.withValues(alpha: 0.03),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -520,7 +520,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               Container(
                 padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
                 decoration: BoxDecoration(
-                  color: HomeColors.successGreen.withOpacity(0.1),
+                  color: HomeColors.successGreen.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(20.r),
                 ),
                 child: Text(
@@ -604,7 +604,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12.r),
                   borderSide: BorderSide(
-                      color: HomeColors.heritagePurple.withOpacity(0.3)),
+                      color: HomeColors.heritagePurple.withValues(alpha: 0.3)),
                 ),
               ),
             ),
@@ -650,7 +650,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               width: double.infinity,
               padding: EdgeInsets.all(14.w),
               decoration: BoxDecoration(
-                color: HomeColors.successGreen.withOpacity(0.08),
+                color: HomeColors.successGreen.withValues(alpha: 0.08),
                 borderRadius: BorderRadius.circular(12.r),
               ),
               child: Row(
@@ -761,7 +761,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           border: Border.all(color: const Color(0xFFDEE2E6)),
           boxShadow: [
             BoxShadow(
-              color: const Color(0xFF000000).withOpacity(0.04),
+              color: const Color(0xFF000000).withValues(alpha: 0.04),
               blurRadius: 12,
               offset: const Offset(0, 4),
             ),
@@ -787,15 +787,15 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                             begin: Alignment.topLeft,
                             end: Alignment.bottomRight,
                             colors: [
-                              accentColor.withOpacity(0.7),
-                              accentColor.withOpacity(0.35),
+                              accentColor.withValues(alpha: 0.7),
+                              accentColor.withValues(alpha: 0.35),
                             ],
                           ),
                         ),
                         child: Center(
                           child: Icon(icon,
                               size: 48.sp,
-                              color: Colors.white.withOpacity(0.9)),
+                              color: Colors.white.withValues(alpha: 0.9)),
                         ),
                       ),
                     ),
@@ -809,8 +809,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                           end: Alignment.bottomCenter,
                           colors: [
                             Colors.transparent,
-                            const Color(0xFF000000).withOpacity(0.15),
-                            const Color(0xFF000000).withOpacity(0.5),
+                            const Color(0xFF000000).withValues(alpha: 0.15),
+                            const Color(0xFF000000).withValues(alpha: 0.5),
                           ],
                         ),
                       ),
@@ -828,7 +828,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         borderRadius: BorderRadius.circular(8.r),
                         boxShadow: [
                           BoxShadow(
-                            color: accentColor.withOpacity(0.4),
+                            color: accentColor.withValues(alpha: 0.4),
                             blurRadius: 8,
                             offset: const Offset(0, 2),
                           ),
@@ -866,7 +866,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                           border: Border.all(color: Colors.white, width: 2),
                           boxShadow: [
                             BoxShadow(
-                              color: HomeColors.infoBlue.withOpacity(0.5),
+                              color: HomeColors.infoBlue.withValues(alpha: 0.5),
                               blurRadius: 6,
                             ),
                           ],
@@ -926,7 +926,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         padding: EdgeInsets.symmetric(
                             horizontal: 12.w, vertical: 6.h),
                         decoration: BoxDecoration(
-                          color: accentColor.withOpacity(0.08),
+                          color: accentColor.withValues(alpha: 0.08),
                           borderRadius: BorderRadius.circular(8.r),
                         ),
                         child: Row(
@@ -970,7 +970,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           color: HomeColors.warmHearth,
           borderRadius: BorderRadius.circular(14.r),
           border:
-              Border.all(color: HomeColors.heritagePurple.withOpacity(0.12)),
+              Border.all(color: HomeColors.heritagePurple.withValues(alpha: 0.12)),
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,

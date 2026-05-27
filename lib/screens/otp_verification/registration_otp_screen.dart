@@ -160,7 +160,7 @@ class _VerificationScreenState extends State<VerificationScreen> {
         boxShadow: focusNodes[index].hasFocus
             ? [
                 BoxShadow(
-                  color: const Color(0xFF6A4FB6).withOpacity(0.15),
+                  color: const Color(0xFF6A4FB6).withValues(alpha: 0.15),
                   blurRadius: 8,
                   offset: const Offset(0, 2),
                 ),
@@ -218,7 +218,7 @@ class _VerificationScreenState extends State<VerificationScreen> {
                 shape: BoxShape.circle,
                 gradient: RadialGradient(
                   colors: [
-                    const Color(0xFFD1C4E9).withOpacity(0.35),
+                    const Color(0xFFD1C4E9).withValues(alpha: 0.35),
                     Colors.transparent,
                   ],
                 ),
@@ -235,7 +235,7 @@ class _VerificationScreenState extends State<VerificationScreen> {
                 shape: BoxShape.circle,
                 gradient: RadialGradient(
                   colors: [
-                    const Color(0xFFD1C4E9).withOpacity(0.4),
+                    const Color(0xFFD1C4E9).withValues(alpha: 0.4),
                     Colors.transparent,
                   ],
                 ),
@@ -440,13 +440,13 @@ class _VerificationScreenState extends State<VerificationScreen> {
                         Icon(
                           Icons.lock_outline,
                           size: 16.w,
-                          color: const Color(0xFF6A4FB6).withOpacity(0.6),
+                          color: const Color(0xFF6A4FB6).withValues(alpha: 0.6),
                         ),
                         SizedBox(width: 8.w),
                         Text(
                           'End-to-end encrypted',
                           style: TextStyle(
-                            color: const Color(0xFF6A4FB6).withOpacity(0.6),
+                            color: const Color(0xFF6A4FB6).withValues(alpha: 0.6),
                             fontSize: 13.sp,
                             fontWeight: FontWeight.w600,
                           ),

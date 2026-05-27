@@ -48,6 +48,9 @@ class User {
   };
 }
 
+// Sentinel so copyWith can distinguish "set to null" vs "leave unchanged"
+const _unset = Object();
+
 class AuthState {
   final bool isLoading;
   final User? user;
@@ -63,17 +66,18 @@ class AuthState {
     this.isGuest = false,
   });
 
+  // FIX #2 — nullable fields (user, error) can now be explicitly cleared
   AuthState copyWith({
     bool? isLoading,
-    User? user,
-    String? error,
+    Object? user = _unset,
+    Object? error = _unset,
     bool? isAuthenticated,
     bool? isGuest,
   }) {
     return AuthState(
       isLoading:       isLoading       ?? this.isLoading,
-      user:            user            ?? this.user,
-      error:           error           ?? this.error,
+      user:            user       == _unset ? this.user       : user       as User?,
+      error:           error      == _unset ? this.error      : error      as String?,
       isAuthenticated: isAuthenticated ?? this.isAuthenticated,
       isGuest:         isGuest         ?? this.isGuest,
     );
@@ -94,7 +98,6 @@ class AuthProvider extends StateNotifier<AuthState> {
         await _loadProfile(session.user.id, session.user.email ?? '');
       }
     } catch (e) {
-      // Supabase not yet initialized (e.g. test environment) — stay unauthenticated
       debugPrint('[AuthProvider] _checkAuthStatus skipped: $e');
     }
   }
@@ -154,19 +157,36 @@ class AuthProvider extends StateNotifier<AuthState> {
       );
 
       if (response.user != null) {
+        final uid = response.user!.id;
+
+        // FIX #3 — insert profiles row immediately so _loadProfile never 404s
+        await _client.from('profiles').upsert({
+          'id':      uid,
+          'name':    name,
+          'email':   email,
+          'phone':   phone,
+          'address': address,
+        });
+
         await LocalStorage.saveUserData(
-          userId:    response.user!.id,
+          userId:    uid,
           userName:  name,
           userEmail: email,
         );
         state = state.copyWith(isLoading: false);
       } else {
-        state = state.copyWith(isLoading: false, error: 'Registration failed. Please try again.');
+        state = state.copyWith(
+          isLoading: false,
+          error: 'Registration failed. Please try again.',
+        );
       }
     } on AuthException catch (e) {
       state = state.copyWith(isLoading: false, error: e.message);
     } catch (_) {
-      state = state.copyWith(isLoading: false, error: 'Registration failed. Please try again.');
+      state = state.copyWith(
+        isLoading: false,
+        error: 'Registration failed. Please try again.',
+      );
     }
   }
 
@@ -202,14 +222,14 @@ class AuthProvider extends StateNotifier<AuthState> {
     );
   }
 
- Future<void> logout() async {
-  state = state.copyWith(isLoading: true);
-  if (!state.isGuest) {
-    await _client.auth.signOut();
+  Future<void> logout() async {
+    state = state.copyWith(isLoading: true);
+    if (!state.isGuest) {
+      await _client.auth.signOut();
+    }
+    await LocalStorage.clearAll();
+    state = const AuthState(isLoading: false);
   }
-  await LocalStorage.clearAll();
-  state = const AuthState(isLoading: false);
-}
 
   Future<void> updateProfile({
     String? name,
@@ -250,6 +270,7 @@ class AuthProvider extends StateNotifier<AuthState> {
     await _client.auth.resetPasswordForEmail(email);
   }
 
+  // FIX #2 — clearError now properly sets error to null
   void clearError() => state = state.copyWith(error: null);
 }
 

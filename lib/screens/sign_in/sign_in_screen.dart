@@ -74,7 +74,7 @@ class _WelcomeBackScreenState extends ConsumerState<WelcomeBackScreen> {
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 gradient: RadialGradient(
-                  colors: [const Color(0xFFD1C4E9).withOpacity(0.35), Colors.transparent],
+                  colors: [const Color(0xFFD1C4E9).withValues(alpha: 0.35), Colors.transparent],
                 ),
               ),
             ),
@@ -88,7 +88,7 @@ class _WelcomeBackScreenState extends ConsumerState<WelcomeBackScreen> {
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 gradient: RadialGradient(
-                  colors: [const Color(0xFFD1C4E9).withOpacity(0.4), Colors.transparent],
+                  colors: [const Color(0xFFD1C4E9).withValues(alpha: 0.4), Colors.transparent],
                 ),
               ),
             ),
@@ -112,7 +112,7 @@ class _WelcomeBackScreenState extends ConsumerState<WelcomeBackScreen> {
                     decoration: BoxDecoration(
                       boxShadow: [
                         BoxShadow(
-                          color: const Color(0xFF7B2CBF).withOpacity(0.18),
+                          color: const Color(0xFF7B2CBF).withValues(alpha: 0.18),
                           blurRadius: 25.r,
                           spreadRadius: 2,
                         ),
@@ -138,7 +138,7 @@ class _WelcomeBackScreenState extends ConsumerState<WelcomeBackScreen> {
                       borderRadius: BorderRadius.circular(28.r),
                       boxShadow: [
                         BoxShadow(
-                          color: const Color(0xFF7B2CBF).withOpacity(0.08),
+                          color: const Color(0xFF7B2CBF).withValues(alpha: 0.08),
                           blurRadius: 20.r,
                           offset: Offset(0, 8.h),
                         ),
@@ -260,7 +260,7 @@ class _WelcomeBackScreenState extends ConsumerState<WelcomeBackScreen> {
                                 ),
                                 boxShadow: [
                                   BoxShadow(
-                                    color: const Color(0xFF4C229C).withOpacity(0.3),
+                                    color: const Color(0xFF4C229C).withValues(alpha: 0.3),
                                     blurRadius: 12.r,
                                     offset: Offset(0, 4.h),
                                   ),
@@ -327,7 +327,7 @@ class _WelcomeBackScreenState extends ConsumerState<WelcomeBackScreen> {
                               color: Colors.white,
                               boxShadow: [
                                 BoxShadow(
-                                  color: const Color(0xFF4C229C).withOpacity(0.15),
+                                  color: const Color(0xFF4C229C).withValues(alpha: 0.15),
                                   blurRadius: 12.r,
                                   offset: Offset(0, 4.h),
                                 ),

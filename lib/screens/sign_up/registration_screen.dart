@@ -257,7 +257,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
               height: 280.w,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: const Color(0xFFF3E5F5).withOpacity(0.6),
+                color: const Color(0xFFF3E5F5).withValues(alpha: 0.6),
               ),
             ),
           ),
@@ -269,7 +269,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
               height: 180.w,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: const Color(0xFFE1D5F5).withOpacity(0.5),
+                color: const Color(0xFFE1D5F5).withValues(alpha: 0.5),
               ),
             ),
           ),
@@ -356,7 +356,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                           ),
                           boxShadow: [
                             BoxShadow(
-                              color: const Color(0xFF643EB5).withOpacity(0.3),
+                              color: const Color(0xFF643EB5).withValues(alpha: 0.3),
                               blurRadius: 12,
                               offset: const Offset(0, 6),
                             )
