@@ -4,6 +4,18 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import 'home/home.dart';
 import '../providers/auth_provider.dart';
+import '../providers/app_providers.dart';
+import '../core/local_storage.dart';
+
+// Profile sub-screens
+import 'profile/quick_settings_sheet.dart';
+import 'profile/change_photo_sheet.dart';
+import 'profile/edit_profile_sheet.dart';
+import 'profile/change_password_sheet.dart';
+import 'profile/privacy_security_sheet.dart';
+import 'profile/notification_preferences_sheet.dart';
+import 'profile/help_support_sheet.dart';
+import 'profile/about_milaud_sheet.dart';
 
 class ProfileScreen extends ConsumerStatefulWidget {
   const ProfileScreen({super.key});
@@ -44,7 +56,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                   SizedBox(height: 20.h),
                   _buildPersonalInfoCard(user),
                   SizedBox(height: 20.h),
-                  _buildAccountActionsCard(),
+                  _buildAccountActionsCard(user),
                   SizedBox(height: 20.h),
                   _buildAppSettingsCard(),
                   SizedBox(height: 24.h),
@@ -64,7 +76,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     return SliverAppBar(
       pinned: true,
       floating: false,
-      automaticallyImplyLeading: false, // ← removes unwanted back arrow
+      automaticallyImplyLeading: false,
       backgroundColor: HomeColors.warmHearth,
       elevation: 0,
       centerTitle: false,
@@ -79,7 +91,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       ),
       actions: [
         IconButton(
-          onPressed: () => _showMessage('Settings'),
+          onPressed: () => showQuickSettingsSheet(context),
           icon: Icon(
             Icons.settings_outlined,
             size: 22.sp,
@@ -100,10 +112,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       padding: EdgeInsets.all(24.w),
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [
-            HomeColors.deepAnchor,
-            HomeColors.heritagePurple,
-          ],
+          colors: [HomeColors.deepAnchor, HomeColors.heritagePurple],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
@@ -118,7 +127,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       ),
       child: Column(
         children: [
-          // Avatar with edit badge
           Stack(
             children: [
               Container(
@@ -150,7 +158,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 bottom: 0,
                 right: 0,
                 child: InkWell(
-                  onTap: () => _showMessage('Change profile photo'),
+                  onTap: () => showChangePhotoSheet(context),
                   child: Container(
                     width: 30.w,
                     height: 30.w,
@@ -169,7 +177,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             ],
           ),
           SizedBox(height: 16.h),
-          // Name
           Text(
             name,
             style: TextStyle(
@@ -180,7 +187,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             ),
           ),
           SizedBox(height: 6.h),
-          // Email badge
           Container(
             padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 6.h),
             decoration: BoxDecoration(
@@ -190,7 +196,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(Icons.email_outlined, size: 15.sp, color: Colors.white70),
+                Icon(Icons.email_outlined,
+                    size: 15.sp, color: Colors.white70),
                 SizedBox(width: 6.w),
                 Text(
                   user?.email ?? '',
@@ -207,10 +214,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           SizedBox(height: 6.h),
           Text(
             'Member since $memberYear',
-            style: TextStyle(
-              fontSize: 13.sp,
-              color: Colors.white60,
-            ),
+            style: TextStyle(fontSize: 13.sp, color: Colors.white60),
           ),
         ],
       ),
@@ -307,9 +311,15 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     return _buildWhiteCard(
       title: 'Personal Information',
       trailing: TextButton.icon(
-        onPressed: () {
-          setState(() => _isEditing = !_isEditing);
-          if (_isEditing) _showMessage('Edit mode — functionality coming soon');
+        onPressed: () async {
+          if (_isEditing) {
+            setState(() => _isEditing = false);
+          } else {
+            final saved = await showEditProfileSheet(context, user);
+            if (saved == true && mounted) {
+              setState(() => _isEditing = false);
+            }
+          }
         },
         icon: Icon(
           _isEditing ? Icons.close : Icons.edit_outlined,
@@ -317,15 +327,19 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         ),
         label: Text(
           _isEditing ? 'Cancel' : 'Edit',
-          style: TextStyle(fontSize: 14.sp, fontWeight: FontWeight.w600),
+          style:
+              TextStyle(fontSize: 14.sp, fontWeight: FontWeight.w600),
         ),
       ),
       children: [
-        _buildInfoRow(Icons.person_outline, 'Full Name', user?.name ?? '—'),
-        _buildInfoRow(Icons.email_outlined, 'Email', user?.email ?? '—'),
-        _buildInfoRow(Icons.phone_outlined, 'Phone', user?.phone ?? '—'),
         _buildInfoRow(
-            Icons.location_on_outlined, 'Address', user?.address ?? '—'),
+            Icons.person_outline, 'Full Name', user?.name ?? '—'),
+        _buildInfoRow(
+            Icons.email_outlined, 'Email', user?.email ?? '—'),
+        _buildInfoRow(
+            Icons.phone_outlined, 'Phone', user?.phone ?? '—'),
+        _buildInfoRow(Icons.location_on_outlined, 'Address',
+            user?.address ?? '—'),
       ],
     );
   }
@@ -343,7 +357,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               color: HomeColors.heritagePurple.withOpacity(0.08),
               borderRadius: BorderRadius.circular(10.r),
             ),
-            child: Icon(icon, size: 20.sp, color: HomeColors.heritagePurple),
+            child:
+                Icon(icon, size: 20.sp, color: HomeColors.heritagePurple),
           ),
           SizedBox(width: 14.w),
           Expanded(
@@ -378,7 +393,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   }
 
   // ─── ACCOUNT ACTIONS CARD ──────────────────────────────
-  Widget _buildAccountActionsCard() {
+  Widget _buildAccountActionsCard(User? user) {
     return _buildWhiteCard(
       title: 'Account',
       children: [
@@ -386,19 +401,19 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           icon: Icons.edit_outlined,
           title: 'Edit Profile',
           subtitle: 'Update your personal information',
-          onTap: () => _showMessage('Edit Profile'),
+          onTap: () => showEditProfileSheet(context, user),
         ),
         _buildActionTile(
           icon: Icons.lock_outline,
           title: 'Change Password',
           subtitle: 'Secure your account with a new password',
-          onTap: () => _showMessage('Change Password'),
+          onTap: () => showChangePasswordSheet(context),
         ),
         _buildActionTile(
           icon: Icons.security_outlined,
           title: 'Privacy & Security',
           subtitle: 'Manage your data and account security',
-          onTap: () => _showMessage('Privacy & Security'),
+          onTap: () => showPrivacySecuritySheet(context),
         ),
       ],
     );
@@ -406,6 +421,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
 
   // ─── APP SETTINGS CARD ─────────────────────────────────
   Widget _buildAppSettingsCard() {
+    final settings = ref.watch(appSettingsProvider);
+
     return _buildWhiteCard(
       title: 'App Settings',
       children: [
@@ -413,20 +430,83 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           icon: Icons.notifications_outlined,
           title: 'Notification Preferences',
           subtitle: 'Manage alerts and push notifications',
-          onTap: () => _showMessage('Notification Settings'),
+          onTap: () => showNotificationPreferencesSheet(context),
         ),
+
+        // Dark mode inline toggle
+        Padding(
+          padding: EdgeInsets.symmetric(vertical: 6.h, horizontal: 4.w),
+          child: Row(
+            children: [
+              Container(
+                width: 42.w,
+                height: 42.w,
+                decoration: BoxDecoration(
+                  color: HomeColors.heritagePurple.withOpacity(0.07),
+                  borderRadius: BorderRadius.circular(12.r),
+                ),
+                child: Icon(
+                  settings.isDarkMode
+                      ? Icons.dark_mode_outlined
+                      : Icons.light_mode_outlined,
+                  size: 22.sp,
+                  color: HomeColors.heritagePurple,
+                ),
+              ),
+              SizedBox(width: 14.w),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Dark Mode',
+                      style: TextStyle(
+                        fontSize: 15.sp,
+                        fontWeight: FontWeight.w600,
+                        color: HomeColors.deepAnchor,
+                      ),
+                    ),
+                    SizedBox(height: 2.h),
+                    Text(
+                      settings.isDarkMode
+                          ? 'Dark theme active'
+                          : 'Light theme active',
+                      style: TextStyle(
+                        fontSize: 13.sp,
+                        fontWeight: FontWeight.w400,
+                        color: const Color(0xFF9E9E9E),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Switch(
+                value: settings.isDarkMode,
+                activeColor: HomeColors.heritagePurple,
+                onChanged: (val) async {
+                  ref
+                      .read(appSettingsProvider.notifier)
+                      .toggleDarkMode();
+                  await LocalStorage.setDarkMode(val);
+                },
+              ),
+            ],
+          ),
+        ),
+
         _buildActionTile(
           icon: Icons.help_outline,
           title: 'Help & Support',
           subtitle: 'FAQs, guides, and contact support',
-          onTap: () => _showMessage('Help & Support'),
+          onTap: () => showHelpSupportSheet(context),
         ),
         _buildActionTile(
           icon: Icons.info_outline,
           title: 'About Milaud',
           subtitle: 'App version, terms, and privacy policy',
           trailing: Container(
-            padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
+            padding:
+                EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
             decoration: BoxDecoration(
               color: HomeColors.heritagePurple.withOpacity(0.08),
               borderRadius: BorderRadius.circular(8.r),
@@ -440,7 +520,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               ),
             ),
           ),
-          onTap: () => _showMessage('About Milaud'),
+          onTap: () => showAboutMilaudSheet(context),
         ),
       ],
     );
@@ -467,7 +547,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 color: HomeColors.heritagePurple.withOpacity(0.07),
                 borderRadius: BorderRadius.circular(12.r),
               ),
-              child: Icon(icon, size: 22.sp, color: HomeColors.heritagePurple),
+              child: Icon(icon,
+                  size: 22.sp, color: HomeColors.heritagePurple),
             ),
             SizedBox(width: 14.w),
             Expanded(
@@ -556,15 +637,17 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       width: double.infinity,
       height: 52.h,
       child: OutlinedButton.icon(
-        onPressed: () => _showLogoutConfirmation(),
+        onPressed: _showLogoutConfirmation,
         icon: Icon(Icons.logout_rounded, size: 20.sp),
         label: Text(
           'Logout',
-          style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.w600),
+          style:
+              TextStyle(fontSize: 16.sp, fontWeight: FontWeight.w600),
         ),
         style: OutlinedButton.styleFrom(
           foregroundColor: const Color(0xFFD32F2F),
-          side: const BorderSide(color: Color(0xFFEF9A9A), width: 1.2),
+          side:
+              const BorderSide(color: Color(0xFFEF9A9A), width: 1.2),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16.r),
           ),
@@ -576,14 +659,14 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
 
   // ─── LOGOUT DIALOG ─────────────────────────────────────
   void _showLogoutConfirmation() {
-    final authState = ref.read(authProvider);
-    final userName = authState.user?.name ?? 'user';
+    final userName = ref.read(authProvider).user?.name ?? 'user';
 
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        shape:
-            RoundedRectangleBorder(borderRadius: BorderRadius.circular(20.r)),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20.r),
+        ),
         title: Text(
           'Confirm Logout',
           style: TextStyle(
@@ -593,7 +676,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           ),
         ),
         content: Text(
-          'Are you sure you want to sign out, $userName? You\'ll need to sign in again to access your account.',
+          'Are you sure you want to sign out, $userName? '
+          "You'll need to sign in again to access your account.",
           style: TextStyle(
             fontSize: 14.sp,
             color: const Color(0xFF616161),
@@ -614,10 +698,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           ),
           ElevatedButton(
             onPressed: () async {
-              Navigator.pop(ctx); // close dialog
+              Navigator.pop(ctx);
               await ref.read(authProvider.notifier).logout();
               if (mounted) {
-                // Navigate back to the root route (opening/splash) and clear stack
                 Navigator.of(context)
                     .pushNamedAndRemoveUntil('/', (route) => false);
               }
@@ -628,28 +711,16 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12.r),
               ),
-              padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 10.h),
+              padding: EdgeInsets.symmetric(
+                  horizontal: 20.w, vertical: 10.h),
             ),
             child: Text(
               'Logout',
-              style: TextStyle(fontSize: 15.sp, fontWeight: FontWeight.w600),
+              style: TextStyle(
+                  fontSize: 15.sp, fontWeight: FontWeight.w600),
             ),
           ),
         ],
-      ),
-    );
-  }
-
-  // ─── HELPERS ───────────────────────────────────────────
-  void _showMessage(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        behavior: SnackBarBehavior.floating,
-        duration: const Duration(seconds: 2),
-        shape:
-            RoundedRectangleBorder(borderRadius: BorderRadius.circular(10.r)),
-        margin: EdgeInsets.all(12.w),
       ),
     );
   }
