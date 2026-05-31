@@ -6,7 +6,6 @@ import 'package:google_fonts/google_fonts.dart';
 
 class AppTheme {
   // ===== MILAOR COLOR PALETTE =====
-  // Based on Milaor, Camarines Sur municipal colors and Philippine national colors
   static const Color milaorBlue =
       Color(0xFF0056A3); // Primary: Milaor municipal blue
   static const Color philippineGold =
@@ -15,13 +14,13 @@ class AppTheme {
       Color(0xFFCE1126); // Accent: Philippine red
   static const Color philippineGreen =
       Color(0xFF0C5A43); // Success: Philippine green
-  static const Color neutralWhite = Color(0xFFFFFFFF); // White
-  static const Color neutralGray50 = Color(0xFFF8F9FA); // Light background
-  static const Color neutralGray100 = Color(0xFFE9ECEF); // Light border
-  static const Color neutralGray200 = Color(0xFFDEE2E6); // Divider
-  static const Color neutralGray500 = Color(0xFF6C757D); // Secondary text
-  static const Color neutralGray800 = Color(0xFF343A40); // Primary text
-  static const Color neutralBlack = Color(0xFF212529); // Black
+  static const Color neutralWhite = Color(0xFFFFFFFF);
+  static const Color neutralGray50 = Color(0xFFF8F9FA);
+  static const Color neutralGray100 = Color(0xFFE9ECEF);
+  static const Color neutralGray200 = Color(0xFFDEE2E6);
+  static const Color neutralGray500 = Color(0xFF6C757D);
+  static const Color neutralGray800 = Color(0xFF343A40);
+  static const Color neutralBlack = Color(0xFF212529);
 
   // Semantic colors
   static const Color success = philippineGreen;
@@ -161,43 +160,19 @@ class AppTheme {
 
   // ===== SHADOWS =====
   static const List<BoxShadow> shadowXs = [
-    BoxShadow(
-      color: Color(0x0A000000),
-      blurRadius: 2,
-      offset: Offset(0, 1),
-    ),
+    BoxShadow(color: Color(0x0A000000), blurRadius: 2, offset: Offset(0, 1)),
   ];
-
   static const List<BoxShadow> shadowSm = [
-    BoxShadow(
-      color: Color(0x14000000),
-      blurRadius: 4,
-      offset: Offset(0, 2),
-    ),
+    BoxShadow(color: Color(0x14000000), blurRadius: 4, offset: Offset(0, 2)),
   ];
-
   static const List<BoxShadow> shadowMd = [
-    BoxShadow(
-      color: Color(0x1F000000),
-      blurRadius: 8,
-      offset: Offset(0, 4),
-    ),
+    BoxShadow(color: Color(0x1F000000), blurRadius: 8, offset: Offset(0, 4)),
   ];
-
   static const List<BoxShadow> shadowLg = [
-    BoxShadow(
-      color: Color(0x29000000),
-      blurRadius: 16,
-      offset: Offset(0, 8),
-    ),
+    BoxShadow(color: Color(0x29000000), blurRadius: 16, offset: Offset(0, 8)),
   ];
-
   static const List<BoxShadow> shadowXl = [
-    BoxShadow(
-      color: Color(0x3D000000),
-      blurRadius: 24,
-      offset: Offset(0, 12),
-    ),
+    BoxShadow(color: Color(0x3D000000), blurRadius: 24, offset: Offset(0, 12)),
   ];
 
   // ===== ANIMATIONS =====
@@ -335,23 +310,142 @@ class AppTheme {
 
   // ===== DARK THEME =====
   static ThemeData darkTheme() {
+    // Dark mode color constants
+    const Color darkSurface = Color(0xFF1E1E1E);
+    const Color darkBackground = Color(0xFF121212);
+    const Color darkPrimary = Color(0xFF66B5FF);
+    const Color darkCard = Color(0xFF2C2C2C);
+    const Color darkBorder = Color(0xFF444444);
+    const Color darkSubtext = Color(0xFF9E9E9E);
+    const Color darkDivider = Color(0xFF333333);
+
     return ThemeData(
       useMaterial3: true,
       brightness: Brightness.dark,
       colorScheme: const ColorScheme.dark(
-        primary: Color(0xFF66B5FF),
+        primary: darkPrimary,
         secondary: Color(0xFFFFD166),
-        surface: Color(0xFF1E1E1E),
-        background: Color(0xFF121212),
+        surface: darkSurface,
+        background: darkBackground,
         error: Color(0xFFCF6679),
       ),
-      scaffoldBackgroundColor: const Color(0xFF121212),
+      scaffoldBackgroundColor: darkBackground,
+
+      // ← FIXED: was only this section before
       appBarTheme: AppBarTheme(
-        backgroundColor: const Color(0xFF1E1E1E),
+        backgroundColor: darkSurface,
         elevation: 0,
         centerTitle: false,
         titleTextStyle: titleLarge.copyWith(color: neutralWhite),
-        iconTheme: const IconThemeData(color: Color(0xFF66B5FF)),
+        iconTheme: const IconThemeData(color: darkPrimary),
+      ),
+
+      // ← ADDED: cards were showing light color in dark mode
+      cardTheme: CardThemeData(
+        color: darkSurface,
+        elevation: 0,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(borderRadiusMd),
+        ),
+        margin: EdgeInsets.zero,
+      ),
+
+      // ← ADDED: buttons
+      elevatedButtonTheme: ElevatedButtonThemeData(
+        style: ElevatedButton.styleFrom(
+          backgroundColor: darkPrimary,
+          foregroundColor: darkBackground,
+          padding: const EdgeInsets.symmetric(
+            horizontal: spacingLg,
+            vertical: spacingMd,
+          ),
+          textStyle: labelLarge,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(borderRadiusMd),
+          ),
+          elevation: 0,
+        ),
+      ),
+      outlinedButtonTheme: OutlinedButtonThemeData(
+        style: OutlinedButton.styleFrom(
+          foregroundColor: darkPrimary,
+          side: const BorderSide(color: darkPrimary),
+          padding: const EdgeInsets.symmetric(
+            horizontal: spacingLg,
+            vertical: spacingMd,
+          ),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(borderRadiusMd),
+          ),
+        ),
+      ),
+      textButtonTheme: TextButtonThemeData(
+        style: TextButton.styleFrom(
+          foregroundColor: darkPrimary,
+          padding: const EdgeInsets.symmetric(
+            horizontal: spacingMd,
+            vertical: spacingSm,
+          ),
+        ),
+      ),
+
+      // ← ADDED: input fields were showing white background in dark mode
+      inputDecorationTheme: InputDecorationTheme(
+        filled: true,
+        fillColor: darkCard,
+        contentPadding: const EdgeInsets.all(spacingMd),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(borderRadiusMd),
+          borderSide: const BorderSide(color: darkBorder),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(borderRadiusMd),
+          borderSide: const BorderSide(color: darkBorder),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(borderRadiusMd),
+          borderSide: const BorderSide(color: darkPrimary, width: 2),
+        ),
+        errorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(borderRadiusMd),
+          borderSide: const BorderSide(color: Color(0xFFCF6679)),
+        ),
+        labelStyle: bodyMedium.copyWith(color: darkSubtext),
+        hintStyle: bodyMedium.copyWith(color: darkSubtext),
+        errorStyle: bodySmall.copyWith(color: Color(0xFFCF6679)),
+      ),
+
+      // ← ADDED
+      dividerTheme: const DividerThemeData(
+        color: darkDivider,
+        thickness: 1,
+        space: 1,
+      ),
+      chipTheme: ChipThemeData(
+        backgroundColor: darkCard,
+        selectedColor: darkPrimary,
+        labelStyle: labelSmall.copyWith(color: neutralWhite),
+        secondaryLabelStyle: labelSmall.copyWith(color: darkBackground),
+        padding: const EdgeInsets.symmetric(
+          horizontal: spacingSm,
+          vertical: spacingXs,
+        ),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(borderRadiusCircle),
+        ),
+      ),
+
+      // ← ADDED: nav bar was staying white in dark mode
+      bottomNavigationBarTheme: const BottomNavigationBarThemeData(
+        backgroundColor: darkSurface,
+        selectedItemColor: darkPrimary,
+        unselectedItemColor: darkSubtext,
+        elevation: 8,
+      ),
+      floatingActionButtonTheme: const FloatingActionButtonThemeData(
+        backgroundColor: darkPrimary,
+        foregroundColor: darkBackground,
+        elevation: 4,
       ),
     );
   }

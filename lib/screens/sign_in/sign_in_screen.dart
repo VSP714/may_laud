@@ -1,4 +1,3 @@
-// ignore_for_file: deprecated_member_use
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -29,7 +28,8 @@ class _WelcomeBackScreenState extends ConsumerState<WelcomeBackScreen> {
   }
 
   Future<void> _login() async {
-    if (_emailController.text.trim().isEmpty || _passwordController.text.isEmpty) {
+    if (_emailController.text.trim().isEmpty ||
+        _passwordController.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Please enter email and password')),
       );
@@ -37,7 +37,8 @@ class _WelcomeBackScreenState extends ConsumerState<WelcomeBackScreen> {
     }
 
     final authNotifier = ref.read(authProvider.notifier);
-    await authNotifier.login(_emailController.text.trim(), _passwordController.text);
+    await authNotifier.login(
+        _emailController.text.trim(), _passwordController.text);
 
     if (mounted && ref.read(authProvider).isAuthenticated) {
       Navigator.pushReplacement(
@@ -50,9 +51,34 @@ class _WelcomeBackScreenState extends ConsumerState<WelcomeBackScreen> {
   @override
   Widget build(BuildContext context) {
     final authState = ref.watch(authProvider);
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final cs = theme.colorScheme;
+
+    // Adaptive colors
+    final scaffoldBg = isDark ? cs.background : Colors.white;
+    final bubbleBg1 = isDark ? cs.primary.withOpacity(0.12) : const Color(0xFFEDE7F6);
+    final bubbleBg2Gradient = isDark
+        ? [cs.primary.withOpacity(0.10), Colors.transparent]
+        : [const Color(0xFFD1C4E9).withOpacity(0.35), Colors.transparent];
+    final bubbleBg3Gradient = isDark
+        ? [cs.primary.withOpacity(0.12), Colors.transparent]
+        : [const Color(0xFFD1C4E9).withOpacity(0.4), Colors.transparent];
+    final titleColor = isDark ? cs.onBackground : const Color(0xFF2E0C6D);
+    final subtitleColor = isDark ? cs.onBackground.withOpacity(0.6) : const Color(0xFF6E6A75);
+    final formBg = isDark ? cs.surface : const Color(0xFFF6F2FC);
+    final inputBg = isDark ? cs.background : Colors.white;
+    final inputBorder = isDark ? cs.onSurface.withOpacity(0.15) : const Color(0xFFDDDDDD);
+    final inputIconColor = isDark ? cs.onSurface.withOpacity(0.5) : const Color(0xFF666666);
+    final labelColor = isDark ? cs.onSurface.withOpacity(0.85) : const Color(0xFF555555);
+    final hintColor = isDark ? cs.onSurface.withOpacity(0.45) : const Color(0xFF888888);
+    final accentPurple = isDark ? cs.primary : const Color(0xFF4C229C);
+    final guestBg = isDark ? cs.surface : Colors.white;
+    final guestText = isDark ? cs.primary : Colors.deepPurple;
+    final linkColor = isDark ? cs.onBackground.withOpacity(0.6) : Colors.black54;
 
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: scaffoldBg,
       body: Stack(
         children: [
           // Background decorations
@@ -62,7 +88,7 @@ class _WelcomeBackScreenState extends ConsumerState<WelcomeBackScreen> {
             child: Container(
               width: 280.w,
               height: 280.w,
-              decoration: const BoxDecoration(shape: BoxShape.circle, color: Color(0xFFEDE7F6)),
+              decoration: BoxDecoration(shape: BoxShape.circle, color: bubbleBg1),
             ),
           ),
           Positioned(
@@ -73,9 +99,7 @@ class _WelcomeBackScreenState extends ConsumerState<WelcomeBackScreen> {
               height: 160.w,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                gradient: RadialGradient(
-                  colors: [const Color(0xFFD1C4E9).withValues(alpha: 0.35), Colors.transparent],
-                ),
+                gradient: RadialGradient(colors: bubbleBg2Gradient),
               ),
             ),
           ),
@@ -87,9 +111,7 @@ class _WelcomeBackScreenState extends ConsumerState<WelcomeBackScreen> {
               height: 180.w,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                gradient: RadialGradient(
-                  colors: [const Color(0xFFD1C4E9).withValues(alpha: 0.4), Colors.transparent],
-                ),
+                gradient: RadialGradient(colors: bubbleBg3Gradient),
               ),
             ),
           ),
@@ -98,7 +120,7 @@ class _WelcomeBackScreenState extends ConsumerState<WelcomeBackScreen> {
             child: SizedBox(
               height: 240.h,
               width: double.infinity,
-              child: CustomPaint(painter: _WavePainter()),
+              child: CustomPaint(painter: _WavePainter(isDark: isDark, cs: cs)),
             ),
           ),
           SafeArea(
@@ -112,33 +134,37 @@ class _WelcomeBackScreenState extends ConsumerState<WelcomeBackScreen> {
                     decoration: BoxDecoration(
                       boxShadow: [
                         BoxShadow(
-                          color: const Color(0xFF7B2CBF).withValues(alpha: 0.18),
+                          color: const Color(0xFF7B2CBF).withOpacity(0.18),
                           blurRadius: 25.r,
                           spreadRadius: 2,
                         ),
                       ],
                     ),
-                    child: Image.asset('assets/images/milaudlogo.png', height: 100.h),
+                    child: Image.asset('assets/images/milaudlogo.png',
+                        height: 100.h),
                   ),
                   SizedBox(height: 15.h),
                   Text(
                     "Welcome to MiLaud",
-                    style: TextStyle(fontSize: 32.sp, fontWeight: FontWeight.w700, color: const Color(0xFF2E0C6D)),
+                    style: TextStyle(
+                        fontSize: 32.sp,
+                        fontWeight: FontWeight.w700,
+                        color: titleColor),
                   ),
                   SizedBox(height: 8.h),
                   Text(
                     "Enter your email and password",
-                    style: TextStyle(fontSize: 14.sp, color: const Color(0xFF6E6A75)),
+                    style: TextStyle(fontSize: 14.sp, color: subtitleColor),
                   ),
                   SizedBox(height: 30.h),
                   Container(
                     padding: EdgeInsets.all(20.w),
                     decoration: BoxDecoration(
-                      color: const Color(0xFFF6F2FC),
+                      color: formBg,
                       borderRadius: BorderRadius.circular(28.r),
                       boxShadow: [
                         BoxShadow(
-                          color: const Color(0xFF7B2CBF).withValues(alpha: 0.08),
+                          color: const Color(0xFF7B2CBF).withOpacity(isDark ? 0.05 : 0.08),
                           blurRadius: 20.r,
                           offset: Offset(0, 8.h),
                         ),
@@ -147,31 +173,39 @@ class _WelcomeBackScreenState extends ConsumerState<WelcomeBackScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        // Email field
-                        Text("Email", style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14.sp, color: const Color(0xFF555555))),
+                        Text("Email",
+                            style: TextStyle(
+                                fontWeight: FontWeight.w600,
+                                fontSize: 14.sp,
+                                color: labelColor)),
                         SizedBox(height: 6.h),
                         Text("We'll use this to sign you in",
-                            style: TextStyle(fontSize: 12.sp, color: const Color(0xFF888888))),
+                            style: TextStyle(
+                                fontSize: 12.sp, color: hintColor)),
                         SizedBox(height: 10.h),
                         Container(
-                          padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 4.h),
+                          padding: EdgeInsets.symmetric(
+                              horizontal: 20.w, vertical: 4.h),
                           decoration: BoxDecoration(
-                            color: Colors.white,
+                            color: inputBg,
                             borderRadius: BorderRadius.circular(16.r),
-                            border: Border.all(color: const Color(0xFFDDDDDD), width: 1.5),
+                            border: Border.all(color: inputBorder, width: 1.5),
                           ),
                           child: Row(
                             children: [
-                              const Icon(Icons.email_outlined, color: Color(0xFF666666)),
+                              Icon(Icons.email_outlined,
+                                  color: inputIconColor),
                               SizedBox(width: 12.w),
                               Expanded(
                                 child: TextField(
                                   controller: _emailController,
                                   keyboardType: TextInputType.emailAddress,
-                                  decoration: const InputDecoration(
+                                  style: TextStyle(color: cs.onSurface),
+                                  decoration: InputDecoration(
                                     hintText: "Enter your email",
                                     border: InputBorder.none,
-                                    hintStyle: TextStyle(color: Color(0xFFAAAAAA)),
+                                    hintStyle: TextStyle(
+                                        color: cs.onSurface.withOpacity(0.4)),
                                   ),
                                 ),
                               ),
@@ -179,43 +213,54 @@ class _WelcomeBackScreenState extends ConsumerState<WelcomeBackScreen> {
                           ),
                         ),
                         SizedBox(height: 20.h),
-                        // Password field
-                        Text("Password", style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14.sp, color: const Color(0xFF555555))),
+                        Text("Password",
+                            style: TextStyle(
+                                fontWeight: FontWeight.w600,
+                                fontSize: 14.sp,
+                                color: labelColor)),
                         SizedBox(height: 6.h),
                         Text("Enter your password to access your account",
-                            style: TextStyle(fontSize: 12.sp, color: const Color(0xFF888888))),
+                            style: TextStyle(
+                                fontSize: 12.sp, color: hintColor)),
                         SizedBox(height: 10.h),
                         Container(
-                          padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 4.h),
+                          padding: EdgeInsets.symmetric(
+                              horizontal: 20.w, vertical: 4.h),
                           decoration: BoxDecoration(
-                            color: Colors.white,
+                            color: inputBg,
                             borderRadius: BorderRadius.circular(16.r),
-                            border: Border.all(color: const Color(0xFFDDDDDD), width: 1.5),
+                            border: Border.all(color: inputBorder, width: 1.5),
                           ),
                           child: Row(
                             children: [
-                              const Icon(Icons.lock_outline, color: Color(0xFF666666)),
+                              Icon(Icons.lock_outline, color: inputIconColor),
                               SizedBox(width: 12.w),
                               Expanded(
                                 child: TextField(
                                   controller: _passwordController,
                                   obscureText: _obscurePassword,
-                                  decoration: const InputDecoration(
+                                  style: TextStyle(color: cs.onSurface),
+                                  decoration: InputDecoration(
                                     hintText: "Enter your password",
                                     border: InputBorder.none,
-                                    hintStyle: TextStyle(color: Color(0xFFAAAAAA)),
+                                    hintStyle: TextStyle(
+                                        color: cs.onSurface.withOpacity(0.4)),
                                   ),
                                 ),
                               ),
                               IconButton(
-                                icon: Icon(_obscurePassword ? Icons.visibility_off : Icons.visibility, color: const Color(0xFF666666)),
-                                onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
+                                icon: Icon(
+                                    _obscurePassword
+                                        ? Icons.visibility_off
+                                        : Icons.visibility,
+                                    color: inputIconColor),
+                                onPressed: () => setState(
+                                    () => _obscurePassword = !_obscurePassword),
                               ),
                             ],
                           ),
                         ),
                         SizedBox(height: 15.h),
-                        // Remember me & Forgot password
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
@@ -223,28 +268,36 @@ class _WelcomeBackScreenState extends ConsumerState<WelcomeBackScreen> {
                               children: [
                                 Checkbox(
                                   value: _rememberMe,
-                                  activeColor: const Color(0xFF4C229C),
-                                  onChanged: (val) => setState(() => _rememberMe = val ?? false),
+                                  activeColor: accentPurple,
+                                  onChanged: (val) => setState(
+                                      () => _rememberMe = val ?? false),
                                 ),
-                                Text("Remember me", style: TextStyle(fontSize: 14.sp)),
+                                Text("Remember me",
+                                    style: TextStyle(
+                                        fontSize: 14.sp,
+                                        color: cs.onSurface)),
                               ],
                             ),
                             GestureDetector(
                               onTap: () {
                                 Navigator.push(
                                   context,
-                                  MaterialPageRoute(builder: (_) => const ForgotPasswordScreen()),
+                                  MaterialPageRoute(
+                                      builder: (_) =>
+                                          const ForgotPasswordScreen()),
                                 );
                               },
                               child: Text(
                                 "Forgot password?",
-                                style: TextStyle(color: const Color(0xFF4C229C), fontWeight: FontWeight.w600, fontSize: 14.sp),
+                                style: TextStyle(
+                                    color: accentPurple,
+                                    fontWeight: FontWeight.w600,
+                                    fontSize: 14.sp),
                               ),
                             ),
                           ],
                         ),
                         SizedBox(height: 20.h),
-                        // Sign in button
                         if (authState.isLoading)
                           const Center(child: CircularProgressIndicator())
                         else
@@ -252,15 +305,20 @@ class _WelcomeBackScreenState extends ConsumerState<WelcomeBackScreen> {
                             onTap: _login,
                             child: Container(
                               width: double.infinity,
-                              padding: EdgeInsets.symmetric(vertical: 16.h),
+                              padding:
+                                  EdgeInsets.symmetric(vertical: 16.h),
                               decoration: BoxDecoration(
                                 borderRadius: BorderRadius.circular(40.r),
                                 gradient: const LinearGradient(
-                                  colors: [Color(0xFF4C229C), Color(0xFF643EB5)],
+                                  colors: [
+                                    Color(0xFF4C229C),
+                                    Color(0xFF643EB5)
+                                  ],
                                 ),
                                 boxShadow: [
                                   BoxShadow(
-                                    color: const Color(0xFF4C229C).withValues(alpha: 0.3),
+                                    color: const Color(0xFF4C229C)
+                                        .withOpacity(0.3),
                                     blurRadius: 12.r,
                                     offset: Offset(0, 4.h),
                                   ),
@@ -269,7 +327,10 @@ class _WelcomeBackScreenState extends ConsumerState<WelcomeBackScreen> {
                               child: Center(
                                 child: Text(
                                   "Sign in",
-                                  style: TextStyle(color: Colors.white, fontSize: 18.sp, fontWeight: FontWeight.bold),
+                                  style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 18.sp,
+                                      fontWeight: FontWeight.bold),
                                 ),
                               ),
                             ),
@@ -279,27 +340,31 @@ class _WelcomeBackScreenState extends ConsumerState<WelcomeBackScreen> {
                             padding: EdgeInsets.only(top: 12.h),
                             child: Text(
                               authState.error!,
-                              style: TextStyle(color: Colors.red, fontSize: 13.sp),
+                              style: TextStyle(
+                                  color: Colors.red, fontSize: 13.sp),
                             ),
                           ),
                         SizedBox(height: 14.h),
-                        // Create account link
                         GestureDetector(
                           onTap: () {
                             Navigator.push(
                               context,
-                              MaterialPageRoute(builder: (_) => const RegisterScreen()),
+                              MaterialPageRoute(
+                                  builder: (_) => const RegisterScreen()),
                             );
                           },
                           child: Center(
                             child: RichText(
                               text: TextSpan(
                                 text: "Don't have an account? ",
-                                style: TextStyle(color: Colors.black54, fontSize: 14.sp),
+                                style: TextStyle(
+                                    color: linkColor, fontSize: 14.sp),
                                 children: [
                                   TextSpan(
                                     text: "Create Account",
-                                    style: TextStyle(color: const Color(0xFF4C229C), fontWeight: FontWeight.w600),
+                                    style: TextStyle(
+                                        color: accentPurple,
+                                        fontWeight: FontWeight.w600),
                                   ),
                                 ],
                               ),
@@ -307,27 +372,35 @@ class _WelcomeBackScreenState extends ConsumerState<WelcomeBackScreen> {
                           ),
                         ),
                         SizedBox(height: 40.h),
-                        // Guest button
                         GestureDetector(
                           onTap: () async {
-                            final authNotifier = ref.read(authProvider.notifier);
+                            final authNotifier =
+                                ref.read(authProvider.notifier);
                             await authNotifier.loginAsGuest();
                             if (mounted) {
                               Navigator.pushReplacement(
                                 context,
-                                MaterialPageRoute(builder: (_) => const MainApp()),
+                                MaterialPageRoute(
+                                    builder: (_) => const MainApp()),
                               );
                             }
                           },
                           child: Container(
                             width: double.infinity,
-                            padding: EdgeInsets.symmetric(vertical: 16.h),
+                            padding:
+                                EdgeInsets.symmetric(vertical: 16.h),
                             decoration: BoxDecoration(
                               borderRadius: BorderRadius.circular(40.r),
-                              color: Colors.white,
+                              color: guestBg,
+                              border: isDark
+                                  ? Border.all(
+                                      color: cs.primary.withOpacity(0.4),
+                                      width: 1)
+                                  : null,
                               boxShadow: [
                                 BoxShadow(
-                                  color: const Color(0xFF4C229C).withValues(alpha: 0.15),
+                                  color: const Color(0xFF4C229C)
+                                      .withOpacity(isDark ? 0.08 : 0.15),
                                   blurRadius: 12.r,
                                   offset: Offset(0, 4.h),
                                 ),
@@ -336,7 +409,10 @@ class _WelcomeBackScreenState extends ConsumerState<WelcomeBackScreen> {
                             child: Center(
                               child: Text(
                                 "Continue as Guest",
-                                style: TextStyle(color: Colors.deepPurple, fontSize: 18.sp, fontWeight: FontWeight.bold),
+                                style: TextStyle(
+                                    color: guestText,
+                                    fontSize: 18.sp,
+                                    fontWeight: FontWeight.bold),
                               ),
                             ),
                           ),
@@ -356,31 +432,31 @@ class _WelcomeBackScreenState extends ConsumerState<WelcomeBackScreen> {
 }
 
 class _WavePainter extends CustomPainter {
+  final bool isDark;
+  final ColorScheme cs;
+
+  _WavePainter({required this.isDark, required this.cs});
+
   @override
   void paint(Canvas canvas, Size size) {
+    final fillColor =
+        isDark ? cs.primary.withOpacity(0.08) : const Color(0xFFF3F0FA);
+    final strokeColor =
+        isDark ? cs.primary.withOpacity(0.25) : const Color(0xFFB39DDB);
+
     final fillWave = Paint()
-      ..color = const Color(0xFFF3F0FA)
+      ..color = fillColor
       ..style = PaintingStyle.fill;
 
     final lineWave = Paint()
-      ..color = const Color(0xFFB39DDB)
+      ..color = strokeColor
       ..style = PaintingStyle.stroke
       ..strokeWidth = 2;
 
     final path1 = Path();
     path1.moveTo(0, 70);
-    path1.quadraticBezierTo(
-      size.width * 0.25,
-      20,
-      size.width * 0.5,
-      90,
-    );
-    path1.quadraticBezierTo(
-      size.width * 0.75,
-      150,
-      size.width,
-      70,
-    );
+    path1.quadraticBezierTo(size.width * 0.25, 20, size.width * 0.5, 90);
+    path1.quadraticBezierTo(size.width * 0.75, 150, size.width, 70);
     path1.lineTo(size.width, size.height);
     path1.lineTo(0, size.height);
     path1.close();
@@ -389,22 +465,13 @@ class _WavePainter extends CustomPainter {
 
     final path2 = Path();
     path2.moveTo(0, 90);
-    path2.quadraticBezierTo(
-      size.width * 0.3,
-      40,
-      size.width * 0.6,
-      110,
-    );
-    path2.quadraticBezierTo(
-      size.width * 0.85,
-      170,
-      size.width,
-      100,
-    );
+    path2.quadraticBezierTo(size.width * 0.3, 40, size.width * 0.6, 110);
+    path2.quadraticBezierTo(size.width * 0.85, 170, size.width, 100);
 
     canvas.drawPath(path2, lineWave);
   }
 
   @override
-  bool shouldRepaint(CustomPainter oldDelegate) => false;
+  bool shouldRepaint(covariant _WavePainter oldDelegate) =>
+      oldDelegate.isDark != isDark;
 }

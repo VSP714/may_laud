@@ -1,20 +1,21 @@
-// ignore_for_file: deprecated_member_use
-
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
-// Intro page 2
 class IntroPage2 extends StatelessWidget {
   const IntroPage2({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final cs = Theme.of(context).colorScheme;
+    final titleColor = isDark ? cs.primary : const Color(0xFF4C229C);
+    final bodyColor = isDark ? cs.onBackground.withOpacity(0.85) : Colors.black87;
+
     return Scaffold(
       body: Column(
         children: [
-          //TOP IMAGE (same as IntroPage1)
           SizedBox(
-            height: 0.62.sh, // 62% of screen height
+            height: 0.62.sh,
             width: double.infinity,
             child: Stack(
               children: [
@@ -27,16 +28,12 @@ class IntroPage2 extends StatelessWidget {
               ],
             ),
           ),
-
-          // 🔹 BOTTOM CONTENT
           Expanded(
             child: SingleChildScrollView(
               padding: EdgeInsets.symmetric(horizontal: 24.w),
               child: Column(
                 children: [
                   SizedBox(height: 20.h),
-
-                  /// TITLE
                   Text(
                     "Stay Connected\nwith Your Barangay",
                     textAlign: TextAlign.center,
@@ -44,13 +41,10 @@ class IntroPage2 extends StatelessWidget {
                       fontFamily: 'Montserrat',
                       fontSize: 30.sp,
                       fontWeight: FontWeight.bold,
-                      color: Color(0xFF4C229C),
+                      color: titleColor,
                     ),
                   ),
-
                   SizedBox(height: 20.h),
-
-                  /// DESCRIPTION
                   Text(
                     "Get real-time announcements emergency alerts,\n"
                     "local events and important barangay updates anytime anywhere with milaud.\n",
@@ -58,7 +52,7 @@ class IntroPage2 extends StatelessWidget {
                     style: TextStyle(
                       fontSize: 16.sp,
                       height: 1.5,
-                      color: Colors.black,
+                      color: bodyColor,
                     ),
                   ),
                 ],

@@ -126,6 +126,17 @@ class HotlinesScreen extends StatefulWidget {
 class _HotlinesScreenState extends State<HotlinesScreen> {
   ContactType? _selectedType;
 
+  // Dark mode helpers — set in build(), used by helper methods
+  bool _isDark = false;
+  ColorScheme? _cs;
+  Color get _scaffoldBg => _isDark ? _cs!.background : HotlineColors.warmHearth;
+  Color get _cardBg => _isDark ? _cs!.surface : HotlineColors.cardWhite;
+  Color get _titleText => _isDark ? _cs!.onSurface : HotlineColors.deepAnchor;
+  Color get _bodyText => _isDark ? _cs!.onSurface.withOpacity(0.65) : AppTheme.neutralGray800;
+  Color get _mutedText => _isDark ? _cs!.onSurface.withOpacity(0.45) : AppTheme.neutralGray500;
+  Color get _dividerColor => _isDark ? _cs!.onSurface.withOpacity(0.12) : AppTheme.neutralGray200;
+  Color get _chipBorder => _isDark ? _cs!.onSurface.withOpacity(0.2) : AppTheme.neutralGray200;
+
   late final List<EmergencyContact> _contacts;
   late final List<Map<String, dynamic>> _filterOptions;
 
@@ -249,6 +260,8 @@ class _HotlinesScreenState extends State<HotlinesScreen> {
       isScrollControlled: true,
       builder: (_) => _ContactDetailSheet(
           contact: c,
+          cardBg: _cardBg,
+          scaffoldBg: _scaffoldBg,
           onCall: () {
             Navigator.pop(context);
             _call(c.number);
@@ -259,8 +272,11 @@ class _HotlinesScreenState extends State<HotlinesScreen> {
   // ─── MAIN BUILD ──────────────────────────────────────
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    _isDark = theme.brightness == Brightness.dark;
+    _cs = theme.colorScheme;
     return Scaffold(
-      backgroundColor: HotlineColors.warmHearth,
+      backgroundColor: _scaffoldBg,
       body: CustomScrollView(
         physics: const BouncingScrollPhysics(),
         slivers: [
@@ -353,7 +369,7 @@ class _HotlinesScreenState extends State<HotlinesScreen> {
       width: double.infinity,
       padding: EdgeInsets.all(24.w),
       decoration: BoxDecoration(
-        color: HotlineColors.cardWhite,
+        color: _cardBg,
         borderRadius: BorderRadius.circular(AppTheme.borderRadiusXl),
         border: Border.all(color: HotlineColors.emergencyRedBorder),
         boxShadow: AppTheme.shadowSm,
@@ -407,7 +423,7 @@ class _HotlinesScreenState extends State<HotlinesScreen> {
             style: GoogleFonts.poppins(
               fontSize: 52.sp,
               fontWeight: FontWeight.w900,
-              color: HotlineColors.deepAnchor,
+              color: _titleText,
               letterSpacing: 3,
               height: 1,
             ),
@@ -418,7 +434,7 @@ class _HotlinesScreenState extends State<HotlinesScreen> {
             style: GoogleFonts.inter(
               fontSize: 14.sp,
               fontWeight: FontWeight.w500,
-              color: AppTheme.neutralGray500,
+              color: _mutedText,
             ),
           ),
           SizedBox(height: 18.h),
@@ -461,7 +477,7 @@ class _HotlinesScreenState extends State<HotlinesScreen> {
           style: GoogleFonts.poppins(
             fontSize: 16.sp,
             fontWeight: FontWeight.w600,
-            color: HotlineColors.deepAnchor,
+            color: _titleText,
           ),
         ),
         SizedBox(height: 12.h),
@@ -486,13 +502,13 @@ class _HotlinesScreenState extends State<HotlinesScreen> {
                     decoration: BoxDecoration(
                       color: isSelected
                           ? HotlineColors.heritagePurple
-                          : HotlineColors.cardWhite,
+                          : _cardBg,
                       borderRadius:
                           BorderRadius.circular(AppTheme.borderRadiusCircle),
                       border: Border.all(
                         color: isSelected
                             ? HotlineColors.heritagePurple
-                            : AppTheme.neutralGray200,
+                            : _chipBorder,
                       ),
                       boxShadow: isSelected ? AppTheme.shadowSm : [],
                     ),
@@ -502,7 +518,7 @@ class _HotlinesScreenState extends State<HotlinesScreen> {
                         fontSize: 13.sp,
                         fontWeight: FontWeight.w600,
                         color:
-                            isSelected ? Colors.white : AppTheme.neutralGray500,
+                            isSelected ? Colors.white : _mutedText,
                       ),
                     ),
                   ),
@@ -524,7 +540,7 @@ class _HotlinesScreenState extends State<HotlinesScreen> {
           style: GoogleFonts.poppins(
             fontSize: 16.sp,
             fontWeight: FontWeight.w600,
-            color: HotlineColors.deepAnchor,
+            color: _titleText,
           ),
         ),
         SizedBox(width: 8.w),
@@ -556,9 +572,9 @@ class _HotlinesScreenState extends State<HotlinesScreen> {
     return Container(
       margin: EdgeInsets.only(bottom: 10.h),
       decoration: BoxDecoration(
-        color: HotlineColors.cardWhite,
+        color: _cardBg,
         borderRadius: BorderRadius.circular(AppTheme.borderRadiusLg),
-        border: Border.all(color: AppTheme.neutralGray100),
+        border: Border.all(color: _dividerColor),
         boxShadow: AppTheme.shadowSm,
       ),
       child: Material(
@@ -592,7 +608,7 @@ class _HotlinesScreenState extends State<HotlinesScreen> {
                         style: GoogleFonts.poppins(
                           fontSize: 15.sp,
                           fontWeight: FontWeight.w600,
-                          color: HotlineColors.deepAnchor,
+                          color: _titleText,
                         ),
                       ),
                       SizedBox(height: 4.h),
@@ -663,13 +679,13 @@ class _HotlinesScreenState extends State<HotlinesScreen> {
       child: Column(
         children: [
           Icon(Icons.search_off_rounded,
-              size: 48.sp, color: AppTheme.neutralGray200),
+              size: 48.sp, color: _dividerColor),
           SizedBox(height: 12.h),
           Text(
             'No contacts in this category',
             style: GoogleFonts.inter(
               fontSize: 14.sp,
-              color: AppTheme.neutralGray500,
+              color: _mutedText,
             ),
           ),
         ],
@@ -724,10 +740,14 @@ class _HotlinesScreenState extends State<HotlinesScreen> {
 // ─── CONTACT DETAIL BOTTOM SHEET ───────────────────────
 class _ContactDetailSheet extends StatelessWidget {
   final EmergencyContact contact;
+  final Color cardBg;
+  final Color scaffoldBg;
   final VoidCallback onCall;
 
   const _ContactDetailSheet({
     required this.contact,
+    required this.cardBg,
+    required this.scaffoldBg,
     required this.onCall,
   });
 
@@ -739,7 +759,7 @@ class _ContactDetailSheet extends StatelessWidget {
     return Container(
       padding: EdgeInsets.fromLTRB(24.w, 16.h, 24.w, 32.h),
       decoration: BoxDecoration(
-        color: HotlineColors.cardWhite,
+        color: cardBg,
         borderRadius: BorderRadius.vertical(
             top: Radius.circular(AppTheme.borderRadiusXl)),
       ),
@@ -752,7 +772,7 @@ class _ContactDetailSheet extends StatelessWidget {
               width: 36.w,
               height: 4.h,
               decoration: BoxDecoration(
-                color: AppTheme.neutralGray200,
+                color: cardBg == Colors.white ? AppTheme.neutralGray200 : Colors.white24,
                 borderRadius: BorderRadius.circular(2.r),
               ),
             ),
@@ -779,7 +799,7 @@ class _ContactDetailSheet extends StatelessWidget {
                       style: GoogleFonts.poppins(
                         fontSize: 20.sp,
                         fontWeight: FontWeight.w700,
-                        color: HotlineColors.deepAnchor,
+                        color: cardBg == Colors.white ? HotlineColors.deepAnchor : Colors.white,
                       ),
                     ),
                     SizedBox(height: 4.h),
@@ -810,7 +830,7 @@ class _ContactDetailSheet extends StatelessWidget {
             contact.description,
             style: GoogleFonts.inter(
               fontSize: 14.sp,
-              color: AppTheme.neutralGray500,
+              color: cardBg == Colors.white ? AppTheme.neutralGray500 : Colors.white60,
               height: 1.6,
             ),
           ),
@@ -819,7 +839,7 @@ class _ContactDetailSheet extends StatelessWidget {
             width: double.infinity,
             padding: EdgeInsets.symmetric(vertical: 18.h),
             decoration: BoxDecoration(
-              color: HotlineColors.warmHearth,
+              color: scaffoldBg,
               borderRadius: BorderRadius.circular(AppTheme.borderRadiusLg),
               border: Border.all(
                   color: HotlineColors.heritagePurple.withOpacity(0.1)),

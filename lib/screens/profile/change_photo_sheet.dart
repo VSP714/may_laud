@@ -8,6 +8,11 @@ class ChangePhotoSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final _theme = Theme.of(context);
+    final _isDark = _theme.brightness == Brightness.dark;
+    final _cs = _theme.colorScheme;
+    final _titleColor = _isDark ? _cs.onSurface : HomeColors.deepAnchor;
+    final _accentColor = _isDark ? _cs.primary : HomeColors.heritagePurple;
     return Padding(
       padding: EdgeInsets.fromLTRB(24.w, 20.h, 24.w, 32.h),
       child: Column(
@@ -21,7 +26,7 @@ class ChangePhotoSheet extends StatelessWidget {
             style: TextStyle(
               fontSize: 20.sp,
               fontWeight: FontWeight.w700,
-              color: HomeColors.deepAnchor,
+              color: _titleColor,
             ),
           ),
           SizedBox(height: 8.h),
@@ -39,6 +44,8 @@ class ChangePhotoSheet extends StatelessWidget {
             context: context,
             icon: Icons.camera_alt_outlined,
             label: 'Take a photo',
+            accentColor: _accentColor,
+            titleColor: _titleColor,
             onTap: () {
               Navigator.pop(context);
               ScaffoldMessenger.of(context).showSnackBar(
@@ -59,6 +66,8 @@ class ChangePhotoSheet extends StatelessWidget {
             context: context,
             icon: Icons.photo_library_outlined,
             label: 'Choose from gallery',
+            accentColor: _accentColor,
+            titleColor: _titleColor,
             onTap: () {
               Navigator.pop(context);
               ScaffoldMessenger.of(context).showSnackBar(
@@ -96,6 +105,8 @@ class ChangePhotoSheet extends StatelessWidget {
     required BuildContext context,
     required IconData icon,
     required String label,
+    required Color accentColor,
+    required Color titleColor,
     required VoidCallback onTap,
   }) {
     return InkWell(
@@ -110,14 +121,14 @@ class ChangePhotoSheet extends StatelessWidget {
         ),
         child: Row(
           children: [
-            Icon(icon, color: HomeColors.heritagePurple, size: 22.sp),
+            Icon(icon, color: accentColor, size: 22.sp),
             SizedBox(width: 14.w),
             Text(
               label,
               style: TextStyle(
                 fontSize: 15.sp,
                 fontWeight: FontWeight.w600,
-                color: HomeColors.deepAnchor,
+                color: titleColor,
               ),
             ),
           ],

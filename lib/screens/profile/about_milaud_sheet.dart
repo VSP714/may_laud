@@ -8,7 +8,12 @@ class AboutMilaudSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
+    final _theme = Theme.of(context);
+    final _isDark = _theme.brightness == Brightness.dark;
+    final _cs = _theme.colorScheme;
+    final _titleColor = _isDark ? _cs.onSurface : HomeColors.deepAnchor;
+    final _accentColor = _isDark ? _cs.primary : HomeColors.heritagePurple;
+        return Padding(
       padding: EdgeInsets.fromLTRB(24.w, 20.h, 24.w, 32.h),
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -29,7 +34,7 @@ class AboutMilaudSheet extends StatelessWidget {
                 ),
                 child: Icon(
                   Icons.account_balance_outlined,
-                  color: HomeColors.heritagePurple,
+                  color: _accentColor,
                   size: 28.sp,
                 ),
               ),
@@ -42,7 +47,7 @@ class AboutMilaudSheet extends StatelessWidget {
                     style: TextStyle(
                       fontSize: 22.sp,
                       fontWeight: FontWeight.w700,
-                      color: HomeColors.deepAnchor,
+                      color: _titleColor,
                     ),
                   ),
                   Text(
@@ -68,13 +73,26 @@ class AboutMilaudSheet extends StatelessWidget {
           ),
 
           SizedBox(height: 20.h),
-          _aboutRow(Icons.code_outlined, 'Built with', 'Flutter + Supabase'),
+          _aboutRow(
+            icon: Icons.code_outlined,
+            label: 'Built with',
+            value: 'Flutter + Supabase',
+            titleColor: _titleColor,
+          ),
           SizedBox(height: 10.h),
-          _aboutRow(Icons.location_city_outlined, 'Municipality',
-              'Milaor, Camarines Sur'),
+          _aboutRow(
+            icon: Icons.location_city_outlined,
+            label: 'Municipality',
+            value: 'Milaor, Camarines Sur',
+            titleColor: _titleColor,
+          ),
           SizedBox(height: 10.h),
-          _aboutRow(Icons.school_outlined, 'Purpose',
-              'Academic Final Defense Project'),
+          _aboutRow(
+            icon: Icons.school_outlined,
+            label: 'Purpose',
+            value: 'Academic Final Defense Project',
+            titleColor: _titleColor,
+          ),
 
           SizedBox(height: 20.h),
           const Divider(),
@@ -105,7 +123,11 @@ class AboutMilaudSheet extends StatelessWidget {
     );
   }
 
-  Widget _aboutRow(IconData icon, String label, String value) {
+  Widget _aboutRow(
+      {required IconData icon,
+      required String label,
+      required String value,
+      required Color titleColor}) {
     return Row(
       children: [
         Icon(icon, size: 18.sp, color: HomeColors.heritagePurple),
@@ -123,7 +145,7 @@ class AboutMilaudSheet extends StatelessWidget {
           style: TextStyle(
             fontSize: 13.sp,
             fontWeight: FontWeight.w600,
-            color: HomeColors.deepAnchor,
+            color: titleColor,
           ),
         ),
       ],

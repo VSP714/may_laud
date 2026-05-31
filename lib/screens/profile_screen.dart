@@ -37,14 +37,21 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   Widget build(BuildContext context) {
     final authState = ref.watch(authProvider);
     final user = authState.user;
+    // ← FIX: read theme colors from context so they respond to dark mode
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final isDark = theme.brightness == Brightness.dark;
+
+    // Adaptive background: light lavender in light mode, true dark in dark mode
+    final scaffoldBg = isDark ? colorScheme.background : HomeColors.warmHearth;
 
     return Scaffold(
-      backgroundColor: HomeColors.warmHearth,
+      backgroundColor: scaffoldBg,
       body: SafeArea(
         child: CustomScrollView(
           physics: const BouncingScrollPhysics(),
           slivers: [
-            _buildAppBar(),
+            _buildAppBar(isDark: isDark, colorScheme: colorScheme),
             SliverPadding(
               padding: EdgeInsets.symmetric(horizontal: 20.w),
               sliver: SliverList(
@@ -52,13 +59,13 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                   SizedBox(height: 12.h),
                   _buildProfileHeaderCard(user),
                   SizedBox(height: 20.h),
-                  _buildStatsRow(),
+                  _buildStatsRow(isDark: isDark, colorScheme: colorScheme),
                   SizedBox(height: 20.h),
-                  _buildPersonalInfoCard(user),
+                  _buildPersonalInfoCard(user, isDark: isDark, colorScheme: colorScheme),
                   SizedBox(height: 20.h),
-                  _buildAccountActionsCard(user),
+                  _buildAccountActionsCard(user, isDark: isDark, colorScheme: colorScheme),
                   SizedBox(height: 20.h),
-                  _buildAppSettingsCard(),
+                  _buildAppSettingsCard(isDark: isDark, colorScheme: colorScheme),
                   SizedBox(height: 24.h),
                   _buildLogoutButton(),
                   SizedBox(height: 40.h),
@@ -72,12 +79,17 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   }
 
   // ─── APP BAR ───────────────────────────────────────────
-  Widget _buildAppBar() {
+  Widget _buildAppBar({required bool isDark, required ColorScheme colorScheme}) {
+    // ← FIX: was hardcoded HomeColors.warmHearth always
+    final bgColor = isDark ? colorScheme.surface : HomeColors.warmHearth;
+    final titleColor = isDark ? colorScheme.onSurface : HomeColors.deepAnchor;
+    final iconColor = isDark ? colorScheme.primary : HomeColors.heritagePurple;
+
     return SliverAppBar(
       pinned: true,
       floating: false,
       automaticallyImplyLeading: false,
-      backgroundColor: HomeColors.warmHearth,
+      backgroundColor: bgColor,
       elevation: 0,
       centerTitle: false,
       title: Text(
@@ -85,7 +97,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         style: TextStyle(
           fontSize: 24.sp,
           fontWeight: FontWeight.w700,
-          color: HomeColors.deepAnchor,
+          color: titleColor,
           letterSpacing: -0.5,
         ),
       ),
@@ -95,7 +107,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           icon: Icon(
             Icons.settings_outlined,
             size: 22.sp,
-            color: HomeColors.heritagePurple,
+            color: iconColor,
           ),
         ),
         SizedBox(width: 4.w),
@@ -104,6 +116,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   }
 
   // ─── PROFILE HEADER CARD ───────────────────────────────
+  // Gradient card — intentionally keeps the purple gradient in both modes
   Widget _buildProfileHeaderCard(User? user) {
     final name = user?.name ?? 'Resident';
     final memberYear = user?.createdAt?.year.toString() ?? '2022';
@@ -111,7 +124,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     return Container(
       padding: EdgeInsets.all(24.w),
       decoration: BoxDecoration(
-        gradient: LinearGradient(
+        gradient: const LinearGradient(
           colors: [HomeColors.deepAnchor, HomeColors.heritagePurple],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
@@ -196,8 +209,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(Icons.email_outlined,
-                    size: 15.sp, color: Colors.white70),
+                Icon(Icons.email_outlined, size: 15.sp, color: Colors.white70),
                 SizedBox(width: 6.w),
                 Text(
                   user?.email ?? '',
@@ -222,7 +234,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   }
 
   // ─── STATS ROW ─────────────────────────────────────────
-  Widget _buildStatsRow() {
+  Widget _buildStatsRow({required bool isDark, required ColorScheme colorScheme}) {
     return Row(
       children: [
         _buildStatCard(
@@ -230,6 +242,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           value: '${_docStats['total'] ?? 0}',
           label: 'Total\nRequests',
           color: HomeColors.heritagePurple,
+          isDark: isDark,
+          colorScheme: colorScheme,
         ),
         SizedBox(width: 12.w),
         _buildStatCard(
@@ -237,6 +251,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           value: '${_docStats['approved'] ?? 0}',
           label: 'Approved',
           color: const Color(0xFF2E7D32),
+          isDark: isDark,
+          colorScheme: colorScheme,
         ),
         SizedBox(width: 12.w),
         _buildStatCard(
@@ -244,6 +260,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           value: '${_docStats['pending'] ?? 0}',
           label: 'Pending',
           color: const Color(0xFFE65100),
+          isDark: isDark,
+          colorScheme: colorScheme,
         ),
       ],
     );
@@ -254,16 +272,23 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     required String value,
     required String label,
     required Color color,
+    required bool isDark,
+    required ColorScheme colorScheme,
   }) {
+    // ← FIX: was hardcoded Colors.white
+    final cardColor = isDark ? colorScheme.surface : Colors.white;
+    final valueColor = isDark ? colorScheme.onSurface : HomeColors.deepAnchor;
+    final labelColor = isDark ? colorScheme.onSurface.withOpacity(0.6) : const Color(0xFF757575);
+
     return Expanded(
       child: Container(
         padding: EdgeInsets.symmetric(vertical: 18.h, horizontal: 12.w),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: cardColor,
           borderRadius: BorderRadius.circular(16.r),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.04),
+              color: Colors.black.withOpacity(isDark ? 0.2 : 0.04),
               blurRadius: 8,
               offset: const Offset(0, 2),
             ),
@@ -286,7 +311,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               style: TextStyle(
                 fontSize: 24.sp,
                 fontWeight: FontWeight.w800,
-                color: HomeColors.deepAnchor,
+                color: valueColor,
               ),
             ),
             SizedBox(height: 2.h),
@@ -296,7 +321,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               style: TextStyle(
                 fontSize: 12.sp,
                 fontWeight: FontWeight.w500,
-                color: const Color(0xFF757575),
+                color: labelColor,
                 height: 1.3,
               ),
             ),
@@ -307,9 +332,11 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   }
 
   // ─── PERSONAL INFO CARD ────────────────────────────────
-  Widget _buildPersonalInfoCard(User? user) {
-    return _buildWhiteCard(
+  Widget _buildPersonalInfoCard(User? user, {required bool isDark, required ColorScheme colorScheme}) {
+    return _buildCard(
       title: 'Personal Information',
+      isDark: isDark,
+      colorScheme: colorScheme,
       trailing: TextButton.icon(
         onPressed: () async {
           if (_isEditing) {
@@ -321,30 +348,30 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             }
           }
         },
-        icon: Icon(
-          _isEditing ? Icons.close : Icons.edit_outlined,
-          size: 18.sp,
-        ),
+        icon: Icon(_isEditing ? Icons.close : Icons.edit_outlined, size: 18.sp),
         label: Text(
           _isEditing ? 'Cancel' : 'Edit',
-          style:
-              TextStyle(fontSize: 14.sp, fontWeight: FontWeight.w600),
+          style: TextStyle(fontSize: 14.sp, fontWeight: FontWeight.w600),
         ),
       ),
       children: [
-        _buildInfoRow(
-            Icons.person_outline, 'Full Name', user?.name ?? '—'),
-        _buildInfoRow(
-            Icons.email_outlined, 'Email', user?.email ?? '—'),
-        _buildInfoRow(
-            Icons.phone_outlined, 'Phone', user?.phone ?? '—'),
-        _buildInfoRow(Icons.location_on_outlined, 'Address',
-            user?.address ?? '—'),
+        _buildInfoRow(Icons.person_outline, 'Full Name', user?.name ?? '—', isDark: isDark, colorScheme: colorScheme),
+        _buildInfoRow(Icons.email_outlined, 'Email', user?.email ?? '—', isDark: isDark, colorScheme: colorScheme),
+        _buildInfoRow(Icons.phone_outlined, 'Phone', user?.phone ?? '—', isDark: isDark, colorScheme: colorScheme),
+        _buildInfoRow(Icons.location_on_outlined, 'Address', user?.address ?? '—', isDark: isDark, colorScheme: colorScheme),
       ],
     );
   }
 
-  Widget _buildInfoRow(IconData icon, String label, String value) {
+  Widget _buildInfoRow(IconData icon, String label, String value, {required bool isDark, required ColorScheme colorScheme}) {
+    // ← FIX: was hardcoded HomeColors.deepAnchor for value text
+    final iconBg = isDark
+        ? colorScheme.primary.withOpacity(0.15)
+        : HomeColors.heritagePurple.withOpacity(0.08);
+    final iconColor = isDark ? colorScheme.primary : HomeColors.heritagePurple;
+    final labelColor = isDark ? colorScheme.onSurface.withOpacity(0.5) : const Color(0xFF9E9E9E);
+    final valueColor = isDark ? colorScheme.onSurface : HomeColors.deepAnchor;
+
     return Padding(
       padding: EdgeInsets.only(bottom: 16.h),
       child: Row(
@@ -354,11 +381,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             width: 36.w,
             height: 36.w,
             decoration: BoxDecoration(
-              color: HomeColors.heritagePurple.withOpacity(0.08),
+              color: iconBg,
               borderRadius: BorderRadius.circular(10.r),
             ),
-            child:
-                Icon(icon, size: 20.sp, color: HomeColors.heritagePurple),
+            child: Icon(icon, size: 20.sp, color: iconColor),
           ),
           SizedBox(width: 14.w),
           Expanded(
@@ -370,7 +396,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                   style: TextStyle(
                     fontSize: 12.sp,
                     fontWeight: FontWeight.w500,
-                    color: const Color(0xFF9E9E9E),
+                    color: labelColor,
                     letterSpacing: 0.2,
                   ),
                 ),
@@ -380,7 +406,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                   style: TextStyle(
                     fontSize: 15.sp,
                     fontWeight: FontWeight.w600,
-                    color: HomeColors.deepAnchor,
+                    color: valueColor,
                     height: 1.4,
                   ),
                 ),
@@ -393,44 +419,62 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   }
 
   // ─── ACCOUNT ACTIONS CARD ──────────────────────────────
-  Widget _buildAccountActionsCard(User? user) {
-    return _buildWhiteCard(
+  Widget _buildAccountActionsCard(User? user, {required bool isDark, required ColorScheme colorScheme}) {
+    return _buildCard(
       title: 'Account',
+      isDark: isDark,
+      colorScheme: colorScheme,
       children: [
         _buildActionTile(
           icon: Icons.edit_outlined,
           title: 'Edit Profile',
           subtitle: 'Update your personal information',
           onTap: () => showEditProfileSheet(context, user),
+          isDark: isDark,
+          colorScheme: colorScheme,
         ),
         _buildActionTile(
           icon: Icons.lock_outline,
           title: 'Change Password',
           subtitle: 'Secure your account with a new password',
           onTap: () => showChangePasswordSheet(context),
+          isDark: isDark,
+          colorScheme: colorScheme,
         ),
         _buildActionTile(
           icon: Icons.security_outlined,
           title: 'Privacy & Security',
           subtitle: 'Manage your data and account security',
           onTap: () => showPrivacySecuritySheet(context),
+          isDark: isDark,
+          colorScheme: colorScheme,
         ),
       ],
     );
   }
 
   // ─── APP SETTINGS CARD ─────────────────────────────────
-  Widget _buildAppSettingsCard() {
+  Widget _buildAppSettingsCard({required bool isDark, required ColorScheme colorScheme}) {
     final settings = ref.watch(appSettingsProvider);
+    final iconColor = isDark ? colorScheme.primary : HomeColors.heritagePurple;
+    final iconBg = isDark
+        ? colorScheme.primary.withOpacity(0.15)
+        : HomeColors.heritagePurple.withOpacity(0.07);
+    final titleColor = isDark ? colorScheme.onSurface : HomeColors.deepAnchor;
+    final subtitleColor = isDark ? colorScheme.onSurface.withOpacity(0.5) : const Color(0xFF9E9E9E);
 
-    return _buildWhiteCard(
+    return _buildCard(
       title: 'App Settings',
+      isDark: isDark,
+      colorScheme: colorScheme,
       children: [
         _buildActionTile(
           icon: Icons.notifications_outlined,
           title: 'Notification Preferences',
           subtitle: 'Manage alerts and push notifications',
           onTap: () => showNotificationPreferencesSheet(context),
+          isDark: isDark,
+          colorScheme: colorScheme,
         ),
 
         // Dark mode inline toggle
@@ -442,15 +486,13 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 width: 42.w,
                 height: 42.w,
                 decoration: BoxDecoration(
-                  color: HomeColors.heritagePurple.withOpacity(0.07),
+                  color: iconBg,
                   borderRadius: BorderRadius.circular(12.r),
                 ),
                 child: Icon(
-                  settings.isDarkMode
-                      ? Icons.dark_mode_outlined
-                      : Icons.light_mode_outlined,
+                  settings.isDarkMode ? Icons.dark_mode_outlined : Icons.light_mode_outlined,
                   size: 22.sp,
-                  color: HomeColors.heritagePurple,
+                  color: iconColor,
                 ),
               ),
               SizedBox(width: 14.w),
@@ -463,18 +505,16 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                       style: TextStyle(
                         fontSize: 15.sp,
                         fontWeight: FontWeight.w600,
-                        color: HomeColors.deepAnchor,
+                        color: titleColor,
                       ),
                     ),
                     SizedBox(height: 2.h),
                     Text(
-                      settings.isDarkMode
-                          ? 'Dark theme active'
-                          : 'Light theme active',
+                      settings.isDarkMode ? 'Dark theme active' : 'Light theme active',
                       style: TextStyle(
                         fontSize: 13.sp,
                         fontWeight: FontWeight.w400,
-                        color: const Color(0xFF9E9E9E),
+                        color: subtitleColor,
                       ),
                     ),
                   ],
@@ -482,11 +522,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               ),
               Switch(
                 value: settings.isDarkMode,
-                activeColor: HomeColors.heritagePurple,
+                activeColor: isDark ? colorScheme.primary : HomeColors.heritagePurple,
                 onChanged: (val) async {
-                  ref
-                      .read(appSettingsProvider.notifier)
-                      .toggleDarkMode();
+                  ref.read(appSettingsProvider.notifier).toggleDarkMode();
                   await LocalStorage.setDarkMode(val);
                 },
               ),
@@ -499,16 +537,17 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           title: 'Help & Support',
           subtitle: 'FAQs, guides, and contact support',
           onTap: () => showHelpSupportSheet(context),
+          isDark: isDark,
+          colorScheme: colorScheme,
         ),
         _buildActionTile(
           icon: Icons.info_outline,
           title: 'About Milaud',
           subtitle: 'App version, terms, and privacy policy',
           trailing: Container(
-            padding:
-                EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
+            padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
             decoration: BoxDecoration(
-              color: HomeColors.heritagePurple.withOpacity(0.08),
+              color: iconBg,
               borderRadius: BorderRadius.circular(8.r),
             ),
             child: Text(
@@ -516,11 +555,13 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               style: TextStyle(
                 fontSize: 12.sp,
                 fontWeight: FontWeight.w600,
-                color: HomeColors.heritagePurple,
+                color: iconColor,
               ),
             ),
           ),
           onTap: () => showAboutMilaudSheet(context),
+          isDark: isDark,
+          colorScheme: colorScheme,
         ),
       ],
     );
@@ -531,8 +572,19 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     required String title,
     required String subtitle,
     required VoidCallback onTap,
+    required bool isDark,
+    required ColorScheme colorScheme,
     Widget? trailing,
   }) {
+    // ← FIX: was all hardcoded HomeColors
+    final iconBg = isDark
+        ? colorScheme.primary.withOpacity(0.15)
+        : HomeColors.heritagePurple.withOpacity(0.07);
+    final iconColor = isDark ? colorScheme.primary : HomeColors.heritagePurple;
+    final titleColor = isDark ? colorScheme.onSurface : HomeColors.deepAnchor;
+    final subtitleColor = isDark ? colorScheme.onSurface.withOpacity(0.5) : const Color(0xFF9E9E9E);
+    final chevronColor = isDark ? colorScheme.onSurface.withOpacity(0.3) : const Color(0xFFBDBDBD);
+
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(12.r),
@@ -544,11 +596,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               width: 42.w,
               height: 42.w,
               decoration: BoxDecoration(
-                color: HomeColors.heritagePurple.withOpacity(0.07),
+                color: iconBg,
                 borderRadius: BorderRadius.circular(12.r),
               ),
-              child: Icon(icon,
-                  size: 22.sp, color: HomeColors.heritagePurple),
+              child: Icon(icon, size: 22.sp, color: iconColor),
             ),
             SizedBox(width: 14.w),
             Expanded(
@@ -560,7 +611,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                     style: TextStyle(
                       fontSize: 15.sp,
                       fontWeight: FontWeight.w600,
-                      color: HomeColors.deepAnchor,
+                      color: titleColor,
                     ),
                   ),
                   SizedBox(height: 2.h),
@@ -569,7 +620,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                     style: TextStyle(
                       fontSize: 13.sp,
                       fontWeight: FontWeight.w400,
-                      color: const Color(0xFF9E9E9E),
+                      color: subtitleColor,
                     ),
                   ),
                 ],
@@ -579,7 +630,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 Icon(
                   Icons.chevron_right_rounded,
                   size: 22.sp,
-                  color: const Color(0xFFBDBDBD),
+                  color: chevronColor,
                 ),
           ],
         ),
@@ -587,20 +638,27 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     );
   }
 
-  // ─── WHITE CARD WRAPPER ────────────────────────────────
-  Widget _buildWhiteCard({
+  // ─── CARD WRAPPER ──────────────────────────────────────
+  // ← FIX: renamed from _buildWhiteCard, now theme-aware
+  Widget _buildCard({
     required String title,
     required List<Widget> children,
+    required bool isDark,
+    required ColorScheme colorScheme,
     Widget? trailing,
   }) {
+    // ← FIX: was always Colors.white
+    final cardColor = isDark ? colorScheme.surface : Colors.white;
+    final titleColor = isDark ? colorScheme.onSurface : HomeColors.deepAnchor;
+
     return Container(
       padding: EdgeInsets.all(20.w),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: cardColor,
         borderRadius: BorderRadius.circular(20.r),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withOpacity(isDark ? 0.2 : 0.04),
             blurRadius: 10,
             offset: const Offset(0, 2),
           ),
@@ -617,7 +675,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 style: TextStyle(
                   fontSize: 18.sp,
                   fontWeight: FontWeight.w700,
-                  color: HomeColors.deepAnchor,
+                  color: titleColor,
                   letterSpacing: -0.3,
                 ),
               ),
@@ -641,17 +699,17 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         icon: Icon(Icons.logout_rounded, size: 20.sp),
         label: Text(
           'Logout',
-          style:
-              TextStyle(fontSize: 16.sp, fontWeight: FontWeight.w600),
+          style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.w600),
         ),
         style: OutlinedButton.styleFrom(
           foregroundColor: const Color(0xFFD32F2F),
-          side:
-              const BorderSide(color: Color(0xFFEF9A9A), width: 1.2),
+          side: const BorderSide(color: Color(0xFFEF9A9A), width: 1.2),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16.r),
           ),
-          backgroundColor: const Color(0xFFFFF5F5),
+          backgroundColor: Theme.of(context).brightness == Brightness.dark
+              ? const Color(0xFF3D1515)
+              : const Color(0xFFFFF5F5),
         ),
       ),
     );
@@ -672,7 +730,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           style: TextStyle(
             fontSize: 20.sp,
             fontWeight: FontWeight.w700,
-            color: HomeColors.deepAnchor,
+            color: Theme.of(context).colorScheme.onSurface,
           ),
         ),
         content: Text(
@@ -701,8 +759,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               Navigator.pop(ctx);
               await ref.read(authProvider.notifier).logout();
               if (mounted) {
-                Navigator.of(context)
-                    .pushNamedAndRemoveUntil('/', (route) => false);
+                Navigator.of(context).pushNamedAndRemoveUntil('/', (route) => false);
               }
             },
             style: ElevatedButton.styleFrom(
@@ -711,13 +768,11 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12.r),
               ),
-              padding: EdgeInsets.symmetric(
-                  horizontal: 20.w, vertical: 10.h),
+              padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 10.h),
             ),
             child: Text(
               'Logout',
-              style: TextStyle(
-                  fontSize: 15.sp, fontWeight: FontWeight.w600),
+              style: TextStyle(fontSize: 15.sp, fontWeight: FontWeight.w600),
             ),
           ),
         ],

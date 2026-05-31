@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:may_laud/core/local_storage.dart'; // ← ADDED
 
 /// Theme provider for light/dark mode
 final themeProvider = StateProvider<bool>((ref) {
@@ -41,7 +42,15 @@ final appSettingsProvider =
 );
 
 class AppSettingsNotifier extends StateNotifier<AppSettings> {
-  AppSettingsNotifier() : super(const AppSettings());
+  AppSettingsNotifier() : super(const AppSettings()) {
+    _loadSavedSettings(); // ← ADDED: load persisted settings on startup
+  }
+
+  // ← ADDED: reads saved dark mode from SharedPreferences
+  void _loadSavedSettings() {
+    final savedDark = LocalStorage.isDarkMode();
+    state = state.copyWith(isDarkMode: savedDark);
+  }
 
   void toggleDarkMode() {
     state = state.copyWith(isDarkMode: !state.isDarkMode);

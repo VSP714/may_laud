@@ -31,7 +31,6 @@ class _AnnouncementsListScreenState
   String _searchQuery = '';
   bool _showImportantOnly = false;
 
-  // Filters applied on top of the live Supabase data
   List<Announcement> _filtered(List<Announcement> all) {
     var list = all;
     if (_selectedCategory != 'All') {
@@ -67,12 +66,20 @@ class _AnnouncementsListScreenState
 
   @override
   Widget build(BuildContext context) {
-    // Single source of truth — live from Supabase via provider
     final announcements = ref.watch(announcementsProvider);
     final filtered = _filtered(announcements);
 
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final cs = theme.colorScheme;
+
+    final scaffoldBg = isDark ? cs.background : const Color(0xFFF5F0F8);
+    final accentPurple = isDark ? cs.primary : const Color(0xFF4C229C);
+    final titleColor = isDark ? cs.onBackground : const Color(0xFF311B6B);
+    final searchFill = isDark ? cs.surface : Colors.white;
+
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F0F8),
+      backgroundColor: scaffoldBg,
       body: SafeArea(
         child: Column(
           children: [
@@ -81,8 +88,7 @@ class _AnnouncementsListScreenState
               padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
               child: Row(
                 children: [
-                  Icon(Icons.campaign,
-                      size: 30.sp, color: const Color(0xFF4C229C)),
+                  Icon(Icons.campaign, size: 30.sp, color: accentPurple),
                   SizedBox(width: 12.w),
                   Expanded(
                     child: Text(
@@ -90,7 +96,7 @@ class _AnnouncementsListScreenState
                       style: TextStyle(
                         fontSize: 28.sp,
                         fontWeight: FontWeight.bold,
-                        color: const Color(0xFF311B6B),
+                        color: titleColor,
                       ),
                     ),
                   ),
@@ -98,8 +104,7 @@ class _AnnouncementsListScreenState
                     onPressed: () => ref
                         .read(announcementsProvider.notifier)
                         .fetchAnnouncements(),
-                    icon: Icon(Icons.refresh,
-                        size: 26.sp, color: const Color(0xFF4C229C)),
+                    icon: Icon(Icons.refresh, size: 26.sp, color: accentPurple),
                     tooltip: 'Refresh',
                   ),
                 ],
@@ -110,11 +115,12 @@ class _AnnouncementsListScreenState
               padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
               child: TextField(
                 onChanged: (v) => setState(() => _searchQuery = v),
+                style: TextStyle(color: cs.onSurface),
                 decoration: InputDecoration(
                   hintText: 'Search announcements...',
                   prefixIcon: Icon(Icons.search, size: 24.sp),
                   filled: true,
-                  fillColor: Colors.white,
+                  fillColor: searchFill,
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(30.r),
                     borderSide: BorderSide.none,
@@ -142,10 +148,13 @@ class _AnnouncementsListScreenState
                       selected: selected,
                       onSelected: (_) =>
                           setState(() => _selectedCategory = cat),
-                      selectedColor: const Color(0xFF4C229C),
+                      selectedColor: accentPurple,
+                      backgroundColor: isDark ? cs.surface : null,
                       labelStyle: TextStyle(
                         fontSize: 14.sp,
-                        color: selected ? Colors.white : Colors.black,
+                        color: selected
+                            ? Colors.white
+                            : (isDark ? cs.onSurface : Colors.black),
                       ),
                     ),
                   );
@@ -164,19 +173,24 @@ class _AnnouncementsListScreenState
                         setState(() => _showImportantOnly = !_showImportantOnly),
                     avatar: Icon(Icons.priority_high,
                         size: 18.sp,
-                        color:
-                            _showImportantOnly ? Colors.white : Colors.red),
+                        color: _showImportantOnly ? Colors.white : Colors.red),
                     selectedColor: Colors.red.shade700,
+                    backgroundColor: isDark ? cs.surface : null,
                     labelStyle: TextStyle(
                       fontSize: 14.sp,
-                      color: _showImportantOnly ? Colors.white : Colors.black,
+                      color: _showImportantOnly
+                          ? Colors.white
+                          : (isDark ? cs.onSurface : Colors.black),
                     ),
                   ),
                   SizedBox(width: 12.w),
                   Text(
                     '${filtered.length} announcement${filtered.length == 1 ? '' : 's'}',
                     style: TextStyle(
-                        fontSize: 14.sp, color: Colors.grey.shade600),
+                        fontSize: 14.sp,
+                        color: isDark
+                            ? cs.onSurface.withOpacity(0.6)
+                            : Colors.grey.shade600),
                   ),
                 ],
               ),
@@ -190,14 +204,15 @@ class _AnnouncementsListScreenState
                         children: [
                           Icon(Icons.campaign_outlined,
                               size: 56.sp,
-                              color: const Color(0xFF4C229C)
-                                  .withValues(alpha: 0.3)),
+                              color: accentPurple.withOpacity(0.3)),
                           SizedBox(height: 16.h),
                           Text(
                             'No announcements yet',
                             style: TextStyle(
                                 fontSize: 16.sp,
-                                color: Colors.grey.shade500),
+                                color: isDark
+                                    ? cs.onSurface.withOpacity(0.5)
+                                    : Colors.grey.shade500),
                           ),
                         ],
                       ),
@@ -208,14 +223,16 @@ class _AnnouncementsListScreenState
                             'No results for your filters.',
                             style: TextStyle(
                                 fontSize: 14.sp,
-                                color: Colors.grey.shade500),
+                                color: isDark
+                                    ? cs.onSurface.withOpacity(0.5)
+                                    : Colors.grey.shade500),
                           ),
                         )
                       : ListView.builder(
                           padding: EdgeInsets.all(16.w),
                           itemCount: filtered.length,
                           itemBuilder: (_, i) =>
-                              _buildCard(filtered[i]),
+                              _buildCard(filtered[i], isDark, cs),
                         ),
             ),
           ],
@@ -224,10 +241,16 @@ class _AnnouncementsListScreenState
     );
   }
 
-  Widget _buildCard(Announcement a) {
+  Widget _buildCard(Announcement a, bool isDark, ColorScheme cs) {
+    final accentPurple = isDark ? cs.primary : const Color(0xFF4C229C);
+    final categoryBg = isDark ? cs.primary.withOpacity(0.15) : const Color(0xFFEADCFB);
+    final titleColor = isDark ? cs.onSurface : const Color(0xFF2E2438);
+    final bodyColor = isDark ? cs.onSurface.withOpacity(0.65) : const Color(0xFF6F6878);
+
     return Card(
       margin: EdgeInsets.only(bottom: 16.h),
       elevation: 2,
+      color: isDark ? cs.surface : null,
       shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16.r)),
       child: InkWell(
@@ -250,9 +273,9 @@ class _AnnouncementsListScreenState
                           width: double.infinity,
                           fit: BoxFit.cover,
                           errorBuilder: (_, __, ___) =>
-                              _imageFallback(a),
+                              _imageFallback(a, isDark, cs),
                         )
-                      : _imageFallback(a),
+                      : _imageFallback(a, isDark, cs),
                   if (a.isImportant)
                     Positioned(
                       top: 12.h,
@@ -295,7 +318,7 @@ class _AnnouncementsListScreenState
                         padding: EdgeInsets.symmetric(
                             horizontal: 12.w, vertical: 6.h),
                         decoration: BoxDecoration(
-                          color: const Color(0xFFEADCFB),
+                          color: categoryBg,
                           borderRadius: BorderRadius.circular(20.r),
                         ),
                         child: Text(
@@ -303,7 +326,7 @@ class _AnnouncementsListScreenState
                           style: TextStyle(
                               fontSize: 12.sp,
                               fontWeight: FontWeight.w600,
-                              color: const Color(0xFF4C229C)),
+                              color: accentPurple),
                         ),
                       ),
                       if (!a.isRead)
@@ -322,7 +345,7 @@ class _AnnouncementsListScreenState
                     style: TextStyle(
                         fontSize: 20.sp,
                         fontWeight: FontWeight.bold,
-                        color: const Color(0xFF2E2438)),
+                        color: titleColor),
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -330,9 +353,7 @@ class _AnnouncementsListScreenState
                   Text(
                     a.description,
                     style: TextStyle(
-                        fontSize: 14.sp,
-                        color: const Color(0xFF6F6878),
-                        height: 1.5),
+                        fontSize: 14.sp, color: bodyColor, height: 1.5),
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -340,26 +361,22 @@ class _AnnouncementsListScreenState
                   Row(
                     children: [
                       Icon(Icons.calendar_today_outlined,
-                          size: 16.sp, color: const Color(0xFF6F6878)),
+                          size: 16.sp, color: bodyColor),
                       SizedBox(width: 6.w),
                       Text(
                         a.formattedDate,
-                        style: TextStyle(
-                            fontSize: 14.sp,
-                            color: const Color(0xFF6F6878)),
+                        style: TextStyle(fontSize: 14.sp, color: bodyColor),
                       ),
                       const Spacer(),
                       IconButton(
                         onPressed: () {},
                         icon: Icon(Icons.bookmark_border,
-                            size: 20.sp,
-                            color: const Color(0xFF6F6878)),
+                            size: 20.sp, color: bodyColor),
                       ),
                       IconButton(
                         onPressed: () {},
                         icon: Icon(Icons.share_outlined,
-                            size: 20.sp,
-                            color: const Color(0xFF6F6878)),
+                            size: 20.sp, color: bodyColor),
                       ),
                     ],
                   ),
@@ -372,16 +389,18 @@ class _AnnouncementsListScreenState
     );
   }
 
-  Widget _imageFallback(Announcement a) {
+  Widget _imageFallback(Announcement a, bool isDark, ColorScheme cs) {
+    final fallbackBg = isDark ? cs.primary.withOpacity(0.12) : const Color(0xFFEADCFB);
+    final fallbackIcon = isDark ? cs.primary.withOpacity(0.4) : const Color(0xFF4C229C).withOpacity(0.4);
     return Container(
       height: 180.h,
       width: double.infinity,
-      color: const Color(0xFFEADCFB),
+      color: fallbackBg,
       child: Center(
         child: Icon(
           a.isImportant ? Icons.priority_high : Icons.campaign_outlined,
           size: 48.sp,
-          color: const Color(0xFF4C229C).withValues(alpha: 0.4),
+          color: fallbackIcon,
         ),
       ),
     );
@@ -395,8 +414,21 @@ class AnnouncementDetailScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final cs = theme.colorScheme;
+
+    final scaffoldBg = isDark ? cs.background : HomeColors.warmHearth;
+    final accentPurple = isDark ? cs.primary : const Color(0xFF4C229C);
+    final categoryBg = isDark ? cs.primary.withOpacity(0.15) : const Color(0xFFEADCFB);
+    final imageFallbackBg = isDark ? cs.surface : const Color(0xFFEADCFB);
+    final backBtnBg = isDark ? cs.surface.withOpacity(0.9) : Colors.white.withOpacity(0.9);
+    final titleColor = isDark ? cs.onSurface : const Color(0xFF2E2438);
+    final metaColor = isDark ? cs.onSurface.withOpacity(0.55) : const Color(0xFF6F6878);
+    final bodyColor = isDark ? cs.onSurface.withOpacity(0.85) : const Color(0xFF3D3549);
+
     return Scaffold(
-      backgroundColor: HomeColors.warmHearth,
+      backgroundColor: scaffoldBg,
       body: SingleChildScrollView(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -412,22 +444,20 @@ class AnnouncementDetailScreen extends StatelessWidget {
                         fit: BoxFit.cover,
                         errorBuilder: (_, __, ___) => Container(
                           height: 260.h,
-                          color: const Color(0xFFEADCFB),
+                          color: imageFallbackBg,
                         ),
                       )
                     : Container(
                         height: 260.h,
-                        color: const Color(0xFFEADCFB),
+                        color: imageFallbackBg,
                       ),
                 SafeArea(
                   child: Padding(
                     padding: EdgeInsets.all(8.w),
                     child: CircleAvatar(
-                      backgroundColor:
-                          Colors.white.withValues(alpha: 0.9),
+                      backgroundColor: backBtnBg,
                       child: IconButton(
-                        icon: const Icon(Icons.arrow_back,
-                            color: Color(0xFF4C229C)),
+                        icon: Icon(Icons.arrow_back, color: accentPurple),
                         onPressed: () => Navigator.pop(context),
                       ),
                     ),
@@ -467,7 +497,7 @@ class AnnouncementDetailScreen extends StatelessWidget {
                     padding: EdgeInsets.symmetric(
                         horizontal: 12.w, vertical: 6.h),
                     decoration: BoxDecoration(
-                      color: const Color(0xFFEADCFB),
+                      color: categoryBg,
                       borderRadius: BorderRadius.circular(20.r),
                     ),
                     child: Text(
@@ -475,7 +505,7 @@ class AnnouncementDetailScreen extends StatelessWidget {
                       style: TextStyle(
                           fontSize: 12.sp,
                           fontWeight: FontWeight.w600,
-                          color: const Color(0xFF4C229C)),
+                          color: accentPurple),
                     ),
                   ),
                   SizedBox(height: 16.h),
@@ -484,19 +514,17 @@ class AnnouncementDetailScreen extends StatelessWidget {
                     style: TextStyle(
                         fontSize: 24.sp,
                         fontWeight: FontWeight.bold,
-                        color: const Color(0xFF2E2438)),
+                        color: titleColor),
                   ),
                   SizedBox(height: 8.h),
                   Row(
                     children: [
                       Icon(Icons.calendar_today_outlined,
-                          size: 16.sp, color: const Color(0xFF6F6878)),
+                          size: 16.sp, color: metaColor),
                       SizedBox(width: 6.w),
                       Text(
                         announcement.formattedDate,
-                        style: TextStyle(
-                            fontSize: 13.sp,
-                            color: const Color(0xFF6F6878)),
+                        style: TextStyle(fontSize: 13.sp, color: metaColor),
                       ),
                     ],
                   ),
@@ -504,9 +532,7 @@ class AnnouncementDetailScreen extends StatelessWidget {
                   Text(
                     announcement.description,
                     style: TextStyle(
-                        fontSize: 15.sp,
-                        color: const Color(0xFF3D3549),
-                        height: 1.7),
+                        fontSize: 15.sp, color: bodyColor, height: 1.7),
                   ),
                   SizedBox(height: 32.h),
                 ],

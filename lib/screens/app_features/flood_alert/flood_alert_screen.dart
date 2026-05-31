@@ -43,6 +43,11 @@ class FloodAlertScreen extends StatefulWidget {
 }
 
 class _FloodAlertScreenState extends State<FloodAlertScreen> {
+  bool _isDark = false;
+  ColorScheme? _cs;
+  Color get _scaffoldBg => _isDark ? _cs!.background : FloodColors.warmHearth;
+  Color get _cardBg => _isDark ? _cs!.surface : FloodColors.cardWhite;
+
   final RefreshController _refreshController = RefreshController();
   late Map<String, dynamic> _floodData;
   late List<Map<String, dynamic>> _alerts;
@@ -159,8 +164,10 @@ class _FloodAlertScreenState extends State<FloodAlertScreen> {
 
   @override
   Widget build(BuildContext context) {
+    _isDark = Theme.of(context).brightness == Brightness.dark;
+    _cs = Theme.of(context).colorScheme;
     return Scaffold(
-      backgroundColor: FloodColors.warmHearth,
+      backgroundColor: _scaffoldBg,
       body: SmartRefresher(
         controller: _refreshController,
         onRefresh: _onRefresh,
@@ -301,7 +308,7 @@ class _FloodAlertScreenState extends State<FloodAlertScreen> {
       width: double.infinity,
       padding: EdgeInsets.all(24.w),
       decoration: BoxDecoration(
-        color: FloodColors.cardWhite,
+        color: _cardBg,
         borderRadius: BorderRadius.circular(28.r),
         boxShadow: [
           BoxShadow(
@@ -489,7 +496,7 @@ class _FloodAlertScreenState extends State<FloodAlertScreen> {
     return Container(
       padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
-        color: FloodColors.cardWhite,
+        color: _cardBg,
         borderRadius: BorderRadius.circular(20.r),
         boxShadow: [
           BoxShadow(
@@ -540,7 +547,7 @@ class _FloodAlertScreenState extends State<FloodAlertScreen> {
       width: double.infinity,
       padding: EdgeInsets.all(24.w),
       decoration: BoxDecoration(
-        color: FloodColors.cardWhite,
+        color: _cardBg,
         borderRadius: BorderRadius.circular(28.r),
         boxShadow: [
           BoxShadow(
@@ -567,7 +574,7 @@ class _FloodAlertScreenState extends State<FloodAlertScreen> {
               Container(
                 padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
                 decoration: BoxDecoration(
-                  color: FloodColors.warmHearth,
+                  color: _scaffoldBg,
                   borderRadius: BorderRadius.circular(100.r),
                 ),
                 child: Text(
@@ -741,7 +748,7 @@ class _FloodAlertScreenState extends State<FloodAlertScreen> {
     return Container(
       margin: EdgeInsets.only(bottom: 12.h),
       decoration: BoxDecoration(
-        color: FloodColors.cardWhite,
+        color: _cardBg,
         borderRadius: BorderRadius.circular(20.r),
         border: Border.all(color: color.withOpacity(0.2)),
         boxShadow: [
@@ -855,7 +862,7 @@ class _FloodAlertScreenState extends State<FloodAlertScreen> {
     return Container(
       margin: EdgeInsets.only(bottom: 12.h),
       decoration: BoxDecoration(
-        color: FloodColors.cardWhite,
+        color: _cardBg,
         borderRadius: BorderRadius.circular(20.r),
         boxShadow: [
           BoxShadow(
@@ -1124,7 +1131,7 @@ class _FloodAlertScreenState extends State<FloodAlertScreen> {
       builder: (ctx) => Container(
         padding: EdgeInsets.all(24.w),
         decoration: BoxDecoration(
-          color: FloodColors.cardWhite,
+          color: _cardBg,
           borderRadius: BorderRadius.vertical(top: Radius.circular(32.r)),
         ),
         child: Column(

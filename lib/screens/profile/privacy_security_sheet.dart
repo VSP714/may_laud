@@ -12,7 +12,12 @@ class PrivacySecuritySheet extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final settings = ref.watch(appSettingsProvider);
 
-    return Padding(
+    final _theme = Theme.of(context);
+    final _isDark = _theme.brightness == Brightness.dark;
+    final _cs = _theme.colorScheme;
+    final _titleColor = _isDark ? _cs.onSurface : HomeColors.deepAnchor;
+    final _accentColor = _isDark ? _cs.primary : HomeColors.heritagePurple;
+        return Padding(
       padding: EdgeInsets.fromLTRB(24.w, 20.h, 24.w, 32.h),
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -25,7 +30,7 @@ class PrivacySecuritySheet extends ConsumerWidget {
             style: TextStyle(
               fontSize: 20.sp,
               fontWeight: FontWeight.w700,
-              color: HomeColors.deepAnchor,
+              color: _titleColor,
             ),
           ),
           SizedBox(height: 20.h),
@@ -33,7 +38,7 @@ class PrivacySecuritySheet extends ConsumerWidget {
             contentPadding: EdgeInsets.zero,
             secondary: Icon(
               Icons.location_on_outlined,
-              color: HomeColors.heritagePurple,
+              color: _accentColor,
             ),
             title: Text(
               'Location Access',
@@ -49,7 +54,7 @@ class PrivacySecuritySheet extends ConsumerWidget {
               style: TextStyle(fontSize: 13.sp),
             ),
             value: settings.locationEnabled,
-            activeColor: HomeColors.heritagePurple,
+            activeColor: _accentColor,
             onChanged: (_) =>
                 ref.read(appSettingsProvider.notifier).toggleLocation(),
           ),

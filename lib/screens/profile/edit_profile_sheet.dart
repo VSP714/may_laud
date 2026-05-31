@@ -39,6 +39,10 @@ class _EditProfileDialogState extends ConsumerState<EditProfileDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final _theme = Theme.of(context);
+    final _isDark = _theme.brightness == Brightness.dark;
+    final _cs = _theme.colorScheme;
+    final _titleColor = _isDark ? _cs.onSurface : HomeColors.deepAnchor;
     return Dialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20.r)),
       insetPadding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 40.h),
@@ -60,7 +64,7 @@ class _EditProfileDialogState extends ConsumerState<EditProfileDialog> {
                       style: TextStyle(
                         fontSize: 20.sp,
                         fontWeight: FontWeight.w700,
-                        color: HomeColors.deepAnchor,
+                        color: _titleColor,
                       ),
                     ),
                     IconButton(
@@ -170,22 +174,28 @@ class _EditProfileDialogState extends ConsumerState<EditProfileDialog> {
     int maxLines = 1,
     String? Function(String?)? validator,
   }) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final cs = theme.colorScheme;
+    final borderColor = isDark ? cs.onSurface.withOpacity(0.18) : Colors.grey.shade300;
+    final fillColor = isDark ? cs.surface : Colors.grey.shade50;
     return TextFormField(
       controller: controller,
       keyboardType: keyboardType,
       maxLines: maxLines,
       validator: validator,
+      style: TextStyle(color: isDark ? cs.onSurface : null),
       decoration: InputDecoration(
         labelText: label,
         prefixIcon:
             Icon(icon, color: HomeColors.heritagePurple, size: 20.sp),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14.r),
-          borderSide: BorderSide(color: Colors.grey[300]!),
+          borderSide: BorderSide(color: borderColor),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14.r),
-          borderSide: BorderSide(color: Colors.grey[300]!),
+          borderSide: BorderSide(color: borderColor),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14.r),
@@ -193,7 +203,7 @@ class _EditProfileDialogState extends ConsumerState<EditProfileDialog> {
               BorderSide(color: HomeColors.heritagePurple, width: 1.5),
         ),
         filled: true,
-        fillColor: Colors.grey[50],
+        fillColor: fillColor,
         contentPadding:
             EdgeInsets.symmetric(vertical: 14.h, horizontal: 16.w),
       ),

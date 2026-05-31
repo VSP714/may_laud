@@ -42,7 +42,6 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   }
 
   Future<void> _register() async {
-    // Validation
     if (_firstNameController.text.trim().isEmpty ||
         _lastNameController.text.trim().isEmpty ||
         _emailController.text.trim().isEmpty ||
@@ -77,7 +76,6 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
           SnackBar(content: Text(authState.error!), backgroundColor: Colors.red),
         );
       } else {
-        // Supabase sends a confirmation email — navigate to OTP screen
         Navigator.push(
           context,
           MaterialPageRoute(
@@ -90,148 +88,134 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     }
   }
 
-  void _showSuccessDialog() {
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20.r)),
-        title: Column(
-          children: [
-            Icon(Icons.check_circle, size: 60.sp, color: Colors.green),
-            SizedBox(height: 12.h),
-            Text(
-              'Registration Successful!',
-              style: TextStyle(fontSize: 20.sp, fontWeight: FontWeight.bold),
-            ),
-          ],
-        ),
-        content: Text(
-          'Welcome to Milaud, ${_firstNameController.text.trim()}! 🎉\n\nYour account has been created. You can now log in and explore the services.',
-          textAlign: TextAlign.center,
-          style: TextStyle(fontSize: 14.sp),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.pop(ctx); // close dialog
-              Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(builder: (_) => const MainApp()),
-              );
-            },
-            child: Text('Continue', style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.bold)),
-          ),
-        ],
-      ),
-    );
-  }
-
   void _showBarangayPicker() {
     showModalBottomSheet(
       context: context,
+      backgroundColor: Colors.transparent,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
       ),
       builder: (ctx) {
+        final sheetDark = Theme.of(ctx).brightness == Brightness.dark;
         return StatefulBuilder(
           builder: (ctx, setModalState) {
-            return Padding(
-              padding: EdgeInsets.only(
-                left: 20.w,
-                right: 20.w,
-                top: 12.h,
-                bottom: MediaQuery.of(ctx).viewInsets.bottom + 20.h,
+            return Container(
+              decoration: BoxDecoration(
+                color: sheetDark ? const Color(0xFF1A1A2E) : Colors.white,
+                borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
               ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Container(
-                    width: 50.w,
-                    height: 5.h,
-                    decoration: BoxDecoration(
-                      color: Colors.grey.shade400,
-                      borderRadius: BorderRadius.circular(10.r),
+              child: Padding(
+                padding: EdgeInsets.only(
+                  left: 20.w,
+                  right: 20.w,
+                  top: 12.h,
+                  bottom: MediaQuery.of(ctx).viewInsets.bottom + 20.h,
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      width: 50.w,
+                      height: 5.h,
+                      decoration: BoxDecoration(
+                        color: sheetDark ? Colors.white24 : Colors.grey.shade400,
+                        borderRadius: BorderRadius.circular(10.r),
+                      ),
                     ),
-                  ),
-                  SizedBox(height: 20.h),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      SizedBox(width: 30.w),
-                      Text(
-                        "Select Barangay",
-                        style: TextStyle(
-                          fontSize: 20.sp,
-                          fontWeight: FontWeight.bold,
-                          color: const Color(0xFF6A1B9A),
+                    SizedBox(height: 20.h),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        SizedBox(width: 30.w),
+                        Text(
+                          "Select Barangay",
+                          style: TextStyle(
+                            fontSize: 20.sp,
+                            fontWeight: FontWeight.bold,
+                            color: sheetDark ? const Color(0xFFB39DDB) : const Color(0xFF6A1B9A),
+                          ),
                         ),
-                      ),
-                      GestureDetector(
-                        onTap: () => Navigator.pop(ctx),
-                        child: Icon(Icons.close, color: const Color(0xFF6A1B9A)),
-                      ),
-                    ],
-                  ),
-                  SizedBox(height: 20.h),
-                  SizedBox(
-                    height: 300.h,
-                    child: ListView.builder(
-                      itemCount: _barangays.length,
-                      itemBuilder: (context, index) {
-                        final item = _barangays[index];
-                        return GestureDetector(
-                          onTap: () {
-                            setModalState(() {
-                              _selectedBarangay = item;
-                            });
-                            Navigator.pop(ctx);
-                            setState(() {});
-                          },
-                          child: Container(
-                            margin: EdgeInsets.only(bottom: 8.h),
-                            padding: EdgeInsets.symmetric(vertical: 16.h, horizontal: 16.w),
-                            decoration: BoxDecoration(
-                              color: _selectedBarangay == item
-                                  ? const Color(0xFFF3E5F5)
-                                  : Colors.white,
-                              borderRadius: BorderRadius.circular(12.r),
-                              border: Border.all(
+                        GestureDetector(
+                          onTap: () => Navigator.pop(ctx),
+                          child: Icon(Icons.close,
+                              color: sheetDark ? const Color(0xFFB39DDB) : const Color(0xFF6A1B9A)),
+                        ),
+                      ],
+                    ),
+                    SizedBox(height: 20.h),
+                    SizedBox(
+                      height: 300.h,
+                      child: ListView.builder(
+                        itemCount: _barangays.length,
+                        itemBuilder: (context, index) {
+                          final item = _barangays[index];
+                          return GestureDetector(
+                            onTap: () {
+                              setModalState(() => _selectedBarangay = item);
+                              Navigator.pop(ctx);
+                              setState(() {});
+                            },
+                            child: Container(
+                              margin: EdgeInsets.only(bottom: 8.h),
+                              padding: EdgeInsets.symmetric(
+                                  vertical: 16.h, horizontal: 16.w),
+                              decoration: BoxDecoration(
                                 color: _selectedBarangay == item
-                                    ? const Color(0xFF6A1B9A)
-                                    : const Color(0xFFE0E0E0),
-                                width: 1.5,
-                              ),
-                            ),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Text(
-                                  item,
-                                  style: TextStyle(
-                                    fontSize: 16.sp,
-                                    fontWeight: FontWeight.w500,
-                                    color: _selectedBarangay == item
-                                        ? const Color(0xFF6A1B9A)
-                                        : Colors.black87,
-                                  ),
-                                ),
-                                Icon(
-                                  _selectedBarangay == item
-                                      ? Icons.check_circle
-                                      : Icons.radio_button_unchecked,
+                                    ? (sheetDark
+                                        ? const Color(0xFF3D2070)
+                                        : const Color(0xFFF3E5F5))
+                                    : (sheetDark
+                                        ? const Color(0xFF252535)
+                                        : Colors.white),
+                                borderRadius: BorderRadius.circular(12.r),
+                                border: Border.all(
                                   color: _selectedBarangay == item
                                       ? const Color(0xFF6A1B9A)
-                                      : Colors.grey,
+                                      : (sheetDark
+                                          ? Colors.white12
+                                          : const Color(0xFFE0E0E0)),
+                                  width: 1.5,
                                 ),
-                              ],
+                              ),
+                              child: Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Text(
+                                    item,
+                                    style: TextStyle(
+                                      fontSize: 16.sp,
+                                      fontWeight: FontWeight.w500,
+                                      color: _selectedBarangay == item
+                                          ? (sheetDark
+                                              ? const Color(0xFFB39DDB)
+                                              : const Color(0xFF6A1B9A))
+                                          : (sheetDark
+                                              ? Colors.white70
+                                              : Colors.black87),
+                                    ),
+                                  ),
+                                  Icon(
+                                    _selectedBarangay == item
+                                        ? Icons.check_circle
+                                        : Icons.radio_button_unchecked,
+                                    color: _selectedBarangay == item
+                                        ? (sheetDark
+                                            ? const Color(0xFFB39DDB)
+                                            : const Color(0xFF6A1B9A))
+                                        : (sheetDark
+                                            ? Colors.white38
+                                            : Colors.grey),
+                                  ),
+                                ],
+                              ),
                             ),
-                          ),
-                        );
-                      },
+                          );
+                        },
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             );
           },
@@ -243,21 +227,65 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   @override
   Widget build(BuildContext context) {
     final authState = ref.watch(authProvider);
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final cs = theme.colorScheme;
+
+    // Same adaptive colors as sign-in screen
+    final scaffoldBg = isDark ? cs.background : Colors.white;
+    final bubbleBg1 = isDark
+        ? cs.primary.withOpacity(0.12)
+        : const Color(0xFFEDE7F6);
+    final bubbleBg2Gradient = isDark
+        ? [cs.primary.withOpacity(0.10), Colors.transparent]
+        : [const Color(0xFFD1C4E9).withOpacity(0.35), Colors.transparent];
+    final bubbleBg3Gradient = isDark
+        ? [cs.primary.withOpacity(0.12), Colors.transparent]
+        : [const Color(0xFFD1C4E9).withOpacity(0.4), Colors.transparent];
+    final titleColor =
+        isDark ? cs.onBackground : const Color(0xFF2E0C6D);
+    final subtitleColor = isDark
+        ? cs.onBackground.withOpacity(0.6)
+        : const Color(0xFF6E6A75);
+    final formBg = isDark ? cs.surface : const Color(0xFFF6F2FC);
+    final inputBg = isDark ? cs.background : Colors.white;
+    final inputBorder = isDark
+        ? cs.onSurface.withOpacity(0.15)
+        : const Color(0xFFDDDDDD);
+    final inputIconColor = isDark
+        ? cs.onSurface.withOpacity(0.5)
+        : const Color(0xFF666666);
+    final labelColor =
+        isDark ? cs.onSurface.withOpacity(0.85) : const Color(0xFF555555);
+    final hintColor =
+        isDark ? cs.onSurface.withOpacity(0.45) : const Color(0xFF888888);
+    final accentPurple =
+        isDark ? cs.primary : const Color(0xFF4C229C);
 
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: scaffoldBg,
       body: Stack(
         children: [
-          // Background decorations
+          // Background decorations — same as sign-in
           Positioned(
             top: -120.h,
             left: -120.w,
             child: Container(
               width: 280.w,
               height: 280.w,
+              decoration:
+                  BoxDecoration(shape: BoxShape.circle, color: bubbleBg1),
+            ),
+          ),
+          Positioned(
+            top: 100.h,
+            right: -60.w,
+            child: Container(
+              width: 160.w,
+              height: 160.w,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: const Color(0xFFF3E5F5).withValues(alpha: 0.6),
+                gradient: RadialGradient(colors: bubbleBg2Gradient),
               ),
             ),
           ),
@@ -269,119 +297,266 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
               height: 180.w,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: const Color(0xFFE1D5F5).withValues(alpha: 0.5),
+                gradient: RadialGradient(colors: bubbleBg3Gradient),
               ),
             ),
           ),
+          Align(
+            alignment: Alignment.bottomCenter,
+            child: SizedBox(
+              height: 240.h,
+              width: double.infinity,
+              child: CustomPaint(
+                  painter: _WavePainter(isDark: isDark, cs: cs)),
+            ),
+          ),
 
-          // Main scrollable content (no back button)
+          // Main content
           SafeArea(
             child: SingleChildScrollView(
-              padding: EdgeInsets.symmetric(horizontal: 24.w),
+              padding:
+                  EdgeInsets.symmetric(horizontal: 24.w, vertical: 30.h),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  SizedBox(height: 20.h), // Normal top spacing
-                  Text(
-                    "Let's",
-                    style: TextStyle(
-                      fontSize: 35.sp,
-                      fontWeight: FontWeight.bold,
-                      color: const Color(0xFF2E0C6D),
+                  SizedBox(height: 30.h),
+                  // Logo — same as sign-in
+                  Container(
+                    decoration: BoxDecoration(
+                      boxShadow: [
+                        BoxShadow(
+                          color: const Color(0xFF7B2CBF).withOpacity(0.18),
+                          blurRadius: 25.r,
+                          spreadRadius: 2,
+                        ),
+                      ],
                     ),
-                  ),
-                  Text(
-                    "Register your account",
-                    style: TextStyle(
-                      fontSize: 35.sp,
-                      fontWeight: FontWeight.bold,
-                      fontStyle: FontStyle.italic,
-                      color: const Color(0xFF5E35B1),
-                    ),
+                    child: Image.asset('assets/images/milaudlogo.png',
+                        height: 100.h),
                   ),
                   SizedBox(height: 15.h),
                   Text(
-                    "Please provide your details below to create your account and get started.",
-                    textAlign: TextAlign.center,
+                    "Create Account",
                     style: TextStyle(
-                      fontSize: 16.sp,
-                      color: Colors.black,
-                      height: 1.5,
-                    ),
+                        fontSize: 32.sp,
+                        fontWeight: FontWeight.w700,
+                        color: titleColor),
                   ),
-                  SizedBox(height: 25.h),
-
-                  // First & Last Name
-                  Row(
-                    children: [
-                      Expanded(child: _buildTextField(_firstNameController, "First Name", Icons.person_outline)),
-                      SizedBox(width: 15.w),
-                      Expanded(child: _buildTextField(_lastNameController, "Last Name", Icons.person_outline)),
-                    ],
+                  SizedBox(height: 8.h),
+                  Text(
+                    "Fill in your details to get started",
+                    style:
+                        TextStyle(fontSize: 14.sp, color: subtitleColor),
                   ),
-                  SizedBox(height: 20.h),
-
-                  // Email field
-                  _buildTextField(_emailController, "Email", Icons.email_outlined, keyboardType: TextInputType.emailAddress),
-                  SizedBox(height: 20.h),
-
-                  // Phone field
-                  _buildPhoneField(),
-                  SizedBox(height: 20.h),
-
-                  // Barangay field
-                  _buildBarangayField(),
-                  SizedBox(height: 20.h),
-
-                  // Password field
-                  _buildPasswordField(),
-                  SizedBox(height: 20.h),
-
-                  // Confirm Password field
-                  _buildConfirmPasswordField(),
                   SizedBox(height: 30.h),
 
-                  if (authState.isLoading)
-                    const CircularProgressIndicator()
-                  else
-                    GestureDetector(
-                      onTap: _register,
-                      child: Container(
-                        width: double.infinity,
-                        padding: EdgeInsets.symmetric(vertical: 16.h),
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(40.r),
-                          gradient: const LinearGradient(
-                            colors: [Color(0xFF4C229C), Color(0xFF643EB5)],
-                          ),
-                          boxShadow: [
-                            BoxShadow(
-                              color: const Color(0xFF643EB5).withValues(alpha: 0.3),
-                              blurRadius: 12,
-                              offset: const Offset(0, 6),
-                            )
+                  // Form card — same style as sign-in
+                  Container(
+                    padding: EdgeInsets.all(20.w),
+                    decoration: BoxDecoration(
+                      color: formBg,
+                      borderRadius: BorderRadius.circular(28.r),
+                      boxShadow: [
+                        BoxShadow(
+                          color: const Color(0xFF7B2CBF)
+                              .withOpacity(isDark ? 0.05 : 0.08),
+                          blurRadius: 20.r,
+                          offset: Offset(0, 8.h),
+                        ),
+                      ],
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // First & Last Name row
+                        Row(
+                          children: [
+                            Expanded(
+                              child: _buildField(
+                                label: "First Name",
+                                icon: Icons.person_outline,
+                                controller: _firstNameController,
+                                hintText: "First name",
+                                inputBg: inputBg,
+                                inputBorder: inputBorder,
+                                inputIconColor: inputIconColor,
+                                labelColor: labelColor,
+                                cs: cs,
+                              ),
+                            ),
+                            SizedBox(width: 12.w),
+                            Expanded(
+                              child: _buildField(
+                                label: "Last Name",
+                                icon: Icons.person_outline,
+                                controller: _lastNameController,
+                                hintText: "Last name",
+                                inputBg: inputBg,
+                                inputBorder: inputBorder,
+                                inputIconColor: inputIconColor,
+                                labelColor: labelColor,
+                                cs: cs,
+                              ),
+                            ),
                           ],
                         ),
-                        child: Center(
-                          child: Text(
-                            "Register now",
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 18.sp,
-                              fontWeight: FontWeight.bold,
+                        SizedBox(height: 20.h),
+
+                        // Email
+                        _buildField(
+                          label: "Email",
+                          subtitle: "We'll use this to sign you in",
+                          icon: Icons.email_outlined,
+                          controller: _emailController,
+                          hintText: "Enter your email",
+                          keyboardType: TextInputType.emailAddress,
+                          inputBg: inputBg,
+                          inputBorder: inputBorder,
+                          inputIconColor: inputIconColor,
+                          labelColor: labelColor,
+                          hintColor: hintColor,
+                          cs: cs,
+                        ),
+                        SizedBox(height: 20.h),
+
+                        // Phone
+                        _buildPhoneField(
+                          inputBg: inputBg,
+                          inputBorder: inputBorder,
+                          inputIconColor: inputIconColor,
+                          labelColor: labelColor,
+                          hintColor: hintColor,
+                          cs: cs,
+                          isDark: isDark,
+                        ),
+                        SizedBox(height: 20.h),
+
+                        // Barangay
+                        _buildBarangayField(
+                          inputBg: inputBg,
+                          inputBorder: inputBorder,
+                          inputIconColor: inputIconColor,
+                          labelColor: labelColor,
+                          hintColor: hintColor,
+                          cs: cs,
+                        ),
+                        SizedBox(height: 20.h),
+
+                        // Password
+                        _buildPasswordField(
+                          label: "Password",
+                          subtitle:
+                              "Create a strong password with at least 8 characters",
+                          controller: _passwordController,
+                          obscure: _obscurePassword,
+                          onToggle: () => setState(
+                              () => _obscurePassword = !_obscurePassword),
+                          inputBg: inputBg,
+                          inputBorder: inputBorder,
+                          inputIconColor: inputIconColor,
+                          labelColor: labelColor,
+                          hintColor: hintColor,
+                          hintText: "Enter your password",
+                          cs: cs,
+                        ),
+                        SizedBox(height: 20.h),
+
+                        // Confirm Password
+                        _buildPasswordField(
+                          label: "Confirm Password",
+                          subtitle: "Re-enter your password to confirm",
+                          controller: _confirmPasswordController,
+                          obscure: _obscureConfirm,
+                          onToggle: () => setState(
+                              () => _obscureConfirm = !_obscureConfirm),
+                          inputBg: inputBg,
+                          inputBorder: inputBorder,
+                          inputIconColor: inputIconColor,
+                          labelColor: labelColor,
+                          hintColor: hintColor,
+                          hintText: "Confirm your password",
+                          cs: cs,
+                        ),
+                        SizedBox(height: 24.h),
+
+                        // Register button — same gradient as sign-in
+                        if (authState.isLoading)
+                          const Center(child: CircularProgressIndicator())
+                        else
+                          GestureDetector(
+                            onTap: _register,
+                            child: Container(
+                              width: double.infinity,
+                              padding: EdgeInsets.symmetric(vertical: 16.h),
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(40.r),
+                                gradient: const LinearGradient(
+                                  colors: [
+                                    Color(0xFF4C229C),
+                                    Color(0xFF643EB5),
+                                  ],
+                                ),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: const Color(0xFF4C229C)
+                                        .withOpacity(0.3),
+                                    blurRadius: 12.r,
+                                    offset: Offset(0, 4.h),
+                                  ),
+                                ],
+                              ),
+                              child: Center(
+                                child: Text(
+                                  "Register now",
+                                  style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 18.sp,
+                                      fontWeight: FontWeight.bold),
+                                ),
+                              ),
+                            ),
+                          ),
+
+                        if (authState.error != null)
+                          Padding(
+                            padding: EdgeInsets.only(top: 12.h),
+                            child: Text(
+                              authState.error!,
+                              style: TextStyle(
+                                  color: Colors.red, fontSize: 13.sp),
+                            ),
+                          ),
+
+                        SizedBox(height: 14.h),
+
+                        // Already have account link
+                        GestureDetector(
+                          onTap: () => Navigator.pop(context),
+                          child: Center(
+                            child: RichText(
+                              text: TextSpan(
+                                text: "Already have an account? ",
+                                style: TextStyle(
+                                    color: isDark
+                                        ? cs.onBackground.withOpacity(0.6)
+                                        : Colors.black54,
+                                    fontSize: 14.sp),
+                                children: [
+                                  TextSpan(
+                                    text: "Sign In",
+                                    style: TextStyle(
+                                        color: accentPurple,
+                                        fontWeight: FontWeight.w600),
+                                  ),
+                                ],
+                              ),
                             ),
                           ),
                         ),
-                      ),
+                        SizedBox(height: 10.h),
+                      ],
                     ),
-                  if (authState.error != null)
-                    Padding(
-                      padding: EdgeInsets.only(top: 12.h),
-                      child: Text(
-                        authState.error!,
-                        style: TextStyle(color: Colors.red, fontSize: 13.sp),
-                      ),
-                    ),
+                  ),
                   SizedBox(height: 30.h),
                 ],
               ),
@@ -392,31 +567,58 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     );
   }
 
-  Widget _buildTextField(TextEditingController ctrl, String label, IconData icon,
-      {TextInputType keyboardType = TextInputType.text}) {
+  /// Generic text field — mirrors sign-in field style
+  Widget _buildField({
+    required String label,
+    String? subtitle,
+    required IconData icon,
+    required TextEditingController controller,
+    required String hintText,
+    TextInputType keyboardType = TextInputType.text,
+    required Color inputBg,
+    required Color inputBorder,
+    required Color inputIconColor,
+    required Color labelColor,
+    Color? hintColor,
+    required ColorScheme cs,
+  }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14.sp, color: const Color(0xFF555555))),
+        Text(label,
+            style: TextStyle(
+                fontWeight: FontWeight.w600,
+                fontSize: 14.sp,
+                color: labelColor)),
+        if (subtitle != null) ...[
+          SizedBox(height: 4.h),
+          Text(subtitle,
+              style: TextStyle(
+                  fontSize: 12.sp,
+                  color: hintColor ?? cs.onSurface.withOpacity(0.45))),
+        ],
         SizedBox(height: 8.h),
         Container(
-          padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 4.h),
+          padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 4.h),
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: inputBg,
             borderRadius: BorderRadius.circular(16.r),
-            border: Border.all(color: const Color(0xFFDDDDDD), width: 1.5),
+            border: Border.all(color: inputBorder, width: 1.5),
           ),
           child: Row(
             children: [
-              Icon(icon, color: const Color(0xFF666666)),
-              SizedBox(width: 12.w),
+              Icon(icon, color: inputIconColor),
+              SizedBox(width: 10.w),
               Expanded(
                 child: TextField(
-                  controller: ctrl,
+                  controller: controller,
                   keyboardType: keyboardType,
-                  decoration: const InputDecoration(
+                  style: TextStyle(color: cs.onSurface),
+                  decoration: InputDecoration(
+                    hintText: hintText,
                     border: InputBorder.none,
-                    hintStyle: TextStyle(color: Color(0xFFAAAAAA)),
+                    hintStyle: TextStyle(
+                        color: cs.onSurface.withOpacity(0.4)),
                   ),
                 ),
               ),
@@ -427,51 +629,76 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     );
   }
 
-  Widget _buildPhoneField() {
+  Widget _buildPhoneField({
+    required Color inputBg,
+    required Color inputBorder,
+    required Color inputIconColor,
+    required Color labelColor,
+    required Color hintColor,
+    required ColorScheme cs,
+    required bool isDark,
+  }) {
+    final prefixBg =
+        isDark ? const Color(0xFF2A2A3A) : const Color(0xFFF5F5F5);
+    final prefixText =
+        isDark ? Colors.white70 : const Color(0xFF333333);
+    final dividerColor = isDark ? Colors.white12 : Colors.grey.shade300;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text("Phone Number", style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14.sp, color: const Color(0xFF555555))),
-        SizedBox(height: 6.h),
+        Text("Phone Number",
+            style: TextStyle(
+                fontWeight: FontWeight.w600,
+                fontSize: 14.sp,
+                color: labelColor)),
+        SizedBox(height: 4.h),
         Text("We'll use this for verification and important updates",
-            style: TextStyle(fontSize: 12.sp, color: const Color(0xFF888888))),
-        SizedBox(height: 10.h),
+            style: TextStyle(fontSize: 12.sp, color: hintColor)),
+        SizedBox(height: 8.h),
         Container(
-          padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 4.h),
+          padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 4.h),
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: inputBg,
             borderRadius: BorderRadius.circular(16.r),
-            border: Border.all(color: const Color(0xFFDDDDDD), width: 1.5),
+            border: Border.all(color: inputBorder, width: 1.5),
           ),
           child: Row(
             children: [
               Container(
-                padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
+                padding:
+                    EdgeInsets.symmetric(horizontal: 10.w, vertical: 10.h),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFF5F5F5),
+                  color: prefixBg,
                   borderRadius: BorderRadius.circular(12.r),
                 ),
                 child: Row(
                   children: [
                     Text("🇵🇭", style: TextStyle(fontSize: 16.sp)),
                     SizedBox(width: 6.w),
-                    Text("+63", style: TextStyle(fontWeight: FontWeight.w600, color: const Color(0xFF333333))),
+                    Text("+63",
+                        style: TextStyle(
+                            fontWeight: FontWeight.w600,
+                            color: prefixText)),
                     SizedBox(width: 4.w),
-                    Icon(Icons.keyboard_arrow_down, size: 18.sp, color: const Color(0xFF666666)),
+                    Icon(Icons.keyboard_arrow_down,
+                        size: 18.sp, color: inputIconColor),
                   ],
                 ),
               ),
-              SizedBox(width: 12.w),
-              Container(width: 1.w, height: 24.h, color: Colors.grey.shade300),
-              SizedBox(width: 12.w),
+              SizedBox(width: 10.w),
+              Container(
+                  width: 1.w, height: 24.h, color: dividerColor),
+              SizedBox(width: 10.w),
               Expanded(
                 child: TextField(
                   controller: _phoneController,
                   keyboardType: TextInputType.phone,
-                  decoration: const InputDecoration(
+                  style: TextStyle(color: cs.onSurface),
+                  decoration: InputDecoration(
                     hintText: "Enter your phone number",
                     border: InputBorder.none,
-                    hintStyle: TextStyle(color: Color(0xFFAAAAAA)),
+                    hintStyle: TextStyle(
+                        color: cs.onSurface.withOpacity(0.4)),
                   ),
                 ),
               ),
@@ -482,42 +709,55 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     );
   }
 
-  Widget _buildBarangayField() {
+  Widget _buildBarangayField({
+    required Color inputBg,
+    required Color inputBorder,
+    required Color inputIconColor,
+    required Color labelColor,
+    required Color hintColor,
+    required ColorScheme cs,
+  }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text("Barangay", style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14.sp, color: const Color(0xFF555555))),
-        SizedBox(height: 6.h),
+        Text("Barangay",
+            style: TextStyle(
+                fontWeight: FontWeight.w600,
+                fontSize: 14.sp,
+                color: labelColor)),
+        SizedBox(height: 4.h),
         Text("Select your barangay to locate your area",
-            style: TextStyle(fontSize: 12.sp, color: const Color(0xFF888888))),
-        SizedBox(height: 10.h),
+            style: TextStyle(fontSize: 12.sp, color: hintColor)),
+        SizedBox(height: 8.h),
         GestureDetector(
           onTap: _showBarangayPicker,
           child: Container(
-            padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 16.h),
+            padding:
+                EdgeInsets.symmetric(horizontal: 16.w, vertical: 16.h),
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: inputBg,
               borderRadius: BorderRadius.circular(16.r),
-              border: Border.all(color: const Color(0xFFDDDDDD), width: 1.5),
+              border: Border.all(color: inputBorder, width: 1.5),
             ),
             child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Row(
-                  children: [
-                    Icon(Icons.location_on_outlined, color: const Color(0xFF666666)),
-                    SizedBox(width: 12.w),
-                    Text(
-                      _selectedBarangay ?? "Select your barangay",
-                      style: TextStyle(
-                        color: _selectedBarangay == null ? const Color(0xFFAAAAAA) : const Color(0xFF333333),
-                        fontWeight: _selectedBarangay == null ? FontWeight.normal : FontWeight.w600,
-                        fontSize: 16.sp,
-                      ),
+                Icon(Icons.location_on_outlined, color: inputIconColor),
+                SizedBox(width: 10.w),
+                Expanded(
+                  child: Text(
+                    _selectedBarangay ?? "Select your barangay",
+                    style: TextStyle(
+                      color: _selectedBarangay == null
+                          ? cs.onSurface.withOpacity(0.4)
+                          : cs.onSurface,
+                      fontWeight: _selectedBarangay == null
+                          ? FontWeight.normal
+                          : FontWeight.w600,
+                      fontSize: 16.sp,
                     ),
-                  ],
+                  ),
                 ),
-                Icon(Icons.arrow_drop_down, color: const Color(0xFF666666)),
+                Icon(Icons.arrow_drop_down, color: inputIconColor),
               ],
             ),
           ),
@@ -526,87 +766,117 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     );
   }
 
-  Widget _buildPasswordField() {
+  Widget _buildPasswordField({
+    required String label,
+    required String subtitle,
+    required TextEditingController controller,
+    required bool obscure,
+    required VoidCallback onToggle,
+    required Color inputBg,
+    required Color inputBorder,
+    required Color inputIconColor,
+    required Color labelColor,
+    required Color hintColor,
+    required String hintText,
+    required ColorScheme cs,
+  }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text("Password", style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14.sp, color: const Color(0xFF555555))),
-        SizedBox(height: 6.h),
-        Text("Create a strong password with at least 8 characters, numbers, and letters",
-            style: TextStyle(fontSize: 12.sp, color: const Color(0xFF888888))),
-        SizedBox(height: 10.h),
+        Text(label,
+            style: TextStyle(
+                fontWeight: FontWeight.w600,
+                fontSize: 14.sp,
+                color: labelColor)),
+        SizedBox(height: 4.h),
+        Text(subtitle,
+            style: TextStyle(fontSize: 12.sp, color: hintColor)),
+        SizedBox(height: 8.h),
         Container(
-          padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 4.h),
+          padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 4.h),
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: inputBg,
             borderRadius: BorderRadius.circular(16.r),
-            border: Border.all(color: const Color(0xFFDDDDDD), width: 1.5),
+            border: Border.all(color: inputBorder, width: 1.5),
           ),
           child: Row(
             children: [
-              const Icon(Icons.lock_outline, color: Color(0xFF666666)),
-              SizedBox(width: 12.w),
+              Icon(Icons.lock_outline, color: inputIconColor),
+              SizedBox(width: 10.w),
               Expanded(
                 child: TextField(
-                  controller: _passwordController,
-                  obscureText: _obscurePassword,
-                  decoration: const InputDecoration(
-                    hintText: "Enter your password",
+                  controller: controller,
+                  obscureText: obscure,
+                  style: TextStyle(color: cs.onSurface),
+                  decoration: InputDecoration(
+                    hintText: hintText,
                     border: InputBorder.none,
-                    hintStyle: TextStyle(color: Color(0xFFAAAAAA)),
+                    hintStyle: TextStyle(
+                        color: cs.onSurface.withOpacity(0.4)),
                   ),
                 ),
               ),
               IconButton(
-                icon: Icon(_obscurePassword ? Icons.visibility_off : Icons.visibility, color: const Color(0xFF666666)),
-                onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
+                icon: Icon(
+                    obscure ? Icons.visibility_off : Icons.visibility,
+                    color: inputIconColor),
+                onPressed: onToggle,
               ),
             ],
           ),
         ),
       ],
     );
+  }
+}
+
+class _WavePainter extends CustomPainter {
+  final bool isDark;
+  final ColorScheme cs;
+
+  _WavePainter({required this.isDark, required this.cs});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final fillColor = isDark
+        ? cs.primary.withOpacity(0.08)
+        : const Color(0xFFF3F0FA);
+    final strokeColor = isDark
+        ? cs.primary.withOpacity(0.25)
+        : const Color(0xFFB39DDB);
+
+    final fillWave = Paint()
+      ..color = fillColor
+      ..style = PaintingStyle.fill;
+
+    final lineWave = Paint()
+      ..color = strokeColor
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2;
+
+    final path1 = Path();
+    path1.moveTo(0, 70);
+    path1.quadraticBezierTo(
+        size.width * 0.25, 20, size.width * 0.5, 90);
+    path1.quadraticBezierTo(
+        size.width * 0.75, 150, size.width, 70);
+    path1.lineTo(size.width, size.height);
+    path1.lineTo(0, size.height);
+    path1.close();
+
+    canvas.drawPath(path1, fillWave);
+
+    final path2 = Path();
+    path2.moveTo(0, 90);
+    path2.quadraticBezierTo(
+        size.width * 0.3, 40, size.width * 0.6, 110);
+    path2.quadraticBezierTo(
+        size.width * 0.85, 170, size.width, 100);
+
+    canvas.drawPath(path2, lineWave);
   }
 
-  Widget _buildConfirmPasswordField() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text("Confirm Password", style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14.sp, color: const Color(0xFF555555))),
-        SizedBox(height: 6.h),
-        Text("Re-enter your password to confirm",
-            style: TextStyle(fontSize: 12.sp, color: const Color(0xFF888888))),
-        SizedBox(height: 10.h),
-        Container(
-          padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 4.h),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(16.r),
-            border: Border.all(color: const Color(0xFFDDDDDD), width: 1.5),
-          ),
-          child: Row(
-            children: [
-              const Icon(Icons.lock_outline, color: Color(0xFF666666)),
-              SizedBox(width: 12.w),
-              Expanded(
-                child: TextField(
-                  controller: _confirmPasswordController,
-                  obscureText: _obscureConfirm,
-                  decoration: const InputDecoration(
-                    hintText: "Confirm your password",
-                    border: InputBorder.none,
-                    hintStyle: TextStyle(color: Color(0xFFAAAAAA)),
-                  ),
-                ),
-              ),
-              IconButton(
-                icon: Icon(_obscureConfirm ? Icons.visibility_off : Icons.visibility, color: const Color(0xFF666666)),
-                onPressed: () => setState(() => _obscureConfirm = !_obscureConfirm),
-              ),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
+  @override
+  bool shouldRepaint(covariant _WavePainter oldDelegate) =>
+      oldDelegate.isDark != isDark;
 }

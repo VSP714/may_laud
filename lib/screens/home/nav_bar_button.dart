@@ -19,7 +19,6 @@ class MainApp extends StatefulWidget {
 class _MainAppState extends State<MainApp> {
   int _selectedIndex = 0;
 
-  // ─── SCREENS ──────────────────────────────────────────
   late final List<Widget> _screens = [
     const HomeScreen(),
     const AnnouncementsListScreen(),
@@ -27,7 +26,6 @@ class _MainAppState extends State<MainApp> {
     const ProfileScreen(),
   ];
 
-  // ─── QUICK-SERVICE DEFINITIONS ────────────────────────
   static final List<_QuickService> _services = [
     _QuickService(Icons.report_problem_rounded, 'Citizen Report',
         'Report issues or concerns', CitizenReportScreen()),
@@ -39,7 +37,6 @@ class _MainAppState extends State<MainApp> {
         'Barangay clearance, permits', DocumentRequestScreen()),
   ];
 
-  // ─── HANDLERS ─────────────────────────────────────────
   void _onItemTapped(int index) => setState(() => _selectedIndex = index);
 
   void _openService(BuildContext context, _QuickService service) {
@@ -50,21 +47,18 @@ class _MainAppState extends State<MainApp> {
     );
   }
 
-  // ──────────────────────────────────────────────────────
-  // BUILD
-  // ──────────────────────────────────────────────────────
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: HomeColors.warmHearth,
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final cs = Theme.of(context).colorScheme;
+    final scaffoldBg = isDark ? cs.background : HomeColors.warmHearth;
 
-      // ─── BODY ─────────────────────────────────────
+    return Scaffold(
+      backgroundColor: scaffoldBg,
       body: IndexedStack(
         index: _selectedIndex,
         children: _screens,
       ),
-
-      // ─── FAB ──────────────────────────────────────
       floatingActionButton: Container(
         width: 72.w,
         height: 72.w,
@@ -88,21 +82,23 @@ class _MainAppState extends State<MainApp> {
         ),
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-
-      // ─── BOTTOM NAV ───────────────────────────────
-      bottomNavigationBar: _buildBottomNav(),
+      bottomNavigationBar: _buildBottomNav(isDark: isDark, cs: cs),
     );
   }
 
-  // ─── PROFESSIONAL BOTTOM NAV (notch for FAB) ──────────
-  Widget _buildBottomNav() {
+  Widget _buildBottomNav({required bool isDark, required ColorScheme cs}) {
+    final navBg = isDark ? cs.surface : Colors.white;
+    final shadowColor = isDark
+        ? HomeColors.heritagePurple.withOpacity(0.12)
+        : HomeColors.heritagePurple.withValues(alpha: 0.06);
+
     return Container(
       height: 100.h,
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: navBg,
         boxShadow: [
           BoxShadow(
-            color: HomeColors.heritagePurple.withValues(alpha: 0.06),
+            color: shadowColor,
             blurRadius: 24,
             offset: const Offset(0, -6),
           ),
@@ -118,11 +114,14 @@ class _MainAppState extends State<MainApp> {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
-              _navItem(Icons.home_rounded, 'Home', 0),
-              _navItem(Icons.campaign_outlined, 'Announcements', 1),
-              SizedBox(width: 44.w), // gap for FAB
-              _navItem(Icons.notifications_outlined, 'Notifications', 2),
-              _navItem(Icons.person_outline_rounded, 'Profile', 3),
+              _navItem(Icons.home_rounded, 'Home', 0, isDark: isDark, cs: cs),
+              _navItem(Icons.campaign_outlined, 'Announcements', 1,
+                  isDark: isDark, cs: cs),
+              SizedBox(width: 44.w),
+              _navItem(Icons.notifications_outlined, 'Notifications', 2,
+                  isDark: isDark, cs: cs),
+              _navItem(Icons.person_outline_rounded, 'Profile', 3,
+                  isDark: isDark, cs: cs),
             ],
           ),
         ),
@@ -130,9 +129,12 @@ class _MainAppState extends State<MainApp> {
     );
   }
 
-  // ─── PROFESSIONAL NAV ITEM ─────────────────────────────
-  Widget _navItem(IconData icon, String label, int index) {
+  Widget _navItem(IconData icon, String label, int index,
+      {required bool isDark, required ColorScheme cs}) {
     final bool active = _selectedIndex == index;
+    final inactiveColor =
+        isDark ? cs.onSurface.withOpacity(0.35) : const Color(0xFFBDBDBD);
+
     return Expanded(
       child: InkWell(
         borderRadius: BorderRadius.circular(14.r),
@@ -142,8 +144,6 @@ class _MainAppState extends State<MainApp> {
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 300),
           curve: Curves.easeOutCubic,
-          // FIX overflow: removed vertical padding
-          // FIX overflow: removed top margin
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(14.r),
           ),
@@ -151,7 +151,6 @@ class _MainAppState extends State<MainApp> {
             mainAxisSize: MainAxisSize.min,
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              // Active indicator pill
               AnimatedContainer(
                 duration: const Duration(milliseconds: 300),
                 curve: Curves.easeOutCubic,
@@ -166,9 +165,7 @@ class _MainAppState extends State<MainApp> {
               Icon(
                 icon,
                 size: active ? 23.sp : 21.sp,
-                color: active
-                    ? HomeColors.heritagePurple
-                    : const Color(0xFFBDBDBD),
+                color: active ? HomeColors.heritagePurple : inactiveColor,
               ),
               SizedBox(height: 2.h),
               AnimatedDefaultTextStyle(
@@ -176,10 +173,9 @@ class _MainAppState extends State<MainApp> {
                 curve: Curves.easeOutCubic,
                 style: TextStyle(
                   fontSize: 10.sp,
-                  fontWeight: active ? FontWeight.w700 : FontWeight.w500,
-                  color: active
-                      ? HomeColors.heritagePurple
-                      : const Color(0xFFBDBDBD),
+                  fontWeight:
+                      active ? FontWeight.w700 : FontWeight.w500,
+                  color: active ? HomeColors.heritagePurple : inactiveColor,
                   letterSpacing: active ? 0.2 : 0,
                 ),
                 child: Text(label),
@@ -191,8 +187,21 @@ class _MainAppState extends State<MainApp> {
     );
   }
 
-  // ─── QUICK SERVICES BOTTOM SHEET ──────────────────────
   void _showQuickServices(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final cs = Theme.of(context).colorScheme;
+    final sheetBg = isDark ? cs.surface : Colors.white;
+    final tileBg = isDark ? cs.background : HomeColors.warmHearth;
+    final titleColor = isDark ? cs.onSurface : HomeColors.deepAnchor;
+    final subtitleColor =
+        isDark ? cs.onSurface.withOpacity(0.5) : HomeColors.textMuted;
+    final iconBg = isDark
+        ? HomeColors.heritagePurple.withOpacity(0.18)
+        : HomeColors.heritagePurple.withValues(alpha: 0.08);
+    final tileIconBg = isDark ? cs.background : Colors.white;
+    final dragHandle =
+        isDark ? Colors.white24 : Colors.grey.shade300;
+
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
@@ -200,18 +209,17 @@ class _MainAppState extends State<MainApp> {
       builder: (_) => Container(
         padding: EdgeInsets.fromLTRB(24.w, 16.h, 24.w, 36.h),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: sheetBg,
           borderRadius: BorderRadius.vertical(top: Radius.circular(28.r)),
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            // Drag handle
             Container(
               width: 40.w,
               height: 4.h,
               decoration: BoxDecoration(
-                color: Colors.grey.shade300,
+                color: dragHandle,
                 borderRadius: BorderRadius.circular(20.r),
               ),
             ),
@@ -222,7 +230,7 @@ class _MainAppState extends State<MainApp> {
                   width: 42.w,
                   height: 42.w,
                   decoration: BoxDecoration(
-                    color: HomeColors.heritagePurple.withValues(alpha: 0.08),
+                    color: iconBg,
                     borderRadius: BorderRadius.circular(12.r),
                   ),
                   child: Icon(Icons.miscellaneous_services_rounded,
@@ -237,13 +245,13 @@ class _MainAppState extends State<MainApp> {
                       style: TextStyle(
                         fontSize: 22.sp,
                         fontWeight: FontWeight.w700,
-                        color: HomeColors.deepAnchor,
+                        color: titleColor,
                       ),
                     ),
                     Text(
                       'Choose a service below',
                       style: TextStyle(
-                          fontSize: 13.sp, color: HomeColors.textMuted),
+                          fontSize: 13.sp, color: subtitleColor),
                     ),
                   ],
                 ),
@@ -257,7 +265,13 @@ class _MainAppState extends State<MainApp> {
               mainAxisSpacing: 14.h,
               crossAxisSpacing: 14.w,
               childAspectRatio: 1.05,
-              children: _services.map((s) => _serviceTile(context, s)).toList(),
+              children: _services
+                  .map((s) => _serviceTile(context, s,
+                      tileBg: tileBg,
+                      tileIconBg: tileIconBg,
+                      titleColor: titleColor,
+                      subtitleColor: subtitleColor))
+                  .toList(),
             ),
           ],
         ),
@@ -265,17 +279,24 @@ class _MainAppState extends State<MainApp> {
     );
   }
 
-  Widget _serviceTile(BuildContext context, _QuickService service) {
+  Widget _serviceTile(
+    BuildContext context,
+    _QuickService service, {
+    required Color tileBg,
+    required Color tileIconBg,
+    required Color titleColor,
+    required Color subtitleColor,
+  }) {
     return InkWell(
       borderRadius: BorderRadius.circular(20.r),
       onTap: () => _openService(context, service),
       child: Container(
         padding: EdgeInsets.all(16.w),
         decoration: BoxDecoration(
-          color: HomeColors.warmHearth,
+          color: tileBg,
           borderRadius: BorderRadius.circular(20.r),
           border: Border.all(
-            color: HomeColors.heritagePurple.withValues(alpha: 0.06),
+            color: HomeColors.heritagePurple.withValues(alpha: 0.08),
           ),
         ),
         child: Column(
@@ -285,7 +306,7 @@ class _MainAppState extends State<MainApp> {
               width: 56.w,
               height: 56.w,
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: tileIconBg,
                 borderRadius: BorderRadius.circular(16.r),
                 boxShadow: [
                   BoxShadow(
@@ -307,7 +328,7 @@ class _MainAppState extends State<MainApp> {
               style: TextStyle(
                 fontSize: 13.sp,
                 fontWeight: FontWeight.w700,
-                color: HomeColors.deepAnchor,
+                color: titleColor,
                 height: 1.2,
               ),
             ),
@@ -320,7 +341,7 @@ class _MainAppState extends State<MainApp> {
               style: TextStyle(
                 fontSize: 10.sp,
                 height: 1.2,
-                color: HomeColors.textMuted,
+                color: subtitleColor,
               ),
             ),
           ],
@@ -330,7 +351,6 @@ class _MainAppState extends State<MainApp> {
   }
 }
 
-/// Lightweight model for a quick-service entry.
 class _QuickService {
   final IconData icon;
   final String title;

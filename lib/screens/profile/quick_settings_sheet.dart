@@ -13,20 +13,28 @@ class QuickSettingsSheet extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final settings = ref.watch(appSettingsProvider);
 
+    // ← FIX: was hardcoded HomeColors.deepAnchor — ignored dark mode
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final cs = theme.colorScheme;
+
+    final titleColor = isDark ? cs.onSurface : HomeColors.deepAnchor;
+    final iconColor = isDark ? cs.primary : HomeColors.heritagePurple;
+
     return Padding(
       padding: EdgeInsets.fromLTRB(24.w, 20.h, 24.w, 32.h),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _buildHandle(),
+          _buildHandle(isDark: isDark, cs: cs),
           SizedBox(height: 20.h),
           Text(
             'Quick Settings',
             style: TextStyle(
               fontSize: 20.sp,
               fontWeight: FontWeight.w700,
-              color: HomeColors.deepAnchor,
+              color: titleColor, // ← FIX
             ),
           ),
           SizedBox(height: 20.h),
@@ -38,21 +46,18 @@ class QuickSettingsSheet extends ConsumerWidget {
               settings.isDarkMode
                   ? Icons.dark_mode_outlined
                   : Icons.light_mode_outlined,
-              color: HomeColors.heritagePurple,
+              color: iconColor, // ← FIX
             ),
             title: Text(
               'Dark Mode',
-              style:
-                  TextStyle(fontSize: 15.sp, fontWeight: FontWeight.w600),
+              style: TextStyle(fontSize: 15.sp, fontWeight: FontWeight.w600),
             ),
             subtitle: Text(
-              settings.isDarkMode
-                  ? 'Dark theme active'
-                  : 'Light theme active',
+              settings.isDarkMode ? 'Dark theme active' : 'Light theme active',
               style: TextStyle(fontSize: 13.sp),
             ),
             value: settings.isDarkMode,
-            activeColor: HomeColors.heritagePurple,
+            activeColor: iconColor,
             onChanged: (val) async {
               ref.read(appSettingsProvider.notifier).toggleDarkMode();
               await LocalStorage.setDarkMode(val);
@@ -64,19 +69,18 @@ class QuickSettingsSheet extends ConsumerWidget {
             contentPadding: EdgeInsets.zero,
             secondary: Icon(
               Icons.notifications_outlined,
-              color: HomeColors.heritagePurple,
+              color: iconColor, // ← FIX
             ),
             title: Text(
               'Notifications',
-              style:
-                  TextStyle(fontSize: 15.sp, fontWeight: FontWeight.w600),
+              style: TextStyle(fontSize: 15.sp, fontWeight: FontWeight.w600),
             ),
             subtitle: Text(
               settings.notificationsEnabled ? 'Enabled' : 'Disabled',
               style: TextStyle(fontSize: 13.sp),
             ),
             value: settings.notificationsEnabled,
-            activeColor: HomeColors.heritagePurple,
+            activeColor: iconColor,
             onChanged: (_) =>
                 ref.read(appSettingsProvider.notifier).toggleNotifications(),
           ),
@@ -85,13 +89,14 @@ class QuickSettingsSheet extends ConsumerWidget {
     );
   }
 
-  Widget _buildHandle() {
+  Widget _buildHandle({required bool isDark, required ColorScheme cs}) {
     return Center(
       child: Container(
         width: 40.w,
         height: 4.h,
         decoration: BoxDecoration(
-          color: Colors.grey[300],
+          // ← FIX: was hardcoded Colors.grey[300]
+          color: isDark ? cs.onSurface.withOpacity(0.2) : Colors.grey[300],
           borderRadius: BorderRadius.circular(2.r),
         ),
       ),

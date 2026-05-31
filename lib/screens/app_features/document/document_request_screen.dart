@@ -7,16 +7,68 @@ import 'dart:io';
 
 import '../../home/home.dart';
 import '../../home/nav_bar_button.dart';
-import '../../../utils/guest_guard.dart'; // ✅ Guest guard import
+import '../../../utils/guest_guard.dart';
 
 class DocumentRequestScreen extends ConsumerStatefulWidget {
   const DocumentRequestScreen({super.key});
 
   @override
-  ConsumerState<DocumentRequestScreen> createState() => _DocumentRequestScreenState();
+  ConsumerState<DocumentRequestScreen> createState() =>
+      _DocumentRequestScreenState();
 }
 
-class _DocumentRequestScreenState extends ConsumerState<DocumentRequestScreen> {
+class _DocumentRequestScreenState
+    extends ConsumerState<DocumentRequestScreen> {
+  bool _isDark = false;
+  ColorScheme? _cs;
+
+  // ─── ADAPTIVE COLORS ──────────────────────────────────
+  Color get _scaffoldBg =>
+      _isDark ? _cs!.background : HomeColors.warmHearth;
+  Color get _cardBg => _isDark ? _cs!.surface : HomeColors.cardWhite;
+  Color get _cardBg70 => _cardBg.withOpacity(0.7);
+  Color get _cardBg60 => _cardBg.withOpacity(0.6);
+  Color get _titleText =>
+      _isDark ? _cs!.onSurface : HomeColors.deepAnchor;
+  Color get _bodyText =>
+      _isDark ? _cs!.onSurface.withOpacity(0.65) : const Color(0xFF374151);
+  Color get _mutedText =>
+      _isDark ? _cs!.onSurface.withOpacity(0.45) : const Color(0xFF9CA3AF);
+  Color get _inputFill =>
+      _isDark ? _cs!.surface.withOpacity(0.8) : HomeColors.warmHearth;
+  Color get _borderColor =>
+      _isDark ? _cs!.onSurface.withOpacity(0.15) : const Color(0xFFE5E7EB);
+  Color get _subtitleText =>
+      _isDark ? _cs!.onSurface.withOpacity(0.5) : const Color(0xFF9CA3AF);
+  Color get _dragHandle =>
+      _isDark ? Colors.white24 : const Color(0xFFD1D5DB);
+
+  // urgency backgrounds — dark mode strips the pastel tint
+  Color _urgencyBg(String urgency) {
+    if (_isDark) return _cs!.surface;
+    switch (urgency) {
+      case 'Urgent':
+        return const Color(0xFFFEF2F2);
+      case 'Normal':
+        return const Color(0xFFF0FDF4);
+      default:
+        return const Color(0xFFFFFBEB);
+    }
+  }
+
+  // urgency foreground stays the same regardless of mode
+  Color _urgencyColor(String urgency) {
+    switch (urgency) {
+      case 'Urgent':
+        return const Color(0xFFDC2626);
+      case 'Normal':
+        return const Color(0xFF16A34A);
+      default:
+        return const Color(0xFFF59E0B);
+    }
+  }
+
+  // ─── FORM STATE ───────────────────────────────────────
   final _formKey = GlobalKey<FormState>();
   final TextEditingController _fullNameController = TextEditingController();
   final TextEditingController _addressController = TextEditingController();
@@ -26,19 +78,20 @@ class _DocumentRequestScreenState extends ConsumerState<DocumentRequestScreen> {
 
   String _selectedDocumentType = 'Business Permit';
   String _selectedUrgency = 'Normal (3-5 days)';
-  int _currentStep = 0; // 0=select, 1=details, 2=review
+  int _currentStep = 0;
 
   final List<File> _attachedFiles = [];
   final ImagePicker _picker = ImagePicker();
   bool _isSubmitting = false;
 
-  // ─── DOCUMENT TYPES WITH METADATA ─────────────────────
+  // ─── DOCUMENT TYPES ───────────────────────────────────
   final List<Map<String, dynamic>> _documentTypes = [
     {
       'name': 'Business Permit',
       'icon': Icons.store_rounded,
       'fee': 500.0,
-      'desc': 'Official permit to operate a business within the municipality',
+      'desc':
+          'Official permit to operate a business within the municipality',
       'color': const Color(0xFF0056A3),
       'available': true,
     },
@@ -46,7 +99,8 @@ class _DocumentRequestScreenState extends ConsumerState<DocumentRequestScreen> {
       'name': 'Civil Registry Documents',
       'icon': Icons.folder_copy_rounded,
       'fee': 200.0,
-      'desc': 'Birth, Death, and Marriage Certificates from the civil registry',
+      'desc':
+          'Birth, Death, and Marriage Certificates from the civil registry',
       'color': const Color(0xFF4C229C),
       'available': true,
     },
@@ -70,7 +124,8 @@ class _DocumentRequestScreenState extends ConsumerState<DocumentRequestScreen> {
       'name': 'Police Clearance',
       'icon': Icons.local_police_rounded,
       'fee': 150.0,
-      'desc': 'Police clearance certificate for employment or travel purposes',
+      'desc':
+          'Police clearance certificate for employment or travel purposes',
       'color': const Color(0xFFF59E0B),
       'available': false,
     },
@@ -78,7 +133,8 @@ class _DocumentRequestScreenState extends ConsumerState<DocumentRequestScreen> {
       'name': 'Community Tax Certificate (Cedula)',
       'icon': Icons.receipt_rounded,
       'fee': 50.0,
-      'desc': 'Community tax certificate required for various transactions',
+      'desc':
+          'Community tax certificate required for various transactions',
       'color': const Color(0xFF643EB5),
       'available': false,
     },
@@ -124,29 +180,6 @@ class _DocumentRequestScreenState extends ConsumerState<DocumentRequestScreen> {
   double get _fee => (_selectedDocMeta['fee'] as num).toDouble();
   bool get _isFree => _fee == 0.0;
 
-  // ─── URGENCY COLOR HELPERS ────────────────────────────
-  Color _urgencyColor(String urgency) {
-    switch (urgency) {
-      case 'Urgent':
-        return const Color(0xFFDC2626);
-      case 'Normal':
-        return const Color(0xFF16A34A);
-      default:
-        return const Color(0xFFF59E0B);
-    }
-  }
-
-  Color _urgencyBgColor(String urgency) {
-    switch (urgency) {
-      case 'Urgent':
-        return const Color(0xFFFEF2F2);
-      case 'Normal':
-        return const Color(0xFFF0FDF4);
-      default:
-        return const Color(0xFFFFFBEB);
-    }
-  }
-
   IconData _urgencyIcon(String iconName) {
     switch (iconName) {
       case 'priority_high':
@@ -160,18 +193,14 @@ class _DocumentRequestScreenState extends ConsumerState<DocumentRequestScreen> {
 
   // ─── PHOTO PICKING ────────────────────────────────────
   Future<void> _pickImage() async {
-    final XFile? image = await _picker.pickImage(
-      source: ImageSource.gallery,
-      imageQuality: 80,
-    );
+    final XFile? image =
+        await _picker.pickImage(source: ImageSource.gallery, imageQuality: 80);
     if (image != null) setState(() => _attachedFiles.add(File(image.path)));
   }
 
   Future<void> _takePhoto() async {
-    final XFile? photo = await _picker.pickImage(
-      source: ImageSource.camera,
-      imageQuality: 80,
-    );
+    final XFile? photo =
+        await _picker.pickImage(source: ImageSource.camera, imageQuality: 80);
     if (photo != null) setState(() => _attachedFiles.add(File(photo.path)));
   }
 
@@ -185,10 +214,10 @@ class _DocumentRequestScreenState extends ConsumerState<DocumentRequestScreen> {
 
   Widget _buildPhotoSheet(BuildContext ctx) {
     return Container(
-      padding:
-          EdgeInsets.only(bottom: MediaQuery.of(ctx).padding.bottom + 16.h),
+      padding: EdgeInsets.only(
+          bottom: MediaQuery.of(ctx).padding.bottom + 16.h),
       decoration: BoxDecoration(
-        color: HomeColors.cardWhite,
+        color: _cardBg,
         borderRadius: BorderRadius.vertical(top: Radius.circular(24.r)),
       ),
       child: Column(
@@ -199,7 +228,7 @@ class _DocumentRequestScreenState extends ConsumerState<DocumentRequestScreen> {
             width: 36.w,
             height: 4.h,
             decoration: BoxDecoration(
-              color: const Color(0xFFE0E0E0),
+              color: _dragHandle,
               borderRadius: BorderRadius.circular(2.r),
             ),
           ),
@@ -209,30 +238,26 @@ class _DocumentRequestScreenState extends ConsumerState<DocumentRequestScreen> {
             style: TextStyle(
               fontSize: 18.sp,
               fontWeight: FontWeight.w700,
-              color: HomeColors.deepAnchor,
+              color: _titleText,
             ),
           ),
           SizedBox(height: 20.h),
-          _photoOption(
-            ctx,
-            icon: Icons.camera_alt_rounded,
-            title: 'Take a Photo',
-            subtitle: 'Use your camera',
-            onTap: () {
-              Navigator.pop(ctx);
-              _takePhoto();
-            },
-          ),
-          _photoOption(
-            ctx,
-            icon: Icons.photo_library_rounded,
-            title: 'Choose from Gallery',
-            subtitle: 'Pick from your photos',
-            onTap: () {
-              Navigator.pop(ctx);
-              _pickImage();
-            },
-          ),
+          _photoOption(ctx,
+              icon: Icons.camera_alt_rounded,
+              title: 'Take a Photo',
+              subtitle: 'Use your camera',
+              onTap: () {
+                Navigator.pop(ctx);
+                _takePhoto();
+              }),
+          _photoOption(ctx,
+              icon: Icons.photo_library_rounded,
+              title: 'Choose from Gallery',
+              subtitle: 'Pick from your photos',
+              onTap: () {
+                Navigator.pop(ctx);
+                _pickImage();
+              }),
           SizedBox(height: 8.h),
         ],
       ),
@@ -254,7 +279,8 @@ class _DocumentRequestScreenState extends ConsumerState<DocumentRequestScreen> {
           onTap: onTap,
           borderRadius: BorderRadius.circular(14.r),
           child: Padding(
-            padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
+            padding:
+                EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
             child: Row(
               children: [
                 Container(
@@ -264,33 +290,29 @@ class _DocumentRequestScreenState extends ConsumerState<DocumentRequestScreen> {
                     color: HomeColors.heritagePurple.withValues(alpha: 0.08),
                     borderRadius: BorderRadius.circular(13.r),
                   ),
-                  child:
-                      Icon(icon, size: 24.sp, color: HomeColors.heritagePurple),
+                  child: Icon(icon,
+                      size: 24.sp, color: HomeColors.heritagePurple),
                 ),
                 SizedBox(width: 14.w),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        title,
-                        style: TextStyle(
-                          fontSize: 15.sp,
-                          fontWeight: FontWeight.w600,
-                          color: HomeColors.deepAnchor,
-                        ),
-                      ),
+                      Text(title,
+                          style: TextStyle(
+                            fontSize: 15.sp,
+                            fontWeight: FontWeight.w600,
+                            color: _titleText,
+                          )),
                       SizedBox(height: 2.h),
-                      Text(
-                        subtitle,
-                        style: TextStyle(
-                            fontSize: 13.sp, color: const Color(0xFF9E9E9E)),
-                      ),
+                      Text(subtitle,
+                          style: TextStyle(
+                              fontSize: 13.sp, color: _mutedText)),
                     ],
                   ),
                 ),
                 Icon(Icons.chevron_right_rounded,
-                    size: 20.sp, color: const Color(0xFFBDBDBD)),
+                    size: 20.sp, color: _mutedText),
               ],
             ),
           ),
@@ -299,11 +321,10 @@ class _DocumentRequestScreenState extends ConsumerState<DocumentRequestScreen> {
     );
   }
 
-  void _removeFile(int index) {
-    setState(() => _attachedFiles.removeAt(index));
-  }
+  void _removeFile(int index) =>
+      setState(() => _attachedFiles.removeAt(index));
 
-  // ─── DOCUMENT TYPE BOTTOM SHEET ───────────────────────
+  // ─── DOCUMENT TYPE PICKER ─────────────────────────────
   void _showDocumentTypePicker() {
     showModalBottomSheet(
       context: context,
@@ -321,8 +342,9 @@ class _DocumentRequestScreenState extends ConsumerState<DocumentRequestScreen> {
       builder: (_, scrollController) {
         return Container(
           decoration: BoxDecoration(
-            color: HomeColors.cardWhite,
-            borderRadius: BorderRadius.vertical(top: Radius.circular(28.r)),
+            color: _cardBg,
+            borderRadius:
+                BorderRadius.vertical(top: Radius.circular(28.r)),
           ),
           child: Column(
             children: [
@@ -331,7 +353,7 @@ class _DocumentRequestScreenState extends ConsumerState<DocumentRequestScreen> {
                 width: 40.w,
                 height: 4.h,
                 decoration: BoxDecoration(
-                  color: const Color(0xFFD1D5DB),
+                  color: _dragHandle,
                   borderRadius: BorderRadius.circular(2.r),
                 ),
               ),
@@ -344,14 +366,13 @@ class _DocumentRequestScreenState extends ConsumerState<DocumentRequestScreen> {
                       width: 40.w,
                       height: 40.w,
                       decoration: BoxDecoration(
-                        color: HomeColors.heritagePurple.withValues(alpha: 0.08),
+                        color: HomeColors.heritagePurple
+                            .withValues(alpha: 0.08),
                         borderRadius: BorderRadius.circular(11.r),
                       ),
-                      child: Icon(
-                        Icons.description_rounded,
-                        size: 22.sp,
-                        color: HomeColors.heritagePurple,
-                      ),
+                      child: Icon(Icons.description_rounded,
+                          size: 22.sp,
+                          color: HomeColors.heritagePurple),
                     ),
                     SizedBox(width: 12.w),
                     Text(
@@ -359,7 +380,7 @@ class _DocumentRequestScreenState extends ConsumerState<DocumentRequestScreen> {
                       style: TextStyle(
                         fontSize: 18.sp,
                         fontWeight: FontWeight.w700,
-                        color: HomeColors.deepAnchor,
+                        color: _titleText,
                       ),
                     ),
                   ],
@@ -374,7 +395,8 @@ class _DocumentRequestScreenState extends ConsumerState<DocumentRequestScreen> {
                   separatorBuilder: (_, __) => SizedBox(height: 8.h),
                   itemBuilder: (_, index) {
                     final doc = _documentTypes[index];
-                    final isSelected = _selectedDocumentType == doc['name'];
+                    final isSelected =
+                        _selectedDocumentType == doc['name'];
                     return _docTypeTile(ctx, doc, isSelected);
                   },
                 ),
@@ -393,12 +415,38 @@ class _DocumentRequestScreenState extends ConsumerState<DocumentRequestScreen> {
     final double fee = (doc['fee'] as num).toDouble();
     final bool available = (doc['available'] as bool?) ?? true;
 
+    // tile bg adapts to dark mode
+    final tileBg = isSelected
+        ? accent.withValues(alpha: 0.06)
+        : available
+            ? (_isDark ? _cs!.background : HomeColors.warmHearth)
+            : (_isDark
+                ? _cs!.background.withOpacity(0.5)
+                : const Color(0xFFF5F5F5));
+
+    final tileBorder = isSelected
+        ? accent
+        : available
+            ? _borderColor
+            : (_isDark ? _cs!.onSurface.withOpacity(0.1) : const Color(0xFFE0E0E0));
+
+    final iconBg = isSelected
+        ? accent.withValues(alpha: 0.12)
+        : available
+            ? (_isDark
+                ? _cs!.onSurface.withOpacity(0.08)
+                : const Color(0xFFF3F4F6))
+            : (_isDark
+                ? _cs!.onSurface.withOpacity(0.05)
+                : const Color(0xFFEEEEEE));
+
     return Material(
       color: Colors.transparent,
       child: InkWell(
         onTap: available
             ? () {
-                setState(() => _selectedDocumentType = doc['name'] as String);
+                setState(
+                    () => _selectedDocumentType = doc['name'] as String);
                 Navigator.pop(ctx);
               }
             : null,
@@ -407,20 +455,10 @@ class _DocumentRequestScreenState extends ConsumerState<DocumentRequestScreen> {
           duration: const Duration(milliseconds: 200),
           padding: EdgeInsets.all(16.w),
           decoration: BoxDecoration(
-            color: isSelected
-                ? accent.withValues(alpha: 0.06)
-                : available
-                    ? HomeColors.warmHearth
-                    : const Color(0xFFF5F5F5),
+            color: tileBg,
             borderRadius: BorderRadius.circular(16.r),
             border: Border.all(
-              color: isSelected
-                  ? accent
-                  : available
-                      ? const Color(0xFFE5E7EB)
-                      : const Color(0xFFE0E0E0),
-              width: isSelected ? 1.5 : 1,
-            ),
+                color: tileBorder, width: isSelected ? 1.5 : 1),
           ),
           child: Row(
             children: [
@@ -428,21 +466,21 @@ class _DocumentRequestScreenState extends ConsumerState<DocumentRequestScreen> {
                 width: 52.w,
                 height: 52.w,
                 decoration: BoxDecoration(
-                  color: isSelected
-                      ? accent.withValues(alpha: 0.12)
-                      : available
-                          ? const Color(0xFFF3F4F6)
-                          : const Color(0xFFEEEEEE),
+                  color: iconBg,
                   borderRadius: BorderRadius.circular(14.r),
                 ),
                 child: Icon(
-                  available ? (doc['icon'] as IconData) : Icons.lock_rounded,
+                  available
+                      ? (doc['icon'] as IconData)
+                      : Icons.lock_rounded,
                   size: 26.sp,
                   color: isSelected
                       ? accent
                       : available
-                          ? const Color(0xFF9CA3AF)
-                          : const Color(0xFFBDBDBD),
+                          ? (_isDark
+                              ? _cs!.onSurface.withOpacity(0.4)
+                              : const Color(0xFF9CA3AF))
+                          : _mutedText,
                 ),
               ),
               SizedBox(width: 14.w),
@@ -450,25 +488,54 @@ class _DocumentRequestScreenState extends ConsumerState<DocumentRequestScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      doc['name'] as String,
-                      style: TextStyle(
-                        fontSize: 15.sp,
-                        fontWeight: FontWeight.w600,
-                        color: available
-                            ? (isSelected
-                                ? HomeColors.deepAnchor
-                                : const Color(0xFF374151))
-                            : const Color(0xFFBDBDBD),
-                      ),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            doc['name'] as String,
+                            style: TextStyle(
+                              fontSize: 15.sp,
+                              fontWeight: FontWeight.w600,
+                              color: available
+                                  ? (isSelected ? _titleText : _bodyText)
+                                  : _mutedText,
+                            ),
+                          ),
+                        ),
+                        if (!available)
+                          Container(
+                            padding: EdgeInsets.symmetric(
+                                horizontal: 8.w, vertical: 3.h),
+                            decoration: BoxDecoration(
+                              color: _isDark
+                                  ? const Color(0xFFDC2626).withOpacity(0.15)
+                                  : const Color(0xFFFEF2F2),
+                              borderRadius: BorderRadius.circular(6.r),
+                              border: Border.all(
+                                  color: _isDark
+                                      ? const Color(0xFFDC2626).withOpacity(0.3)
+                                      : const Color(0xFFFECACA)),
+                            ),
+                            child: Text(
+                              'Unavailable',
+                              style: TextStyle(
+                                fontSize: 10.sp,
+                                fontWeight: FontWeight.w600,
+                                color: const Color(0xFFDC2626),
+                              ),
+                            ),
+                          ),
+                      ],
                     ),
                     SizedBox(height: 3.h),
                     Text(
-                      available ? (doc['desc'] as String) : 'Not Available',
+                      available
+                          ? (doc['desc'] as String)
+                          : 'Not Available',
                       style: TextStyle(
                         fontSize: 12.sp,
                         color: available
-                            ? const Color(0xFF9CA3AF)
+                            ? _mutedText
                             : const Color(0xFFDC2626),
                       ),
                       maxLines: 1,
@@ -486,13 +553,16 @@ class _DocumentRequestScreenState extends ConsumerState<DocumentRequestScreen> {
                   fontSize: 15.sp,
                   fontWeight: FontWeight.w700,
                   color: available
-                      ? (fee == 0 ? const Color(0xFF16A34A) : accent)
-                      : const Color(0xFFBDBDBD),
+                      ? (fee == 0
+                          ? const Color(0xFF16A34A)
+                          : accent)
+                      : _mutedText,
                 ),
               ),
               if (isSelected) ...[
                 SizedBox(width: 8.w),
-                Icon(Icons.check_circle_rounded, size: 22.sp, color: accent),
+                Icon(Icons.check_circle_rounded,
+                    size: 22.sp, color: accent),
               ],
             ],
           ),
@@ -501,32 +571,25 @@ class _DocumentRequestScreenState extends ConsumerState<DocumentRequestScreen> {
     );
   }
 
-  // ─── SUBMIT REQUEST WITH GUEST CHECK ──────────────────
+  // ─── SUBMIT ───────────────────────────────────────────
   Future<void> _submitRequest() async {
-    // ✅ Guest restriction: guests cannot request documents
     if (GuestGuard.isGuest(ref)) {
       await GuestGuard.showGuestRestrictionDialog(context);
       return;
     }
-
     if (!_formKey.currentState!.validate()) return;
-
     if (!_selectedIsAvailable) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: const Text('This document type is not available.'),
-          backgroundColor: const Color(0xFFDC2626),
-          behavior: SnackBarBehavior.floating,
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(10.r)),
-        ),
-      );
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: const Text('This document type is not available.'),
+        backgroundColor: const Color(0xFFDC2626),
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10.r)),
+      ));
       return;
     }
-
     setState(() => _isSubmitting = true);
     await Future.delayed(const Duration(milliseconds: 800));
-
     if (!mounted) return;
     setState(() => _isSubmitting = false);
     _showSuccessScreen();
@@ -536,7 +599,6 @@ class _DocumentRequestScreenState extends ConsumerState<DocumentRequestScreen> {
     final refId =
         'MLR-${DateTime.now().millisecondsSinceEpoch.toString().substring(5)}';
     final urgencyLabel = _selectedUrgency.split(' ')[0];
-
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -546,13 +608,23 @@ class _DocumentRequestScreenState extends ConsumerState<DocumentRequestScreen> {
 
   Widget _buildSuccessDialog(
       BuildContext ctx, String refId, String urgencyLabel) {
+    final tipBg =
+        _isDark ? const Color(0xFF3A2A00) : const Color(0xFFFFFBEB);
+    final tipBorder =
+        _isDark ? const Color(0xFF7A5800) : const Color(0xFFFDE68A);
+    final tipText =
+        _isDark ? const Color(0xFFFFD97A) : const Color(0xFF92400E);
+    final refBg = _isDark ? _cs!.background : _scaffoldBg;
+    final refBorder =
+        _isDark ? _cs!.onSurface.withOpacity(0.12) : const Color(0xFFE8E0F0);
+
     return Dialog(
       backgroundColor: Colors.transparent,
       insetPadding: EdgeInsets.symmetric(horizontal: 28.w),
       child: Container(
         padding: EdgeInsets.all(28.w),
         decoration: BoxDecoration(
-          color: HomeColors.cardWhite,
+          color: _cardBg,
           borderRadius: BorderRadius.circular(28.r),
           boxShadow: [
             BoxShadow(
@@ -570,32 +642,30 @@ class _DocumentRequestScreenState extends ConsumerState<DocumentRequestScreen> {
               tween: Tween(begin: 0.0, end: 1.0),
               duration: const Duration(milliseconds: 500),
               curve: Curves.elasticOut,
-              builder: (_, value, __) {
-                return Transform.scale(
-                  scale: value,
-                  child: Container(
-                    width: 72.w,
-                    height: 72.w,
-                    decoration: BoxDecoration(
-                      gradient: const LinearGradient(
-                        colors: [Color(0xFF22C55E), Color(0xFF16A34A)],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                      ),
-                      borderRadius: BorderRadius.circular(20.r),
-                      boxShadow: [
-                        BoxShadow(
-                          color: const Color(0xFF22C55E).withValues(alpha: 0.3),
-                          blurRadius: 16,
-                          offset: const Offset(0, 6),
-                        ),
-                      ],
+              builder: (_, value, __) => Transform.scale(
+                scale: value,
+                child: Container(
+                  width: 72.w,
+                  height: 72.w,
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      colors: [Color(0xFF22C55E), Color(0xFF16A34A)],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
                     ),
-                    child: Icon(Icons.check_rounded,
-                        size: 38.sp, color: Colors.white),
+                    borderRadius: BorderRadius.circular(20.r),
+                    boxShadow: [
+                      BoxShadow(
+                        color: const Color(0xFF22C55E).withValues(alpha: 0.3),
+                        blurRadius: 16,
+                        offset: const Offset(0, 6),
+                      ),
+                    ],
                   ),
-                );
-              },
+                  child: Icon(Icons.check_rounded,
+                      size: 38.sp, color: _cardBg),
+                ),
+              ),
             ),
             SizedBox(height: 22.h),
             Text(
@@ -603,7 +673,7 @@ class _DocumentRequestScreenState extends ConsumerState<DocumentRequestScreen> {
               style: TextStyle(
                 fontSize: 22.sp,
                 fontWeight: FontWeight.w700,
-                color: HomeColors.deepAnchor,
+                color: _titleText,
                 letterSpacing: -0.3,
               ),
             ),
@@ -612,19 +682,16 @@ class _DocumentRequestScreenState extends ConsumerState<DocumentRequestScreen> {
               'Your document request has been sent to the Barangay office for processing.',
               textAlign: TextAlign.center,
               style: TextStyle(
-                fontSize: 14.sp,
-                color: const Color(0xFF6B7280),
-                height: 1.5,
-              ),
+                  fontSize: 14.sp, color: _mutedText, height: 1.5),
             ),
             SizedBox(height: 20.h),
             Container(
               width: double.infinity,
               padding: EdgeInsets.symmetric(vertical: 14.h),
               decoration: BoxDecoration(
-                color: HomeColors.warmHearth,
+                color: refBg,
                 borderRadius: BorderRadius.circular(14.r),
-                border: Border.all(color: const Color(0xFFE8E0F0)),
+                border: Border.all(color: refBorder),
               ),
               child: Column(
                 children: [
@@ -633,7 +700,7 @@ class _DocumentRequestScreenState extends ConsumerState<DocumentRequestScreen> {
                     style: TextStyle(
                       fontSize: 10.sp,
                       fontWeight: FontWeight.w600,
-                      color: const Color(0xFF9CA3AF),
+                      color: _mutedText,
                       letterSpacing: 1.2,
                     ),
                   ),
@@ -651,8 +718,8 @@ class _DocumentRequestScreenState extends ConsumerState<DocumentRequestScreen> {
               ),
             ),
             SizedBox(height: 20.h),
-            _successDetailRow(
-                Icons.description_outlined, 'Document', _selectedDocumentType),
+            _successDetailRow(Icons.description_outlined, 'Document',
+                _selectedDocumentType),
             SizedBox(height: 10.h),
             _successDetailRow(Icons.schedule_outlined, 'Processing',
                 '$urgencyLabel Processing'),
@@ -666,9 +733,9 @@ class _DocumentRequestScreenState extends ConsumerState<DocumentRequestScreen> {
             Container(
               padding: EdgeInsets.all(14.w),
               decoration: BoxDecoration(
-                color: const Color(0xFFFFFBEB),
+                color: tipBg,
                 borderRadius: BorderRadius.circular(12.r),
-                border: Border.all(color: const Color(0xFFFDE68A)),
+                border: Border.all(color: tipBorder),
               ),
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -680,10 +747,7 @@ class _DocumentRequestScreenState extends ConsumerState<DocumentRequestScreen> {
                     child: Text(
                       'Save your reference number. You can track your request status in the Profile section.',
                       style: TextStyle(
-                        fontSize: 13.sp,
-                        color: const Color(0xFF92400E),
-                        height: 1.4,
-                      ),
+                          fontSize: 13.sp, color: tipText, height: 1.4),
                     ),
                   ),
                 ],
@@ -706,11 +770,10 @@ class _DocumentRequestScreenState extends ConsumerState<DocumentRequestScreen> {
                     borderRadius: BorderRadius.circular(14.r),
                   ),
                 ),
-                child: Text(
-                  'Done',
-                  style:
-                      TextStyle(fontSize: 16.sp, fontWeight: FontWeight.w700),
-                ),
+                child: Text('Done',
+                    style: TextStyle(
+                        fontSize: 16.sp,
+                        fontWeight: FontWeight.w700)),
               ),
             ),
           ],
@@ -719,25 +782,23 @@ class _DocumentRequestScreenState extends ConsumerState<DocumentRequestScreen> {
     );
   }
 
-  Widget _successDetailRow(IconData icon, String label, String value) {
+  Widget _successDetailRow(
+      IconData icon, String label, String value) {
     return Row(
       children: [
         Icon(icon,
-            size: 16.sp, color: HomeColors.heritagePurple.withValues(alpha: 0.7)),
+            size: 16.sp,
+            color: HomeColors.heritagePurple.withValues(alpha: 0.7)),
         SizedBox(width: 10.w),
-        Text(
-          label,
-          style: TextStyle(fontSize: 13.sp, color: const Color(0xFF9CA3AF)),
-        ),
+        Text(label,
+            style: TextStyle(fontSize: 13.sp, color: _mutedText)),
         const Spacer(),
-        Text(
-          value,
-          style: TextStyle(
-            fontSize: 14.sp,
-            fontWeight: FontWeight.w600,
-            color: HomeColors.deepAnchor,
-          ),
-        ),
+        Text(value,
+            style: TextStyle(
+              fontSize: 14.sp,
+              fontWeight: FontWeight.w600,
+              color: _titleText,
+            )),
       ],
     );
   }
@@ -770,8 +831,11 @@ class _DocumentRequestScreenState extends ConsumerState<DocumentRequestScreen> {
   // ═══════════════════════════════════════════════════════
   @override
   Widget build(BuildContext context) {
+    _isDark = Theme.of(context).brightness == Brightness.dark;
+    _cs = Theme.of(context).colorScheme;
+
     return Scaffold(
-      backgroundColor: HomeColors.warmHearth,
+      backgroundColor: _scaffoldBg,
       body: CustomScrollView(
         physics: const BouncingScrollPhysics(),
         slivers: [
@@ -807,7 +871,7 @@ class _DocumentRequestScreenState extends ConsumerState<DocumentRequestScreen> {
     );
   }
 
-  // ─── SLIVER APP BAR ─────────────────────────────────────
+  // ─── SLIVER APP BAR ───────────────────────────────────
   Widget _buildSliverAppBar() {
     return SliverAppBar(
       expandedHeight: 210.h,
@@ -847,7 +911,6 @@ class _DocumentRequestScreenState extends ConsumerState<DocumentRequestScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  // FIX: removed SizedBox(height: 40.h) — too tall for 160px FlexibleSpace
                   Row(
                     children: [
                       Container(
@@ -857,11 +920,8 @@ class _DocumentRequestScreenState extends ConsumerState<DocumentRequestScreen> {
                           color: Colors.white.withValues(alpha: 0.15),
                           borderRadius: BorderRadius.circular(15.r),
                         ),
-                        child: Icon(
-                          Icons.description_rounded,
-                          size: 28.sp,
-                          color: Colors.white,
-                        ),
+                        child: Icon(Icons.description_rounded,
+                            size: 28.sp, color: Colors.white),
                       ),
                       SizedBox(width: 14.w),
                       Expanded(
@@ -896,7 +956,6 @@ class _DocumentRequestScreenState extends ConsumerState<DocumentRequestScreen> {
                     'Request barangay clearances, certificates, and other official documents.',
                     style: TextStyle(
                       fontSize: 12.sp,
-                      fontWeight: FontWeight.w400,
                       color: Colors.white60,
                       height: 1.4,
                     ),
@@ -932,6 +991,8 @@ class _DocumentRequestScreenState extends ConsumerState<DocumentRequestScreen> {
   Widget _stepDot(int step, String label) {
     final isActive = _currentStep >= step;
     final isPast = _currentStep > step;
+    final inactiveCircle =
+        _isDark ? _cs!.onSurface.withOpacity(0.15) : const Color(0xFFE5E7EB);
 
     return Expanded(
       child: Column(
@@ -941,14 +1002,13 @@ class _DocumentRequestScreenState extends ConsumerState<DocumentRequestScreen> {
             width: 32.w,
             height: 32.w,
             decoration: BoxDecoration(
-              color: isActive
-                  ? HomeColors.heritagePurple
-                  : const Color(0xFFE5E7EB),
+              color: isActive ? HomeColors.heritagePurple : inactiveCircle,
               shape: BoxShape.circle,
               boxShadow: isActive
                   ? [
                       BoxShadow(
-                        color: HomeColors.heritagePurple.withValues(alpha: 0.3),
+                        color: HomeColors.heritagePurple
+                            .withValues(alpha: 0.3),
                         blurRadius: 8,
                         offset: const Offset(0, 2),
                       )
@@ -957,14 +1017,14 @@ class _DocumentRequestScreenState extends ConsumerState<DocumentRequestScreen> {
             ),
             child: Center(
               child: isPast
-                  ? Icon(Icons.check_rounded, size: 16.sp, color: Colors.white)
+                  ? Icon(Icons.check_rounded,
+                      size: 16.sp, color: Colors.white)
                   : Text(
                       '${step + 1}',
                       style: TextStyle(
                         fontSize: 13.sp,
                         fontWeight: FontWeight.w700,
-                        color:
-                            isActive ? Colors.white : const Color(0xFF9CA3AF),
+                        color: isActive ? Colors.white : _mutedText,
                       ),
                     ),
             ),
@@ -975,8 +1035,9 @@ class _DocumentRequestScreenState extends ConsumerState<DocumentRequestScreen> {
             textAlign: TextAlign.center,
             style: TextStyle(
               fontSize: 10.sp,
-              fontWeight: isActive ? FontWeight.w600 : FontWeight.w400,
-              color: isActive ? HomeColors.deepAnchor : const Color(0xFF9CA3AF),
+              fontWeight:
+                  isActive ? FontWeight.w600 : FontWeight.w400,
+              color: isActive ? _titleText : _mutedText,
               height: 1.3,
             ),
           ),
@@ -987,6 +1048,8 @@ class _DocumentRequestScreenState extends ConsumerState<DocumentRequestScreen> {
 
   Widget _stepLine(int fromStep) {
     final isPast = _currentStep > fromStep;
+    final inactiveLine =
+        _isDark ? _cs!.onSurface.withOpacity(0.12) : const Color(0xFFE5E7EB);
     return Expanded(
       child: Padding(
         padding: EdgeInsets.only(bottom: 24.h),
@@ -994,7 +1057,7 @@ class _DocumentRequestScreenState extends ConsumerState<DocumentRequestScreen> {
           height: 2,
           margin: EdgeInsets.symmetric(horizontal: 2.w),
           decoration: BoxDecoration(
-            color: isPast ? HomeColors.heritagePurple : const Color(0xFFE5E7EB),
+            color: isPast ? HomeColors.heritagePurple : inactiveLine,
             borderRadius: BorderRadius.circular(1),
           ),
         ),
@@ -1016,10 +1079,9 @@ class _DocumentRequestScreenState extends ConsumerState<DocumentRequestScreen> {
         children: [
           _sectionLabel('Document Type'),
           SizedBox(height: 2.h),
-          Text(
-            'Tap to select the document you need',
-            style: TextStyle(fontSize: 13.sp, color: const Color(0xFF9CA3AF)),
-          ),
+          Text('Tap to select the document you need',
+              style: TextStyle(
+                  fontSize: 13.sp, color: _subtitleText)),
           SizedBox(height: 14.h),
           Material(
             color: Colors.transparent,
@@ -1032,9 +1094,7 @@ class _DocumentRequestScreenState extends ConsumerState<DocumentRequestScreen> {
                   color: accent.withValues(alpha: 0.05),
                   borderRadius: BorderRadius.circular(14.r),
                   border: Border.all(
-                    color: accent.withValues(alpha: 0.3),
-                    width: 1.5,
-                  ),
+                      color: accent.withValues(alpha: 0.3), width: 1.5),
                 ),
                 child: Row(
                   children: [
@@ -1045,11 +1105,8 @@ class _DocumentRequestScreenState extends ConsumerState<DocumentRequestScreen> {
                         color: accent.withValues(alpha: 0.12),
                         borderRadius: BorderRadius.circular(13.r),
                       ),
-                      child: Icon(
-                        doc['icon'] as IconData,
-                        size: 24.sp,
-                        color: accent,
-                      ),
+                      child: Icon(doc['icon'] as IconData,
+                          size: 24.sp, color: accent),
                     ),
                     SizedBox(width: 14.w),
                     Expanded(
@@ -1064,7 +1121,7 @@ class _DocumentRequestScreenState extends ConsumerState<DocumentRequestScreen> {
                                   style: TextStyle(
                                     fontSize: 16.sp,
                                     fontWeight: FontWeight.w600,
-                                    color: HomeColors.deepAnchor,
+                                    color: _titleText,
                                   ),
                                 ),
                               ),
@@ -1073,10 +1130,17 @@ class _DocumentRequestScreenState extends ConsumerState<DocumentRequestScreen> {
                                   padding: EdgeInsets.symmetric(
                                       horizontal: 8.w, vertical: 3.h),
                                   decoration: BoxDecoration(
-                                    color: const Color(0xFFFEF2F2),
-                                    borderRadius: BorderRadius.circular(6.r),
+                                    color: _isDark
+                                        ? const Color(0xFFDC2626)
+                                            .withOpacity(0.15)
+                                        : const Color(0xFFFEF2F2),
+                                    borderRadius:
+                                        BorderRadius.circular(6.r),
                                     border: Border.all(
-                                        color: const Color(0xFFFECACA)),
+                                        color: _isDark
+                                            ? const Color(0xFFDC2626)
+                                                .withOpacity(0.3)
+                                            : const Color(0xFFFECACA)),
                                   ),
                                   child: Text(
                                     'Unavailable',
@@ -1093,9 +1157,7 @@ class _DocumentRequestScreenState extends ConsumerState<DocumentRequestScreen> {
                           Text(
                             doc['desc'] as String,
                             style: TextStyle(
-                              fontSize: 13.sp,
-                              color: const Color(0xFF9CA3AF),
-                            ),
+                                fontSize: 13.sp, color: _mutedText),
                             maxLines: 2,
                             overflow: TextOverflow.ellipsis,
                           ),
@@ -1110,11 +1172,8 @@ class _DocumentRequestScreenState extends ConsumerState<DocumentRequestScreen> {
                         color: accent.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(9.r),
                       ),
-                      child: Icon(
-                        Icons.chevron_right_rounded,
-                        size: 18.sp,
-                        color: accent,
-                      ),
+                      child: Icon(Icons.chevron_right_rounded,
+                          size: 18.sp, color: accent),
                     ),
                   ],
                 ),
@@ -1126,10 +1185,9 @@ class _DocumentRequestScreenState extends ConsumerState<DocumentRequestScreen> {
             controller: _purposeController,
             maxLines: 3,
             style: TextStyle(
-              fontSize: 15.sp,
-              fontWeight: FontWeight.w500,
-              color: HomeColors.deepAnchor,
-            ),
+                fontSize: 15.sp,
+                fontWeight: FontWeight.w500,
+                color: _titleText),
             decoration: _fieldDecoration(
               'Purpose of request (e.g., Employment, School, Travel)',
               Icons.edit_note_rounded,
@@ -1159,7 +1217,9 @@ class _DocumentRequestScreenState extends ConsumerState<DocumentRequestScreen> {
             height: 52.w,
             decoration: BoxDecoration(
               color: _isFree
-                  ? const Color(0xFFF0FDF4)
+                  ? (_isDark
+                      ? const Color(0xFF16A34A).withOpacity(0.15)
+                      : const Color(0xFFF0FDF4))
                   : HomeColors.heritagePurple.withValues(alpha: 0.08),
               borderRadius: BorderRadius.circular(14.r),
             ),
@@ -1168,8 +1228,9 @@ class _DocumentRequestScreenState extends ConsumerState<DocumentRequestScreen> {
                   ? Icons.verified_user_rounded
                   : Icons.receipt_long_rounded,
               size: 26.sp,
-              color:
-                  _isFree ? const Color(0xFF16A34A) : HomeColors.heritagePurple,
+              color: _isFree
+                  ? const Color(0xFF16A34A)
+                  : HomeColors.heritagePurple,
             ),
           ),
           SizedBox(width: 16.w),
@@ -1185,7 +1246,7 @@ class _DocumentRequestScreenState extends ConsumerState<DocumentRequestScreen> {
                     style: TextStyle(
                       fontSize: 16.sp,
                       fontWeight: FontWeight.w600,
-                      color: HomeColors.deepAnchor,
+                      color: _titleText,
                     ),
                   ),
                 ),
@@ -1195,9 +1256,7 @@ class _DocumentRequestScreenState extends ConsumerState<DocumentRequestScreen> {
                       ? 'No payment required for this document'
                       : 'Pay at the Municipality Office upon pickup',
                   style: TextStyle(
-                      fontSize: 13.sp,
-                      color: const Color(0xFF9CA3AF),
-                      height: 1.3),
+                      fontSize: 13.sp, color: _mutedText, height: 1.3),
                 ),
               ],
             ),
@@ -1233,19 +1292,18 @@ class _DocumentRequestScreenState extends ConsumerState<DocumentRequestScreen> {
           children: [
             _sectionLabel('Personal Information'),
             SizedBox(height: 2.h),
-            Text(
-              'Provide accurate details for verification',
-              style: TextStyle(fontSize: 13.sp, color: const Color(0xFF9CA3AF)),
-            ),
+            Text('Provide accurate details for verification',
+                style: TextStyle(
+                    fontSize: 13.sp, color: _subtitleText)),
             SizedBox(height: 16.h),
             TextFormField(
               controller: _fullNameController,
               style: TextStyle(
-                fontSize: 15.sp,
-                fontWeight: FontWeight.w500,
-                color: HomeColors.deepAnchor,
-              ),
-              decoration: _fieldDecoration('Full Name', Icons.person_rounded),
+                  fontSize: 15.sp,
+                  fontWeight: FontWeight.w500,
+                  color: _titleText),
+              decoration:
+                  _fieldDecoration('Full Name', Icons.person_rounded),
               validator: (value) {
                 if (value == null || value.trim().isEmpty) {
                   return 'Please enter your full name';
@@ -1257,10 +1315,9 @@ class _DocumentRequestScreenState extends ConsumerState<DocumentRequestScreen> {
             TextFormField(
               controller: _addressController,
               style: TextStyle(
-                fontSize: 15.sp,
-                fontWeight: FontWeight.w500,
-                color: HomeColors.deepAnchor,
-              ),
+                  fontSize: 15.sp,
+                  fontWeight: FontWeight.w500,
+                  color: _titleText),
               decoration:
                   _fieldDecoration('Complete Address', Icons.home_rounded),
               validator: (value) {
@@ -1286,34 +1343,38 @@ class _DocumentRequestScreenState extends ConsumerState<DocumentRequestScreen> {
         children: [
           _sectionLabel('Processing Urgency'),
           SizedBox(height: 2.h),
-          Text(
-            'Faster processing may include additional fees',
-            style: TextStyle(fontSize: 13.sp, color: const Color(0xFF9CA3AF)),
-          ),
+          Text('Faster processing may include additional fees',
+              style: TextStyle(
+                  fontSize: 13.sp, color: _subtitleText)),
           SizedBox(height: 16.h),
           ..._urgencyLevels.map((urgency) {
-            final urgencyLabel = '${urgency['label']} (${urgency['desc']})';
+            final urgencyLabel =
+                '${urgency['label']} (${urgency['desc']})';
             final isSelected = _selectedUrgency == urgencyLabel;
             final color = _urgencyColor(urgency['label']!);
-            final bg = _urgencyBgColor(urgency['label']!);
+            final bg = _urgencyBg(urgency['label']!);
             final icon = _urgencyIcon(urgency['icon']!);
+            final inactiveIconBg = _isDark
+                ? _cs!.onSurface.withOpacity(0.08)
+                : const Color(0xFFF3F4F6);
 
             return Padding(
               padding: EdgeInsets.only(bottom: 8.h),
               child: Material(
                 color: Colors.transparent,
                 child: InkWell(
-                  onTap: () => setState(() => _selectedUrgency = urgencyLabel),
+                  onTap: () =>
+                      setState(() => _selectedUrgency = urgencyLabel),
                   borderRadius: BorderRadius.circular(14.r),
                   child: AnimatedContainer(
                     duration: const Duration(milliseconds: 200),
-                    padding:
-                        EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
+                    padding: EdgeInsets.symmetric(
+                        horizontal: 16.w, vertical: 14.h),
                     decoration: BoxDecoration(
                       color: isSelected ? bg : Colors.transparent,
                       borderRadius: BorderRadius.circular(14.r),
                       border: Border.all(
-                        color: isSelected ? color : const Color(0xFFE5E7EB),
+                        color: isSelected ? color : _borderColor,
                         width: isSelected ? 1.5 : 1,
                       ),
                     ),
@@ -1326,13 +1387,12 @@ class _DocumentRequestScreenState extends ConsumerState<DocumentRequestScreen> {
                           decoration: BoxDecoration(
                             color: isSelected
                                 ? color.withValues(alpha: 0.12)
-                                : const Color(0xFFF3F4F6),
+                                : inactiveIconBg,
                             borderRadius: BorderRadius.circular(11.r),
                           ),
                           child: Icon(icon,
                               size: 20.sp,
-                              color:
-                                  isSelected ? color : const Color(0xFF9CA3AF)),
+                              color: isSelected ? color : _mutedText),
                         ),
                         SizedBox(width: 14.w),
                         Expanded(
@@ -1345,16 +1405,15 @@ class _DocumentRequestScreenState extends ConsumerState<DocumentRequestScreen> {
                                   fontSize: 15.sp,
                                   fontWeight: FontWeight.w600,
                                   color: isSelected
-                                      ? HomeColors.deepAnchor
-                                      : const Color(0xFF6B7280),
+                                      ? _titleText
+                                      : _bodyText,
                                 ),
                               ),
                               SizedBox(height: 2.h),
                               Text(
                                 'Estimated: ${urgency['desc']}',
                                 style: TextStyle(
-                                    fontSize: 13.sp,
-                                    color: const Color(0xFF9CA3AF)),
+                                    fontSize: 13.sp, color: _mutedText),
                               ),
                             ],
                           ),
@@ -1388,8 +1447,8 @@ class _DocumentRequestScreenState extends ConsumerState<DocumentRequestScreen> {
               _sectionLabel('Attachments'),
               if (_attachedFiles.isNotEmpty)
                 Container(
-                  padding:
-                      EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
+                  padding: EdgeInsets.symmetric(
+                      horizontal: 10.w, vertical: 4.h),
                   decoration: BoxDecoration(
                     color: HomeColors.heritagePurple.withValues(alpha: 0.08),
                     borderRadius: BorderRadius.circular(20.r),
@@ -1409,7 +1468,7 @@ class _DocumentRequestScreenState extends ConsumerState<DocumentRequestScreen> {
           Text(
             'Upload supporting documents like valid ID, proof of address (optional)',
             style: TextStyle(
-                fontSize: 13.sp, color: const Color(0xFF9CA3AF), height: 1.4),
+                fontSize: 13.sp, color: _subtitleText, height: 1.4),
           ),
           SizedBox(height: 16.h),
           if (_attachedFiles.isNotEmpty)
@@ -1445,12 +1504,11 @@ class _DocumentRequestScreenState extends ConsumerState<DocumentRequestScreen> {
           width: double.infinity,
           padding: EdgeInsets.symmetric(vertical: 30.h),
           decoration: BoxDecoration(
-            color: HomeColors.warmHearth,
+            color: _scaffoldBg,
             borderRadius: BorderRadius.circular(16.r),
             border: Border.all(
               color: HomeColors.heritagePurple.withValues(alpha: 0.15),
               width: 1.5,
-              strokeAlign: BorderSide.strokeAlignInside,
             ),
           ),
           child: Column(
@@ -1462,27 +1520,20 @@ class _DocumentRequestScreenState extends ConsumerState<DocumentRequestScreen> {
                   color: HomeColors.heritagePurple.withValues(alpha: 0.08),
                   borderRadius: BorderRadius.circular(14.r),
                 ),
-                child: Icon(
-                  Icons.cloud_upload_rounded,
-                  size: 26.sp,
-                  color: HomeColors.heritagePurple,
-                ),
+                child: Icon(Icons.cloud_upload_rounded,
+                    size: 26.sp, color: HomeColors.heritagePurple),
               ),
               SizedBox(height: 12.h),
-              Text(
-                'Tap to attach files',
-                style: TextStyle(
-                  fontSize: 15.sp,
-                  fontWeight: FontWeight.w600,
-                  color: HomeColors.heritagePurple,
-                ),
-              ),
+              Text('Tap to attach files',
+                  style: TextStyle(
+                    fontSize: 15.sp,
+                    fontWeight: FontWeight.w600,
+                    color: HomeColors.heritagePurple,
+                  )),
               SizedBox(height: 4.h),
-              Text(
-                'Valid ID, proof of address, or other documents',
-                style:
-                    TextStyle(fontSize: 13.sp, color: const Color(0xFF9CA3AF)),
-              ),
+              Text('Valid ID, proof of address, or other documents',
+                  style: TextStyle(
+                      fontSize: 13.sp, color: _mutedText)),
             ],
           ),
         ),
@@ -1505,7 +1556,6 @@ class _DocumentRequestScreenState extends ConsumerState<DocumentRequestScreen> {
             border: Border.all(
               color: HomeColors.heritagePurple.withValues(alpha: 0.2),
               width: 1.5,
-              strokeAlign: BorderSide.strokeAlignInside,
             ),
           ),
           child: Icon(Icons.add_rounded,
@@ -1532,9 +1582,9 @@ class _DocumentRequestScreenState extends ConsumerState<DocumentRequestScreen> {
           height: 116.h,
           padding: EdgeInsets.all(12.w),
           decoration: BoxDecoration(
-            color: HomeColors.warmHearth,
+            color: _scaffoldBg,
             borderRadius: BorderRadius.circular(14.r),
-            border: Border.all(color: const Color(0xFFE5E7EB)),
+            border: Border.all(color: _borderColor),
           ),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -1543,32 +1593,27 @@ class _DocumentRequestScreenState extends ConsumerState<DocumentRequestScreen> {
                 width: 38.w,
                 height: 38.w,
                 decoration: BoxDecoration(
-                  color: const Color(0xFFFEF2F2),
+                  color: _isDark
+                      ? const Color(0xFFDC2626).withOpacity(0.15)
+                      : const Color(0xFFFEF2F2),
                   borderRadius: BorderRadius.circular(10.r),
                 ),
-                child: Icon(
-                  Icons.picture_as_pdf_rounded,
-                  size: 20.sp,
-                  color: const Color(0xFFDC2626),
-                ),
+                child: Icon(Icons.picture_as_pdf_rounded,
+                    size: 20.sp, color: const Color(0xFFDC2626)),
               ),
               SizedBox(height: 8.h),
-              Text(
-                fileName,
-                style: TextStyle(
-                  fontSize: 10.sp,
-                  fontWeight: FontWeight.w500,
-                  color: HomeColors.deepAnchor,
-                ),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
+              Text(fileName,
+                  style: TextStyle(
+                    fontSize: 10.sp,
+                    fontWeight: FontWeight.w500,
+                    color: _titleText,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis),
               SizedBox(height: 2.h),
-              Text(
-                fileSize,
-                style:
-                    TextStyle(fontSize: 9.sp, color: const Color(0xFF9CA3AF)),
-              ),
+              Text(fileSize,
+                  style:
+                      TextStyle(fontSize: 9.sp, color: _mutedText)),
             ],
           ),
         ),
@@ -1581,11 +1626,13 @@ class _DocumentRequestScreenState extends ConsumerState<DocumentRequestScreen> {
               width: 24.w,
               height: 24.w,
               decoration: BoxDecoration(
-                color: const Color(0xFF374151).withValues(alpha: 0.85),
+                color: _isDark
+                    ? Colors.white24
+                    : const Color(0xFF374151).withValues(alpha: 0.85),
                 shape: BoxShape.circle,
               ),
-              child:
-                  Icon(Icons.close_rounded, size: 14.sp, color: Colors.white),
+              child: Icon(Icons.close_rounded,
+                  size: 14.sp, color: Colors.white),
             ),
           ),
         ),
@@ -1603,19 +1650,17 @@ class _DocumentRequestScreenState extends ConsumerState<DocumentRequestScreen> {
         children: [
           _sectionLabel('Additional Notes'),
           SizedBox(height: 2.h),
-          Text(
-            'Any special instructions or details (optional)',
-            style: TextStyle(fontSize: 13.sp, color: const Color(0xFF9CA3AF)),
-          ),
+          Text('Any special instructions or details (optional)',
+              style: TextStyle(
+                  fontSize: 13.sp, color: _subtitleText)),
           SizedBox(height: 16.h),
           TextFormField(
             controller: _additionalNotesController,
             maxLines: 3,
             style: TextStyle(
-              fontSize: 15.sp,
-              fontWeight: FontWeight.w500,
-              color: HomeColors.deepAnchor,
-            ),
+                fontSize: 15.sp,
+                fontWeight: FontWeight.w500,
+                color: _titleText),
             decoration: _fieldDecoration(
               'Write any additional notes here...',
               Icons.sticky_note_2_rounded,
@@ -1629,7 +1674,6 @@ class _DocumentRequestScreenState extends ConsumerState<DocumentRequestScreen> {
   // ─── SUBMIT BUTTON ────────────────────────────────────
   Widget _buildSubmitButton() {
     final bool canSubmit = _selectedIsAvailable && !_isSubmitting;
-
     return SizedBox(
       width: double.infinity,
       height: 56.h,
@@ -1638,13 +1682,13 @@ class _DocumentRequestScreenState extends ConsumerState<DocumentRequestScreen> {
         style: ElevatedButton.styleFrom(
           backgroundColor: HomeColors.heritagePurple,
           foregroundColor: Colors.white,
-          disabledBackgroundColor: HomeColors.heritagePurple.withValues(alpha: 0.5),
+          disabledBackgroundColor:
+              HomeColors.heritagePurple.withValues(alpha: 0.5),
           disabledForegroundColor: Colors.white70,
           elevation: 0,
           shadowColor: Colors.transparent,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16.r),
-          ),
+              borderRadius: BorderRadius.circular(16.r)),
         ),
         child: AnimatedSwitcher(
           duration: const Duration(milliseconds: 200),
@@ -1655,7 +1699,8 @@ class _DocumentRequestScreenState extends ConsumerState<DocumentRequestScreen> {
                   height: 24.w,
                   child: const CircularProgressIndicator(
                     strokeWidth: 2.5,
-                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white70),
+                    valueColor:
+                        AlwaysStoppedAnimation<Color>(Colors.white70),
                   ),
                 )
               : Row(
@@ -1681,12 +1726,16 @@ class _DocumentRequestScreenState extends ConsumerState<DocumentRequestScreen> {
 
   // ─── INFO BANNER ──────────────────────────────────────
   Widget _buildInfoBanner() {
+    final bannerBorder = _isDark
+        ? _cs!.onSurface.withOpacity(0.12)
+        : const Color(0xFFE8E0F0);
+
     return Container(
       padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
-        color: HomeColors.cardWhite,
+        color: _cardBg,
         borderRadius: BorderRadius.circular(16.r),
-        border: Border.all(color: const Color(0xFFE8E0F0)),
+        border: Border.all(color: bannerBorder),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1698,25 +1747,21 @@ class _DocumentRequestScreenState extends ConsumerState<DocumentRequestScreen> {
               color: HomeColors.heritagePurple.withValues(alpha: 0.08),
               borderRadius: BorderRadius.circular(10.r),
             ),
-            child: Icon(
-              Icons.info_outline_rounded,
-              size: 18.sp,
-              color: HomeColors.heritagePurple.withValues(alpha: 0.7),
-            ),
+            child: Icon(Icons.info_outline_rounded,
+                size: 18.sp,
+                color: HomeColors.heritagePurple.withValues(alpha: 0.7)),
           ),
           SizedBox(width: 12.w),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  'Important Reminders',
-                  style: TextStyle(
-                    fontSize: 13.sp,
-                    fontWeight: FontWeight.w600,
-                    color: HomeColors.deepAnchor,
-                  ),
-                ),
+                Text('Important Reminders',
+                    style: TextStyle(
+                      fontSize: 13.sp,
+                      fontWeight: FontWeight.w600,
+                      color: _titleText,
+                    )),
                 SizedBox(height: 4.h),
                 Text(
                   'Documents are processed during office hours (8 AM – 5 PM, Mon–Fri). '
@@ -1724,8 +1769,7 @@ class _DocumentRequestScreenState extends ConsumerState<DocumentRequestScreen> {
                   'Track your request status in the Profile section.',
                   style: TextStyle(
                     fontSize: 13.sp,
-                    fontWeight: FontWeight.w400,
-                    color: const Color(0xFF6B7280),
+                    color: _bodyText,
                     height: 1.5,
                   ),
                 ),
@@ -1744,7 +1788,7 @@ class _DocumentRequestScreenState extends ConsumerState<DocumentRequestScreen> {
       style: TextStyle(
         fontSize: 17.sp,
         fontWeight: FontWeight.w700,
-        color: HomeColors.deepAnchor,
+        color: _titleText,
         letterSpacing: -0.2,
       ),
     );
@@ -1755,20 +1799,19 @@ class _DocumentRequestScreenState extends ConsumerState<DocumentRequestScreen> {
       hintText: hint,
       hintStyle: TextStyle(
         fontSize: 14.sp,
-        color: const Color(0xFFBDBDBD),
+        color: _mutedText,
         fontWeight: FontWeight.w400,
       ),
       prefixIcon: Padding(
         padding: EdgeInsets.only(left: 14.w, right: 10.w),
-        child: Icon(
-          icon,
-          size: 20.sp,
-          color: HomeColors.heritagePurple.withValues(alpha: 0.55),
-        ),
+        child: Icon(icon,
+            size: 20.sp,
+            color: HomeColors.heritagePurple.withValues(alpha: 0.55)),
       ),
-      prefixIconConstraints: BoxConstraints(minWidth: 0, minHeight: 0),
+      prefixIconConstraints:
+          const BoxConstraints(minWidth: 0, minHeight: 0),
       filled: true,
-      fillColor: HomeColors.warmHearth,
+      fillColor: _inputFill,
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(14.r),
         borderSide: BorderSide.none,
@@ -1779,29 +1822,33 @@ class _DocumentRequestScreenState extends ConsumerState<DocumentRequestScreen> {
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(14.r),
-        borderSide:
-            const BorderSide(color: HomeColors.heritagePurple, width: 1.5),
+        borderSide: const BorderSide(
+            color: HomeColors.heritagePurple, width: 1.5),
       ),
       errorBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(14.r),
-        borderSide: const BorderSide(color: Color(0xFFDC2626), width: 1),
+        borderSide:
+            const BorderSide(color: Color(0xFFDC2626), width: 1),
       ),
       focusedErrorBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(14.r),
-        borderSide: const BorderSide(color: Color(0xFFDC2626), width: 1.5),
+        borderSide:
+            const BorderSide(color: Color(0xFFDC2626), width: 1.5),
       ),
-      contentPadding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 16.h),
-      errorStyle: TextStyle(fontSize: 12.sp, color: const Color(0xFFDC2626)),
+      contentPadding:
+          EdgeInsets.symmetric(horizontal: 16.w, vertical: 16.h),
+      errorStyle:
+          TextStyle(fontSize: 12.sp, color: const Color(0xFFDC2626)),
     );
   }
 
   BoxDecoration _cardDecoration() {
     return BoxDecoration(
-      color: HomeColors.cardWhite,
+      color: _cardBg,
       borderRadius: BorderRadius.circular(20.r),
       boxShadow: [
         BoxShadow(
-          color: Colors.black.withValues(alpha: 0.04),
+          color: Colors.black.withValues(alpha: _isDark ? 0.15 : 0.04),
           blurRadius: 12,
           offset: const Offset(0, 3),
         ),

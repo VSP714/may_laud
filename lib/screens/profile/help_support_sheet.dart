@@ -31,7 +31,12 @@ class HelpSupportSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return DraggableScrollableSheet(
+    final _theme = Theme.of(context);
+    final _isDark = _theme.brightness == Brightness.dark;
+    final _cs = _theme.colorScheme;
+    final _titleColor = _isDark ? _cs.onSurface : HomeColors.deepAnchor;
+    final _accentColor = _isDark ? _cs.primary : HomeColors.heritagePurple;
+        return DraggableScrollableSheet(
       expand: false,
       initialChildSize: 0.65,
       maxChildSize: 0.92,
@@ -48,7 +53,7 @@ class HelpSupportSheet extends StatelessWidget {
               style: TextStyle(
                 fontSize: 20.sp,
                 fontWeight: FontWeight.w700,
-                color: HomeColors.deepAnchor,
+                color: _titleColor,
               ),
             ),
             SizedBox(height: 6.h),
@@ -68,11 +73,15 @@ class HelpSupportSheet extends StatelessWidget {
                 itemBuilder: (ctx, i) => _FaqTile(
                   question: _faqs[i].q,
                   answer: _faqs[i].a,
+                  titleColor: _titleColor,
                 ),
               ),
             ),
             SizedBox(height: 16.h),
-            _buildContactCard(),
+            _buildContactCard(
+              titleColor: _titleColor,
+              accentColor: _accentColor,
+            ),
           ],
         ),
       ),
@@ -92,7 +101,8 @@ class HelpSupportSheet extends StatelessWidget {
     );
   }
 
-  Widget _buildContactCard() {
+  Widget _buildContactCard(
+      {required Color titleColor, required Color accentColor}) {
     return Container(
       width: double.infinity,
       padding: EdgeInsets.all(16.w),
@@ -104,7 +114,7 @@ class HelpSupportSheet extends StatelessWidget {
         children: [
           Icon(
             Icons.support_agent_outlined,
-            color: HomeColors.heritagePurple,
+            color: accentColor,
             size: 24.sp,
           ),
           SizedBox(width: 12.w),
@@ -117,7 +127,7 @@ class HelpSupportSheet extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 14.sp,
                     fontWeight: FontWeight.w600,
-                    color: HomeColors.deepAnchor,
+                    color: titleColor,
                   ),
                 ),
                 Text(
@@ -139,8 +149,13 @@ class HelpSupportSheet extends StatelessWidget {
 class _FaqTile extends StatelessWidget {
   final String question;
   final String answer;
+  final Color titleColor;
 
-  const _FaqTile({required this.question, required this.answer});
+  const _FaqTile({
+    required this.question,
+    required this.answer,
+    required this.titleColor,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -155,7 +170,7 @@ class _FaqTile extends StatelessWidget {
           style: TextStyle(
             fontSize: 14.sp,
             fontWeight: FontWeight.w600,
-            color: HomeColors.deepAnchor,
+            color: titleColor,
           ),
         ),
         iconColor: HomeColors.heritagePurple,

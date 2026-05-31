@@ -6,7 +6,7 @@ import 'package:may_laud/providers/content_providers.dart';
 import '../app_features/announcement/announcements_list_screen.dart';
 import '../app_features/flood_alert/flood_alert_screen.dart';
 
-// ===== MUNICIPAL BRAND PALETTE (same as before) =====
+// ===== MUNICIPAL BRAND PALETTE =====
 class HomeColors {
   static const Color heritagePurple = Color(0xFF4C229C);
   static const Color riverFlow = Color(0xFF643EB5);
@@ -68,17 +68,21 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // ✅ Get auth state – user name comes from here
     final authState = ref.watch(authProvider);
     final user = authState.user;
     final userName = user?.name ?? 'Resident';
     final isGuest = authState.isGuest;
 
+    // ← FIX: read theme so all helpers below can use it
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final cs = theme.colorScheme;
+
     return CustomScrollView(
       controller: _scrollController,
       physics: const BouncingScrollPhysics(),
       slivers: [
-        // ── Gradient header matching document/announcement screens ──
+        // Gradient header — intentionally keeps purple gradient in both modes
         SliverAppBar(
           expandedHeight: 210.h,
           pinned: true,
@@ -142,7 +146,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                               ],
                             ),
                           ),
-                          // Notification bell
                           Container(
                             width: 44.w,
                             height: 44.w,
@@ -202,7 +205,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             ),
           ),
         ),
-        // ── Body content ──
         SliverPadding(
           padding: EdgeInsets.only(
             left: 20.w,
@@ -212,18 +214,19 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           ),
           sliver: SliverList(
             delegate: SliverChildListDelegate([
-              _buildDashboardStats(),
+              _buildDashboardStats(isDark: isDark, cs: cs),
               SizedBox(height: 28.h),
               _buildFloodStatusBanner(context),
               SizedBox(height: 28.h),
-              _buildCitizenFeedback(context),
+              _buildCitizenFeedback(context, isDark: isDark, cs: cs),
               SizedBox(height: 28.h),
-              _buildSectionLabel('Announcements', 'Latest news from the LGU'),
+              _buildSectionLabel('Announcements', 'Latest news from the LGU',
+                  isDark: isDark, cs: cs),
               SizedBox(height: 16.h),
-              _buildAnnouncementFeed(),
+              _buildAnnouncementFeed(isDark: isDark, cs: cs),
               if (ref.watch(announcementsProvider).isNotEmpty) ...[
                 SizedBox(height: 8.h),
-                _buildViewAllButton(),
+                _buildViewAllButton(isDark: isDark, cs: cs),
               ],
             ]),
           ),
@@ -232,176 +235,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     );
   }
 
-  // ─── HEADER (now receives user name) ───────────────────
-  Widget _buildHeader(String userName, bool isGuest) {
-    return Column(
-      children: [
-        Row(
-          children: [
-            Container(
-              width: 56.w,
-              height: 56.w,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                gradient: HomeColors.avatarGradient,
-                boxShadow: [
-                  BoxShadow(
-                    color: HomeColors.heritagePurple.withValues(alpha: 0.3),
-                    blurRadius: 12,
-                    offset: const Offset(0, 4),
-                  ),
-                ],
-              ),
-              child: Center(
-                child: Icon(Icons.person, color: Colors.white, size: 28.sp),
-              ),
-            ),
-            SizedBox(width: 14.w),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Text(
-                        'Good ${_timeOfDay()}!',
-                        style: TextStyle(
-                          fontSize: 14.sp,
-                          fontWeight: FontWeight.w500,
-                          color: HomeColors.textMuted,
-                        ),
-                      ),
-                      SizedBox(width: 6.w),
-                      Container(
-                        padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 3.h),
-                        decoration: BoxDecoration(
-                          color: HomeColors.warmHearth,
-                          borderRadius: BorderRadius.circular(20.r),
-                          border: Border.all(
-                            color: HomeColors.heritagePurple.withValues(alpha: 0.15),
-                          ),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(Icons.verified,
-                                size: 12.sp, color: HomeColors.heritagePurple),
-                            SizedBox(width: 4.w),
-                            Text(
-                              isGuest ? 'Guest Mode' : 'LGU Milaor',
-                              style: TextStyle(
-                                fontSize: 10.sp,
-                                fontWeight: FontWeight.w700,
-                                color: HomeColors.heritagePurple,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                  SizedBox(height: 2.h),
-                  // ✅ Dynamic user name
-                  Text(
-                    userName,
-                    style: TextStyle(
-                      fontSize: 22.sp,
-                      fontWeight: FontWeight.w700,
-                      color: HomeColors.deepAnchor,
-                      height: 1.15,
-                    ),
-                  ),
-                  SizedBox(height: 2.h),
-                  Row(
-                    children: [
-                      Icon(Icons.location_on,
-                          size: 14.sp, color: HomeColors.riverFlow),
-                      SizedBox(width: 3.w),
-                      Text(
-                        'Milaor, Camarines Sur',
-                        style: TextStyle(
-                            fontSize: 12.sp, color: HomeColors.textMuted),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-            GestureDetector(
-              onTap: () {
-                // Navigate to notifications
-              },
-              child: Container(
-                width: 44.w,
-                height: 44.w,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: HomeColors.warmHearth,
-                  border: Border.all(
-                    color: HomeColors.riverFlow.withValues(alpha: 0.1),
-                  ),
-                ),
-                child: Stack(
-                  children: [
-                    Center(
-                      child: Icon(Icons.notifications_outlined,
-                          size: 22.sp, color: HomeColors.heritagePurple),
-                    ),
-                    Positioned(
-                      top: 10.h,
-                      right: 10.w,
-                      child: Container(
-                        width: 9.w,
-                        height: 9.w,
-                        decoration: const BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: HomeColors.dangerRed,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ],
-        ),
-        SizedBox(height: 14.h),
-        Container(
-          width: double.infinity,
-          padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 10.h),
-          decoration: BoxDecoration(
-            color: HomeColors.warmHearth,
-            borderRadius: BorderRadius.circular(14.r),
-          ),
-          child: Row(
-            children: [
-              Icon(Icons.calendar_today_rounded,
-                  size: 16.sp, color: HomeColors.heritagePurple),
-              SizedBox(width: 8.w),
-              Text(
-                _todayDate(),
-                style: TextStyle(
-                  fontSize: 13.sp,
-                  fontWeight: FontWeight.w600,
-                  color: HomeColors.heritagePurple,
-                ),
-              ),
-              const Spacer(),
-              Icon(Icons.cloud_outlined,
-                  size: 16.sp, color: HomeColors.textMuted),
-              SizedBox(width: 6.w),
-              Text(
-                '32°C  •  Partly Cloudy',
-                style: TextStyle(fontSize: 12.sp, color: HomeColors.textMuted),
-              ),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-
-  // Helper: get time of day for greeting
   String _timeOfDay() {
     final hour = DateTime.now().hour;
     if (hour < 12) return 'Morning';
@@ -409,9 +242,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     return 'Evening';
   }
 
-
   // ─── DASHBOARD STATS ──────────────────────────────────
-  Widget _buildDashboardStats() {
+  Widget _buildDashboardStats({required bool isDark, required ColorScheme cs}) {
+    final cardColor = isDark ? const Color(0xFF1E1E2E) : HomeColors.cardWhite;
+    final valueColor = isDark ? Colors.white : HomeColors.deepAnchor;
+    final labelColor = isDark ? Colors.white60 : HomeColors.textMuted;
+    final borderColor = isDark ? Colors.white.withOpacity(0.10) : const Color(0xFFDEE2E6);
+
     return Row(
       children: [
         _statCard(
@@ -420,6 +257,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           value: '12',
           color: HomeColors.heritagePurple,
           bgColor: HomeColors.heritagePurple.withValues(alpha: 0.08),
+          cardColor: cardColor,
+          valueColor: valueColor,
+          labelColor: labelColor,
+          borderColor: borderColor,
         ),
         SizedBox(width: 12.w),
         _statCard(
@@ -428,6 +269,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           value: '78%',
           color: HomeColors.successGreen,
           bgColor: HomeColors.successGreen.withValues(alpha: 0.08),
+          cardColor: cardColor,
+          valueColor: valueColor,
+          labelColor: labelColor,
+          borderColor: borderColor,
         ),
         SizedBox(width: 12.w),
         _statCard(
@@ -436,6 +281,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           value: '243',
           color: HomeColors.infoBlue,
           bgColor: HomeColors.infoBlue.withValues(alpha: 0.08),
+          cardColor: cardColor,
+          valueColor: valueColor,
+          labelColor: labelColor,
+          borderColor: borderColor,
         ),
         SizedBox(width: 12.w),
         _statCard(
@@ -444,6 +293,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           value: '18',
           color: HomeColors.warningAmber,
           bgColor: HomeColors.warningAmber.withValues(alpha: 0.08),
+          cardColor: cardColor,
+          valueColor: valueColor,
+          labelColor: labelColor,
+          borderColor: borderColor,
         ),
       ],
     );
@@ -455,14 +308,18 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     required String value,
     required Color color,
     required Color bgColor,
+    required Color cardColor,
+    required Color valueColor,
+    required Color labelColor,
+    required Color borderColor,
   }) {
     return Expanded(
       child: Container(
         padding: EdgeInsets.symmetric(vertical: 16.h, horizontal: 10.w),
         decoration: BoxDecoration(
-          color: HomeColors.cardWhite,
+          color: cardColor, // ← FIX
           borderRadius: BorderRadius.circular(18.r),
-          border: Border.all(color: Colors.grey.shade100),
+          border: Border.all(color: borderColor),
           boxShadow: [
             BoxShadow(
               color: Colors.black.withValues(alpha: 0.03),
@@ -488,7 +345,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               style: TextStyle(
                 fontSize: 20.sp,
                 fontWeight: FontWeight.w800,
-                color: HomeColors.deepAnchor,
+                color: valueColor, // ← FIX
                 height: 1,
               ),
             ),
@@ -499,7 +356,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               style: TextStyle(
                 fontSize: 10.sp,
                 fontWeight: FontWeight.w500,
-                color: HomeColors.textMuted,
+                color: labelColor, // ← FIX
                 height: 1.3,
               ),
             ),
@@ -510,7 +367,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   }
 
   // ─── SECTION LABEL ────────────────────────────────────
-  Widget _buildSectionLabel(String title, String subtitle) {
+  Widget _buildSectionLabel(String title, String subtitle,
+      {required bool isDark, required ColorScheme cs}) {
+    // ← FIX: was hardcoded HomeColors
+    final titleColor = isDark ? Colors.white : HomeColors.deepAnchor;
+    final subtitleColor = isDark ? Colors.white60 : HomeColors.textMuted;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -519,19 +381,20 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           style: TextStyle(
             fontSize: 22.sp,
             fontWeight: FontWeight.w700,
-            color: HomeColors.deepAnchor,
+            color: titleColor,
           ),
         ),
         SizedBox(height: 3.h),
         Text(
           subtitle,
-          style: TextStyle(fontSize: 13.sp, color: HomeColors.textMuted),
+          style: TextStyle(fontSize: 13.sp, color: subtitleColor),
         ),
       ],
     );
   }
 
-  // ─── FLOOD STATUS BANNER ──────────────────────────────
+  // ─── FLOOD STATUS BANNER ─────────────────────────────
+  // Intentionally keeps green gradient — no change needed
   Widget _buildFloodStatusBanner(BuildContext context) {
     return InkWell(
       borderRadius: BorderRadius.circular(20.r),
@@ -544,10 +407,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         padding: EdgeInsets.all(20.w),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(20.r),
-          gradient: LinearGradient(
+          gradient: const LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
-            colors: [HomeColors.successGreen, const Color(0xFF15803D)],
+            colors: [HomeColors.successGreen, Color(0xFF15803D)],
           ),
           boxShadow: [
             BoxShadow(
@@ -612,14 +475,25 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   }
 
   // ─── CITIZEN FEEDBACK ─────────────────────────────────
-  Widget _buildCitizenFeedback(BuildContext context) {
+  Widget _buildCitizenFeedback(BuildContext context,
+      {required bool isDark, required ColorScheme cs}) {
+    // ← FIX: was hardcoded Colors.white / HomeColors throughout
+    final cardColor = isDark ? const Color(0xFF1E1E2E) : HomeColors.cardWhite;
+    final borderColor = isDark ? Colors.white.withOpacity(0.10) : const Color(0xFFDEE2E6);
+    final titleColor = isDark ? Colors.white : HomeColors.deepAnchor;
+    final inputFill = isDark ? const Color(0xFF2A2A3A) : HomeColors.warmHearth;
+    final inputBorder = isDark
+        ? HomeColors.heritagePurple.withOpacity(0.5)
+        : HomeColors.heritagePurple.withValues(alpha: 0.3);
+    final starEmpty = isDark ? Colors.white24 : Colors.grey.shade300;
+
     return Container(
       width: double.infinity,
       padding: EdgeInsets.all(20.w),
       decoration: BoxDecoration(
-        color: HomeColors.cardWhite,
+        color: cardColor,
         borderRadius: BorderRadius.circular(20.r),
-        border: Border.all(color: Colors.grey.shade100),
+        border: Border.all(color: borderColor),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.03),
@@ -642,7 +516,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   style: TextStyle(
                     fontSize: 17.sp,
                     fontWeight: FontWeight.w700,
-                    color: HomeColors.deepAnchor,
+                    color: titleColor,
                   ),
                 ),
               ),
@@ -665,13 +539,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             ],
           ),
           SizedBox(height: 16.h),
-          // Rating: "Kamusta an serbisyo?"
           Text(
             'How is the LGU service?',
             style: TextStyle(
               fontSize: 14.sp,
               fontWeight: FontWeight.w600,
-              color: HomeColors.deepAnchor,
+              color: titleColor,
             ),
           ),
           SizedBox(height: 12.h),
@@ -692,7 +565,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     size: 36.sp,
                     color: i < _feedbackRating
                         ? HomeColors.warningAmber
-                        : Colors.grey.shade300,
+                        : starEmpty,
                   ),
                 ),
               );
@@ -719,12 +592,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             TextField(
               controller: _feedbackController,
               maxLines: 2,
+              style: TextStyle(color: isDark ? cs.onSurface : null),
               decoration: InputDecoration(
                 hintText: 'Any other suggestions? Write here...',
                 hintStyle:
                     TextStyle(fontSize: 12.sp, color: HomeColors.textMuted),
                 filled: true,
-                fillColor: HomeColors.warmHearth,
+                fillColor: inputFill,
                 contentPadding:
                     EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
                 border: OutlineInputBorder(
@@ -733,8 +607,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12.r),
-                  borderSide: BorderSide(
-                      color: HomeColors.heritagePurple.withValues(alpha: 0.3)),
+                  borderSide: BorderSide(color: inputBorder),
                 ),
               ),
             ),
@@ -810,23 +683,17 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   String _ratingLabel(int rating) {
     switch (rating) {
-      case 1:
-        return 'Needs improvement';
-      case 2:
-        return 'Could be better';
-      case 3:
-        return 'Okay, decent service';
-      case 4:
-        return 'Good service!';
-      case 5:
-        return 'Excellent! Keep it up!';
-      default:
-        return '';
+      case 1: return 'Needs improvement';
+      case 2: return 'Could be better';
+      case 3: return 'Okay, decent service';
+      case 4: return 'Good service!';
+      case 5: return 'Excellent! Keep it up!';
+      default: return '';
     }
   }
 
-  // ─── ANNOUNCEMENT FEED — reads the same provider as AnnouncementsListScreen ──
-  Widget _buildAnnouncementFeed() {
+  // ─── ANNOUNCEMENT FEED ────────────────────────────────
+  Widget _buildAnnouncementFeed({required bool isDark, required ColorScheme cs}) {
     final announcements = ref.watch(announcementsProvider);
 
     if (announcements.isEmpty) {
@@ -835,13 +702,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           padding: EdgeInsets.symmetric(vertical: 24.h),
           child: Text(
             'No announcements yet.',
-            style: TextStyle(fontSize: 14.sp, color: HomeColors.textMuted),
+            style: TextStyle(
+                fontSize: 14.sp,
+                color: isDark ? Colors.white60 : HomeColors.textMuted),
           ),
         ),
       );
     }
 
-    // Show latest 3 on home dashboard
     final preview = announcements.take(3).toList();
 
     return Column(
@@ -861,6 +729,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             date: preview[i].formattedDate,
             isUnread: !preview[i].isRead,
             imageUrl: preview[i].imageUrl,
+            isDark: isDark,
+            cs: cs,
             onTap: () {
               ref.read(announcementsProvider.notifier).markAsRead(preview[i].id);
               Navigator.push(
@@ -877,7 +747,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     );
   }
 
-  /// ─── PROFESSIONAL ANNOUNCEMENT CARD (Vertical Layout) ───
   Widget _buildAnnouncementCard({
     required String category,
     required Color accentColor,
@@ -886,17 +755,26 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     required String excerpt,
     required String date,
     required bool isUnread,
+    required bool isDark,
+    required ColorScheme cs,
     String? imageUrl,
     VoidCallback? onTap,
   }) {
+    // ← FIX: card/text colors were all hardcoded
+    final cardColor = isDark ? const Color(0xFF1E1E2E) : HomeColors.cardWhite;
+    final borderColor = isDark ? Colors.white.withOpacity(0.10) : const Color(0xFFDEE2E6);
+    final titleColor = isDark ? Colors.white : HomeColors.deepAnchor;
+    final excerptColor = isDark ? Colors.white60 : const Color(0xFF6B7280);
+    final dateColor = isDark ? Colors.white38 : const Color(0xFF9CA3AF);
+
     return GestureDetector(
       onTap: onTap,
       child: Container(
         width: double.infinity,
         decoration: BoxDecoration(
-          color: HomeColors.cardWhite,
+          color: cardColor,
           borderRadius: BorderRadius.circular(18.r),
-          border: Border.all(color: const Color(0xFFDEE2E6)),
+          border: Border.all(color: borderColor),
           boxShadow: [
             BoxShadow(
               color: const Color(0xFF000000).withValues(alpha: 0.04),
@@ -908,7 +786,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // ── Hero Image with Gradient Overlay & Category Badge ──
             ClipRRect(
               borderRadius: BorderRadius.vertical(top: Radius.circular(18.r)),
               child: Stack(
@@ -920,11 +797,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         ? Image.network(
                             imageUrl,
                             fit: BoxFit.cover,
-                            errorBuilder: (_, __, ___) => _cardFallback(accentColor, icon),
+                            errorBuilder: (_, __, ___) =>
+                                _cardFallback(accentColor, icon),
                           )
                         : _cardFallback(accentColor, icon),
                   ),
-                  // Gradient overlay for better text readability
                   Positioned.fill(
                     child: DecoratedBox(
                       decoration: BoxDecoration(
@@ -940,13 +817,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       ),
                     ),
                   ),
-                  // Category badge + Unread dot
                   Positioned(
                     left: 12.w,
                     bottom: 12.h,
                     child: Container(
-                      padding:
-                          EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
+                      padding: EdgeInsets.symmetric(
+                          horizontal: 12.w, vertical: 6.h),
                       decoration: BoxDecoration(
                         color: accentColor,
                         borderRadius: BorderRadius.circular(8.r),
@@ -976,7 +852,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       ),
                     ),
                   ),
-                  // Unread indicator
                   if (isUnread)
                     Positioned(
                       top: 12.h,
@@ -1000,13 +875,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 ],
               ),
             ),
-            // ── Content Body ──
             Padding(
               padding: EdgeInsets.all(16.w),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Title
                   Text(
                     title,
                     maxLines: 2,
@@ -1014,12 +887,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     style: TextStyle(
                       fontSize: 15.sp,
                       fontWeight: FontWeight.w700,
-                      color: HomeColors.deepAnchor,
+                      color: titleColor, // ← FIX
                       height: 1.3,
                     ),
                   ),
                   SizedBox(height: 8.h),
-                  // Excerpt
                   Text(
                     excerpt,
                     maxLines: 2,
@@ -1027,22 +899,21 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     style: TextStyle(
                       fontSize: 12.sp,
                       height: 1.5,
-                      color: const Color(0xFF6B7280),
+                      color: excerptColor, // ← FIX
                     ),
                   ),
                   SizedBox(height: 14.h),
-                  // Footer: date + action
                   Row(
                     children: [
                       Icon(Icons.access_time_rounded,
-                          size: 14.sp, color: const Color(0xFF9CA3AF)),
+                          size: 14.sp, color: dateColor),
                       SizedBox(width: 5.w),
                       Text(
                         date,
                         style: TextStyle(
                           fontSize: 12.sp,
                           fontWeight: FontWeight.w500,
-                          color: const Color(0xFF9CA3AF),
+                          color: dateColor, // ← FIX
                         ),
                       ),
                       const Spacer(),
@@ -1094,13 +965,21 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         ),
       ),
       child: Center(
-        child: Icon(icon, size: 48.sp, color: Colors.white.withValues(alpha: 0.9)),
+        child: Icon(icon,
+            size: 48.sp, color: Colors.white.withValues(alpha: 0.9)),
       ),
     );
   }
 
   // ─── VIEW ALL BUTTON ──────────────────────────────────
-  Widget _buildViewAllButton() {
+  Widget _buildViewAllButton({required bool isDark, required ColorScheme cs}) {
+    // ← FIX: was hardcoded HomeColors.warmHearth bg
+    final bg = isDark ? const Color(0xFF1E1E2E) : HomeColors.warmHearth;
+    final border = isDark
+        ? HomeColors.heritagePurple.withOpacity(0.4)
+        : HomeColors.heritagePurple.withValues(alpha: 0.12);
+    final fgColor = isDark ? const Color(0xFF9B72E8) : HomeColors.heritagePurple;
+
     return GestureDetector(
       onTap: () {
         Navigator.push(
@@ -1112,59 +991,39 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         width: double.infinity,
         padding: EdgeInsets.symmetric(vertical: 14.h),
         decoration: BoxDecoration(
-          color: HomeColors.warmHearth,
+          color: bg,
           borderRadius: BorderRadius.circular(14.r),
-          border:
-              Border.all(color: HomeColors.heritagePurple.withValues(alpha: 0.12)),
+          border: Border.all(color: border),
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.campaign_outlined,
-                size: 18.sp, color: HomeColors.heritagePurple),
+            Icon(Icons.campaign_outlined, size: 18.sp, color: fgColor),
             SizedBox(width: 8.w),
             Text(
               'View All Announcements',
               style: TextStyle(
                 fontSize: 14.sp,
                 fontWeight: FontWeight.w700,
-                color: HomeColors.heritagePurple,
+                color: fgColor,
               ),
             ),
             SizedBox(width: 6.w),
-            Icon(Icons.arrow_forward_ios_rounded,
-                size: 14.sp, color: HomeColors.heritagePurple),
+            Icon(Icons.arrow_forward_ios_rounded, size: 14.sp, color: fgColor),
           ],
         ),
       ),
     );
   }
 
-  // ─── HELPERS ──────────────────────────────────────────
   String _todayDate() {
     final now = DateTime.now();
     const months = [
-      'January',
-      'February',
-      'March',
-      'April',
-      'May',
-      'June',
-      'July',
-      'August',
-      'September',
-      'October',
-      'November',
-      'December',
+      'January','February','March','April','May','June',
+      'July','August','September','October','November','December',
     ];
     const days = [
-      'Monday',
-      'Tuesday',
-      'Wednesday',
-      'Thursday',
-      'Friday',
-      'Saturday',
-      'Sunday',
+      'Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday',
     ];
     return '${days[now.weekday - 1]}, ${months[now.month - 1]} ${now.day}, ${now.year}';
   }
