@@ -74,7 +74,7 @@ class _AnnouncementsListScreenState
     final cs = theme.colorScheme;
 
     final scaffoldBg = isDark ? cs.background : const Color(0xFFF5F0F8);
-    final accentPurple = isDark ? cs.primary : const Color(0xFF4C229C);
+    final accentPurple = const Color(0xFF4C229C); // heritagePurple — fixed, was cs.primary in dark
     final titleColor = isDark ? cs.onBackground : const Color(0xFF311B6B);
     final searchFill = isDark ? cs.surface : Colors.white;
 
@@ -242,8 +242,8 @@ class _AnnouncementsListScreenState
   }
 
   Widget _buildCard(Announcement a, bool isDark, ColorScheme cs) {
-    final accentPurple = isDark ? cs.primary : const Color(0xFF4C229C);
-    final categoryBg = isDark ? cs.primary.withOpacity(0.15) : const Color(0xFFEADCFB);
+    final accentPurple = const Color(0xFF4C229C); // heritagePurple — fixed, was cs.primary in dark
+    final categoryBg = isDark ? const Color(0xFF4C229C).withOpacity(0.18) : const Color(0xFFEADCFB);
     final titleColor = isDark ? cs.onSurface : const Color(0xFF2E2438);
     final bodyColor = isDark ? cs.onSurface.withOpacity(0.65) : const Color(0xFF6F6878);
 
@@ -390,8 +390,8 @@ class _AnnouncementsListScreenState
   }
 
   Widget _imageFallback(Announcement a, bool isDark, ColorScheme cs) {
-    final fallbackBg = isDark ? cs.primary.withOpacity(0.12) : const Color(0xFFEADCFB);
-    final fallbackIcon = isDark ? cs.primary.withOpacity(0.4) : const Color(0xFF4C229C).withOpacity(0.4);
+    final fallbackBg = isDark ? const Color(0xFF4C229C).withOpacity(0.15) : const Color(0xFFEADCFB);
+    final fallbackIcon = const Color(0xFF4C229C).withOpacity(0.4);
     return Container(
       height: 180.h,
       width: double.infinity,
@@ -419,8 +419,8 @@ class AnnouncementDetailScreen extends StatelessWidget {
     final cs = theme.colorScheme;
 
     final scaffoldBg = isDark ? cs.background : HomeColors.warmHearth;
-    final accentPurple = isDark ? cs.primary : const Color(0xFF4C229C);
-    final categoryBg = isDark ? cs.primary.withOpacity(0.15) : const Color(0xFFEADCFB);
+    final accentPurple = const Color(0xFF4C229C); // heritagePurple — fixed, was cs.primary in dark
+    final categoryBg = isDark ? const Color(0xFF4C229C).withOpacity(0.18) : const Color(0xFFEADCFB);
     final imageFallbackBg = isDark ? cs.surface : const Color(0xFFEADCFB);
     final backBtnBg = isDark ? cs.surface.withOpacity(0.9) : Colors.white.withOpacity(0.9);
     final titleColor = isDark ? cs.onSurface : const Color(0xFF2E2438);
