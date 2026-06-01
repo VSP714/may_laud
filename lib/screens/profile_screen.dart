@@ -83,7 +83,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     // ← FIX: was hardcoded HomeColors.warmHearth always
     final bgColor = isDark ? colorScheme.surface : HomeColors.warmHearth;
     final titleColor = isDark ? colorScheme.onSurface : HomeColors.deepAnchor;
-    final iconColor = isDark ? colorScheme.primary : HomeColors.heritagePurple;
+    final iconColor = HomeColors.heritagePurple;
 
     return SliverAppBar(
       pinned: true,
@@ -366,9 +366,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   Widget _buildInfoRow(IconData icon, String label, String value, {required bool isDark, required ColorScheme colorScheme}) {
     // ← FIX: was hardcoded HomeColors.deepAnchor for value text
     final iconBg = isDark
-        ? colorScheme.primary.withOpacity(0.15)
+        ? const Color(0xFF4C229C).withOpacity(0.15)
         : HomeColors.heritagePurple.withOpacity(0.08);
-    final iconColor = isDark ? colorScheme.primary : HomeColors.heritagePurple;
+    final iconColor = HomeColors.heritagePurple;
     final labelColor = isDark ? colorScheme.onSurface.withOpacity(0.5) : const Color(0xFF9E9E9E);
     final valueColor = isDark ? colorScheme.onSurface : HomeColors.deepAnchor;
 
@@ -456,9 +456,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   // ─── APP SETTINGS CARD ─────────────────────────────────
   Widget _buildAppSettingsCard({required bool isDark, required ColorScheme colorScheme}) {
     final settings = ref.watch(appSettingsProvider);
-    final iconColor = isDark ? colorScheme.primary : HomeColors.heritagePurple;
+    final iconColor = HomeColors.heritagePurple;
     final iconBg = isDark
-        ? colorScheme.primary.withOpacity(0.15)
+        ? const Color(0xFF4C229C).withOpacity(0.15)
         : HomeColors.heritagePurple.withOpacity(0.07);
     final titleColor = isDark ? colorScheme.onSurface : HomeColors.deepAnchor;
     final subtitleColor = isDark ? colorScheme.onSurface.withOpacity(0.5) : const Color(0xFF9E9E9E);
@@ -522,7 +522,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               ),
               Switch(
                 value: settings.isDarkMode,
-                activeColor: isDark ? colorScheme.primary : HomeColors.heritagePurple,
+                activeColor: HomeColors.heritagePurple,
                 onChanged: (val) async {
                   ref.read(appSettingsProvider.notifier).toggleDarkMode();
                   await LocalStorage.setDarkMode(val);
@@ -578,9 +578,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   }) {
     // ← FIX: was all hardcoded HomeColors
     final iconBg = isDark
-        ? colorScheme.primary.withOpacity(0.15)
+        ? const Color(0xFF4C229C).withOpacity(0.15)
         : HomeColors.heritagePurple.withOpacity(0.07);
-    final iconColor = isDark ? colorScheme.primary : HomeColors.heritagePurple;
+    final iconColor = HomeColors.heritagePurple;
     final titleColor = isDark ? colorScheme.onSurface : HomeColors.deepAnchor;
     final subtitleColor = isDark ? colorScheme.onSurface.withOpacity(0.5) : const Color(0xFF9E9E9E);
     final chevronColor = isDark ? colorScheme.onSurface.withOpacity(0.3) : const Color(0xFFBDBDBD);

@@ -31,83 +31,107 @@ class HelpSupportSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final _theme = Theme.of(context);
-    final _isDark = _theme.brightness == Brightness.dark;
-    final _cs = _theme.colorScheme;
-    final _titleColor = _isDark ? _cs.onSurface : HomeColors.deepAnchor;
-    final _accentColor = _isDark ? _cs.primary : HomeColors.heritagePurple;
-        return DraggableScrollableSheet(
-      expand: false,
-      initialChildSize: 0.65,
-      maxChildSize: 0.92,
-      builder: (ctx, scrollCtrl) => Padding(
-        padding: EdgeInsets.fromLTRB(24.w, 0, 24.w, 32.h),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            SizedBox(height: 12.h),
-            _buildHandle(),
-            SizedBox(height: 20.h),
-            Text(
-              'Help & Support',
-              style: TextStyle(
-                fontSize: 20.sp,
-                fontWeight: FontWeight.w700,
-                color: _titleColor,
-              ),
-            ),
-            SizedBox(height: 6.h),
-            Text(
-              'Frequently asked questions',
-              style: TextStyle(
-                fontSize: 13.sp,
-                color: const Color(0xFF9E9E9E),
-              ),
-            ),
-            SizedBox(height: 16.h),
-            Expanded(
-              child: ListView.separated(
-                controller: scrollCtrl,
-                itemCount: _faqs.length,
-                separatorBuilder: (_, __) => SizedBox(height: 8.h),
-                itemBuilder: (ctx, i) => _FaqTile(
-                  question: _faqs[i].q,
-                  answer: _faqs[i].a,
-                  titleColor: _titleColor,
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final colorScheme = theme.colorScheme;
+
+    final backgroundColor = isDark ? colorScheme.surface : Colors.white;
+    final titleColor = isDark ? colorScheme.onSurface : HomeColors.deepAnchor;
+    final subtitleColor = isDark ? colorScheme.onSurface.withOpacity(0.6) : const Color(0xFF9E9E9E);
+    final answerTextColor = isDark ? colorScheme.onSurface.withOpacity(0.8) : const Color(0xFF424242);
+    final handleColor = isDark ? colorScheme.onSurface.withOpacity(0.2) : Colors.grey[300]!;
+    final contactCardBg = isDark 
+        ? HomeColors.heritagePurple.withOpacity(0.12) 
+        : HomeColors.heritagePurple.withOpacity(0.06);
+    
+    // Fixed purple accent – matches ProfileScreen
+    const accentColor = HomeColors.heritagePurple;
+
+    return Container(
+      decoration: BoxDecoration(
+        color: backgroundColor,
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24.r)),
+      ),
+      child: DraggableScrollableSheet(
+        expand: false,
+        initialChildSize: 0.65,
+        maxChildSize: 0.92,
+        builder: (ctx, scrollCtrl) => Padding(
+          padding: EdgeInsets.fromLTRB(24.w, 12.h, 24.w, 32.h),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _buildHandle(handleColor),
+              SizedBox(height: 20.h),
+              Text(
+                'Help & Support',
+                style: TextStyle(
+                  fontSize: 20.sp,
+                  fontWeight: FontWeight.w700,
+                  color: titleColor,
                 ),
               ),
-            ),
-            SizedBox(height: 16.h),
-            _buildContactCard(
-              titleColor: _titleColor,
-              accentColor: _accentColor,
-            ),
-          ],
+              SizedBox(height: 6.h),
+              Text(
+                'Frequently asked questions',
+                style: TextStyle(
+                  fontSize: 13.sp,
+                  color: subtitleColor,
+                ),
+              ),
+              SizedBox(height: 16.h),
+              Expanded(
+                child: ListView.separated(
+                  controller: scrollCtrl,
+                  itemCount: _faqs.length,
+                  separatorBuilder: (_, __) => SizedBox(height: 8.h),
+                  itemBuilder: (ctx, i) => _FaqTile(
+                    question: _faqs[i].q,
+                    answer: _faqs[i].a,
+                    titleColor: titleColor,
+                    answerTextColor: answerTextColor,
+                    accentColor: accentColor,
+                  ),
+                ),
+              ),
+              SizedBox(height: 16.h),
+              _buildContactCard(
+                titleColor: titleColor,
+                accentColor: accentColor,
+                subtitleColor: subtitleColor,
+                backgroundColor: contactCardBg,
+              ),
+            ],
+          ),
         ),
       ),
     );
   }
 
-  Widget _buildHandle() {
+  Widget _buildHandle(Color color) {
     return Center(
       child: Container(
         width: 40.w,
         height: 4.h,
         decoration: BoxDecoration(
-          color: Colors.grey[300],
+          color: color,
           borderRadius: BorderRadius.circular(2.r),
         ),
       ),
     );
   }
 
-  Widget _buildContactCard(
-      {required Color titleColor, required Color accentColor}) {
+  Widget _buildContactCard({
+    required Color titleColor,
+    required Color accentColor,
+    required Color subtitleColor,
+    required Color backgroundColor,
+  }) {
     return Container(
       width: double.infinity,
       padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
-        color: HomeColors.heritagePurple.withOpacity(0.06),
+        color: backgroundColor,
         borderRadius: BorderRadius.circular(14.r),
       ),
       child: Row(
@@ -134,7 +158,7 @@ class HelpSupportSheet extends StatelessWidget {
                   'Contact the Barangay Hall directly.',
                   style: TextStyle(
                     fontSize: 12.sp,
-                    color: const Color(0xFF9E9E9E),
+                    color: subtitleColor,
                   ),
                 ),
               ],
@@ -150,21 +174,31 @@ class _FaqTile extends StatelessWidget {
   final String question;
   final String answer;
   final Color titleColor;
+  final Color answerTextColor;
+  final Color accentColor;
 
   const _FaqTile({
     required this.question,
     required this.answer,
     required this.titleColor,
+    required this.answerTextColor,
+    required this.accentColor,
   });
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    
     return Theme(
       data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
       child: ExpansionTile(
         tilePadding: EdgeInsets.symmetric(horizontal: 4.w),
-        childrenPadding:
-            EdgeInsets.only(left: 4.w, right: 4.w, bottom: 12.h),
+        childrenPadding: EdgeInsets.only(
+          left: 4.w, 
+          right: 4.w, 
+          bottom: 12.h,
+        ),
         title: Text(
           question,
           style: TextStyle(
@@ -173,14 +207,16 @@ class _FaqTile extends StatelessWidget {
             color: titleColor,
           ),
         ),
-        iconColor: HomeColors.heritagePurple,
-        collapsedIconColor: const Color(0xFF9E9E9E),
+        iconColor: accentColor,
+        collapsedIconColor: isDark 
+            ? theme.colorScheme.onSurface.withOpacity(0.4)
+            : const Color(0xFF9E9E9E),
         children: [
           Text(
             answer,
             style: TextStyle(
               fontSize: 13.sp,
-              color: const Color(0xFF616161),
+              color: answerTextColor,
               height: 1.5,
             ),
           ),
@@ -195,6 +231,7 @@ Future<void> showHelpSupportSheet(BuildContext context) {
   return showModalBottomSheet(
     context: context,
     isScrollControlled: true,
+    backgroundColor: Colors.transparent, // Use our container's background
     shape: RoundedRectangleBorder(
       borderRadius: BorderRadius.vertical(top: Radius.circular(24.r)),
     ),

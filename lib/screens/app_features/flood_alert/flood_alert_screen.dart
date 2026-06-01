@@ -45,8 +45,16 @@ class FloodAlertScreen extends StatefulWidget {
 class _FloodAlertScreenState extends State<FloodAlertScreen> {
   bool _isDark = false;
   ColorScheme? _cs;
-  Color get _scaffoldBg => _isDark ? _cs!.background : FloodColors.warmHearth;
-  Color get _cardBg => _isDark ? _cs!.surface : FloodColors.cardWhite;
+
+  // Dark mode palette — matches home.dart's deep navy-purple brand tones
+  static const Color _darkSurface  = Color(0xFF0D0D1A);
+  static const Color _darkCard     = Color(0xFF1E1E2E);
+
+  Color get _scaffoldBg => _isDark ? _darkSurface : FloodColors.warmHearth;
+  Color get _cardBg     => _isDark ? _darkCard    : FloodColors.cardWhite;
+  Color get _titleText  => _isDark ? Colors.white : FloodColors.deepAnchor;
+  Color get _bodyText   => _isDark ? const Color(0xFFCFCFE8) : const Color(0xFF374151);
+  Color get _mutedText  => _isDark ? Colors.white60 : Colors.grey.shade500;
 
   final RefreshController _refreshController = RefreshController();
   late Map<String, dynamic> _floodData;
@@ -329,7 +337,7 @@ class _FloodAlertScreenState extends State<FloodAlertScreen> {
                 style: GoogleFonts.poppins(
                   fontSize: 14.sp,
                   fontWeight: FontWeight.w600,
-                  color: Colors.grey[600],
+                  color: _bodyText,
                 ),
               ),
               Container(
@@ -385,7 +393,7 @@ class _FloodAlertScreenState extends State<FloodAlertScreen> {
                       style: GoogleFonts.poppins(
                         fontSize: 38.sp,
                         fontWeight: FontWeight.w800,
-                        color: FloodColors.deepAnchor,
+                        color: _titleText,
                         height: 1,
                       ),
                     ),
@@ -395,7 +403,7 @@ class _FloodAlertScreenState extends State<FloodAlertScreen> {
                       style: GoogleFonts.inter(
                         fontSize: 14.sp,
                         fontWeight: FontWeight.w500,
-                        color: Colors.grey[500],
+                        color: _mutedText,
                       ),
                     ),
                   ],
@@ -432,7 +440,7 @@ class _FloodAlertScreenState extends State<FloodAlertScreen> {
                   style: GoogleFonts.inter(
                     fontSize: 14.sp,
                     fontWeight: FontWeight.w600,
-                    color: FloodColors.deepAnchor,
+                    color: _titleText,
                   ),
                 ),
               ],
@@ -523,7 +531,7 @@ class _FloodAlertScreenState extends State<FloodAlertScreen> {
             style: GoogleFonts.poppins(
               fontSize: 18.sp,
               fontWeight: FontWeight.w700,
-              color: FloodColors.deepAnchor,
+              color: _titleText,
             ),
           ),
           SizedBox(height: 2.h),
@@ -531,7 +539,7 @@ class _FloodAlertScreenState extends State<FloodAlertScreen> {
             label,
             style: GoogleFonts.inter(
               fontSize: 11.sp,
-              color: Colors.grey[500],
+              color: _mutedText,
             ),
           ),
         ],
@@ -568,7 +576,7 @@ class _FloodAlertScreenState extends State<FloodAlertScreen> {
                 style: GoogleFonts.poppins(
                   fontSize: 18.sp,
                   fontWeight: FontWeight.w700,
-                  color: FloodColors.deepAnchor,
+                  color: _titleText,
                 ),
               ),
               Container(
@@ -661,7 +669,7 @@ class _FloodAlertScreenState extends State<FloodAlertScreen> {
                       style: GoogleFonts.inter(
                         fontSize: 12.sp,
                         fontWeight: FontWeight.w600,
-                        color: Colors.grey[700],
+                        color: _bodyText,
                       ),
                     ),
                   ],
@@ -707,7 +715,7 @@ class _FloodAlertScreenState extends State<FloodAlertScreen> {
           style: GoogleFonts.inter(
             fontSize: 12.sp,
             fontWeight: FontWeight.w500,
-            color: Colors.grey[600],
+            color: _bodyText,
           ),
         ),
       ],
@@ -733,7 +741,7 @@ class _FloodAlertScreenState extends State<FloodAlertScreen> {
           style: GoogleFonts.poppins(
             fontSize: 18.sp,
             fontWeight: FontWeight.w700,
-            color: FloodColors.deepAnchor,
+            color: _titleText,
           ),
         ),
       ],
@@ -801,7 +809,7 @@ class _FloodAlertScreenState extends State<FloodAlertScreen> {
                         style: GoogleFonts.poppins(
                           fontSize: 15.sp,
                           fontWeight: FontWeight.w600,
-                          color: FloodColors.deepAnchor,
+                          color: _titleText,
                         ),
                       ),
                       SizedBox(height: 4.h),
@@ -809,7 +817,7 @@ class _FloodAlertScreenState extends State<FloodAlertScreen> {
                         alert['station'],
                         style: GoogleFonts.inter(
                           fontSize: 12.sp,
-                          color: Colors.grey[500],
+                          color: _mutedText,
                         ),
                       ),
                       SizedBox(height: 4.h),
@@ -832,7 +840,7 @@ class _FloodAlertScreenState extends State<FloodAlertScreen> {
                 ),
                 // Chevron
                 Icon(Icons.chevron_right_rounded,
-                    color: Colors.grey[400], size: 24.sp),
+                    color: _mutedText, size: 24.sp),
               ],
             ),
           ),
@@ -908,7 +916,7 @@ class _FloodAlertScreenState extends State<FloodAlertScreen> {
                         style: GoogleFonts.poppins(
                           fontSize: 15.sp,
                           fontWeight: FontWeight.w600,
-                          color: FloodColors.deepAnchor,
+                          color: _titleText,
                         ),
                       ),
                     ),
@@ -917,7 +925,7 @@ class _FloodAlertScreenState extends State<FloodAlertScreen> {
                       duration: 300.ms,
                       child: Icon(
                         Icons.keyboard_arrow_down_rounded,
-                        color: Colors.grey[400],
+                        color: _mutedText,
                         size: 24.sp,
                       ),
                     ),
@@ -950,7 +958,7 @@ class _FloodAlertScreenState extends State<FloodAlertScreen> {
                                         t,
                                         style: GoogleFonts.inter(
                                           fontSize: 14.sp,
-                                          color: Colors.grey[700],
+                                          color: _bodyText,
                                           height: 1.5,
                                         ),
                                       ),
@@ -1143,7 +1151,7 @@ class _FloodAlertScreenState extends State<FloodAlertScreen> {
                 width: 40.w,
                 height: 4.h,
                 decoration: BoxDecoration(
-                  color: Colors.grey[300],
+                  color: _isDark ? Colors.white.withOpacity(0.18) : Colors.grey[300],
                   borderRadius: BorderRadius.circular(2.r),
                 ),
               ),
@@ -1154,7 +1162,7 @@ class _FloodAlertScreenState extends State<FloodAlertScreen> {
               style: GoogleFonts.poppins(
                 fontSize: 22.sp,
                 fontWeight: FontWeight.w700,
-                color: FloodColors.deepAnchor,
+                color: _titleText,
               ),
             ),
             SizedBox(height: 16.h),
@@ -1169,7 +1177,7 @@ class _FloodAlertScreenState extends State<FloodAlertScreen> {
               'Residents in this area are advised to monitor water levels and follow safety guidelines issued by MDRRMO.',
               style: GoogleFonts.inter(
                 fontSize: 14.sp,
-                color: Colors.grey[600],
+                color: _bodyText,
                 height: 1.6,
               ),
             ),
@@ -1186,7 +1194,7 @@ class _FloodAlertScreenState extends State<FloodAlertScreen> {
       children: [
         Text(
           label,
-          style: GoogleFonts.inter(fontSize: 14.sp, color: Colors.grey[500]),
+          style: GoogleFonts.inter(fontSize: 14.sp, color: _mutedText),
         ),
         Text(
           value,

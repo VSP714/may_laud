@@ -50,13 +50,27 @@ class CitizenReportScreen extends ConsumerStatefulWidget {
 class _CitizenReportScreenState extends ConsumerState<CitizenReportScreen> {
   bool _isDark = false;
   ColorScheme? _cs;
-  Color get _scaffoldBg => _isDark ? _cs!.background : ReportColors.warmHearth;
-  Color get _cardBg => _isDark ? _cs!.surface : ReportColors.cardWhite;
-  Color get _titleText => _isDark ? _cs!.onSurface : ReportColors.deepAnchor;
-  Color get _bodyText => _isDark ? _cs!.onSurface.withOpacity(0.65) : const Color(0xFF374151);
-  Color get _mutedText => _isDark ? _cs!.onSurface.withOpacity(0.45) : Colors.grey.shade500;
-  Color get _inputFill => _isDark ? _cs!.surface.withOpacity(0.8) : ReportColors.warmHearth;
-  Color get _borderColor => _isDark ? _cs!.onSurface.withOpacity(0.15) : Colors.grey.shade200;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final brightness = Theme.of(context).brightness;
+    _isDark = brightness == Brightness.dark;
+    _cs = Theme.of(context).colorScheme;
+  }
+
+  // Dark mode palette — matches home.dart's deep navy-purple brand tones
+  static const Color _darkSurface  = Color(0xFF0D0D1A);   // deepest navy scaffold (richer than home's bg)
+  static const Color _darkCard     = Color(0xFF1E1E2E);   // home card colour exactly
+  static const Color _darkElevated = Color(0xFF16162A);   // slightly deeper elevated surface
+
+  Color get _scaffoldBg  => _isDark ? _darkSurface  : ReportColors.warmHearth;
+  Color get _cardBg      => _isDark ? _darkCard     : ReportColors.cardWhite;
+  Color get _titleText   => _isDark ? Colors.white  : ReportColors.deepAnchor;
+  Color get _bodyText    => _isDark ? const Color(0xFFCFCFE8) : const Color(0xFF374151);
+  Color get _mutedText   => _isDark ? Colors.white60 : Colors.grey.shade500;
+  Color get _inputFill   => _isDark ? _darkElevated : ReportColors.warmHearth;
+  Color get _borderColor => _isDark ? Colors.white.withOpacity(0.10) : Colors.grey.shade200;
 
   final _formKey = GlobalKey<FormState>();
   final TextEditingController _titleController = TextEditingController();
@@ -215,11 +229,11 @@ class _CitizenReportScreenState extends ConsumerState<CitizenReportScreen> {
                 width: 72.w,
                 height: 72.w,
                 decoration: BoxDecoration(
-                  color: const Color(0xFFE8F5E9),
+                  color: _isDark ? const Color(0xFF1B3A2A) : const Color(0xFFE8F5E9),
                   borderRadius: BorderRadius.circular(20.r),
                 ),
-                child: const Icon(Icons.check_circle_rounded,
-                    size: 40, color: Color(0xFF2E7D32)),
+                child: Icon(Icons.check_circle_rounded,
+                    size: 40, color: _isDark ? const Color(0xFF66BB6A) : const Color(0xFF2E7D32)),
               ),
               SizedBox(height: 20.h),
               Text(
@@ -227,7 +241,7 @@ class _CitizenReportScreenState extends ConsumerState<CitizenReportScreen> {
                 style: GoogleFonts.poppins(
                     fontSize: 22.sp,
                     fontWeight: FontWeight.w700,
-                    color: ReportColors.deepAnchor),
+                    color: _titleText),
               ),
               SizedBox(height: 8.h),
               Container(
@@ -365,7 +379,7 @@ class _CitizenReportScreenState extends ConsumerState<CitizenReportScreen> {
                           borderRadius: BorderRadius.circular(16.r),
                         ),
                         child: Icon(Icons.report_problem_rounded,
-                            color: _cardBg, size: 26),
+                            color: _titleText, size: 26),
                       ),
                       SizedBox(width: 14.w),
                       Expanded(
@@ -387,7 +401,7 @@ class _CitizenReportScreenState extends ConsumerState<CitizenReportScreen> {
                               style: GoogleFonts.poppins(
                                 fontSize: 22.sp,
                                 fontWeight: FontWeight.w700,
-                                color: _cardBg,
+                                color: _titleText,
                               ),
                             ),
                           ],
@@ -701,7 +715,7 @@ class _CitizenReportScreenState extends ConsumerState<CitizenReportScreen> {
           SizedBox(height: 4.h),
           Text(
             'Photos help us understand the issue better (optional)',
-            style: GoogleFonts.inter(fontSize: 12.sp, color: Colors.grey[500]),
+            style: GoogleFonts.inter(fontSize: 12.sp, color: _mutedText),
           ),
           SizedBox(height: 16.h),
           if (_attachedPhotos.isNotEmpty)
@@ -840,7 +854,7 @@ class _CitizenReportScreenState extends ConsumerState<CitizenReportScreen> {
               width: 40.w,
               height: 4.h,
               decoration: BoxDecoration(
-                  color: Colors.grey[300],
+                  color: _isDark ? Colors.white.withOpacity(0.18) : Colors.grey[300],
                   borderRadius: BorderRadius.circular(2.r)),
             ),
             SizedBox(height: 22.h),
@@ -895,9 +909,9 @@ class _CitizenReportScreenState extends ConsumerState<CitizenReportScreen> {
           style: GoogleFonts.inter(
               fontSize: 15.sp,
               fontWeight: FontWeight.w600,
-              color: ReportColors.deepAnchor)),
+              color: _titleText)),
       subtitle: Text(subtitle,
-          style: GoogleFonts.inter(fontSize: 13.sp, color: Colors.grey[500])),
+          style: GoogleFonts.inter(fontSize: 13.sp, color: _mutedText)),
     );
   }
 
@@ -963,7 +977,7 @@ class _CitizenReportScreenState extends ConsumerState<CitizenReportScreen> {
       decoration: BoxDecoration(
         color: _cardBg,
         borderRadius: BorderRadius.circular(16.r),
-        border: Border.all(color: const Color(0xFFE8E0F0)),
+        border: Border.all(color: _isDark ? const Color(0xFF3A3A3A) : const Color(0xFFE8E0F0)),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -999,9 +1013,14 @@ class _CitizenReportScreenState extends ConsumerState<CitizenReportScreen> {
     return BoxDecoration(
       color: _cardBg,
       borderRadius: BorderRadius.circular(24.r),
+      border: _isDark
+          ? Border.all(color: Colors.white.withOpacity(0.06))
+          : null,
       boxShadow: [
         BoxShadow(
-          color: ReportColors.heritagePurple.withOpacity(0.06),
+          color: _isDark
+              ? Colors.black.withValues(alpha: 0.30)
+              : ReportColors.heritagePurple.withOpacity(0.06),
           blurRadius: 20,
           offset: const Offset(0, 8),
         ),

@@ -12,99 +12,132 @@ class PrivacySecuritySheet extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final settings = ref.watch(appSettingsProvider);
 
-    final _theme = Theme.of(context);
-    final _isDark = _theme.brightness == Brightness.dark;
-    final _cs = _theme.colorScheme;
-    final _titleColor = _isDark ? _cs.onSurface : HomeColors.deepAnchor;
-    final _accentColor = _isDark ? _cs.primary : HomeColors.heritagePurple;
-        return Padding(
-      padding: EdgeInsets.fromLTRB(24.w, 20.h, 24.w, 32.h),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _buildHandle(),
-          SizedBox(height: 20.h),
-          Text(
-            'Privacy & Security',
-            style: TextStyle(
-              fontSize: 20.sp,
-              fontWeight: FontWeight.w700,
-              color: _titleColor,
-            ),
-          ),
-          SizedBox(height: 20.h),
-          SwitchListTile(
-            contentPadding: EdgeInsets.zero,
-            secondary: Icon(
-              Icons.location_on_outlined,
-              color: _accentColor,
-            ),
-            title: Text(
-              'Location Access',
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final colorScheme = theme.colorScheme;
+
+    final backgroundColor = isDark ? colorScheme.surface : Colors.white;
+    final titleColor = isDark ? colorScheme.onSurface : HomeColors.deepAnchor;
+    final subtitleColor = isDark ? colorScheme.onSurface.withOpacity(0.6) : const Color(0xFF757575);
+    final textColor = isDark ? colorScheme.onSurface : const Color(0xFF424242);
+    final handleColor = isDark ? colorScheme.onSurface.withOpacity(0.2) : Colors.grey[300]!;
+    final dividerColor = isDark ? colorScheme.onSurface.withOpacity(0.12) : const Color(0xFFE0E0E0);
+    final footnoteColor = isDark ? colorScheme.onSurface.withOpacity(0.5) : const Color(0xFF9E9E9E);
+    final chevronColor = isDark ? colorScheme.onSurface.withOpacity(0.3) : const Color(0xFFBDBDBD);
+    
+    // Fixed purple accent – matches ProfileScreen
+    const accentColor = HomeColors.heritagePurple;
+
+    return Container(
+      decoration: BoxDecoration(
+        color: backgroundColor,
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24.r)),
+      ),
+      child: Padding(
+        padding: EdgeInsets.fromLTRB(24.w, 12.h, 24.w, 32.h),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _buildHandle(handleColor),
+            SizedBox(height: 20.h),
+            Text(
+              'Privacy & Security',
               style: TextStyle(
-                fontSize: 15.sp,
-                fontWeight: FontWeight.w600,
+                fontSize: 20.sp,
+                fontWeight: FontWeight.w700,
+                color: titleColor,
               ),
             ),
-            subtitle: Text(
-              settings.locationEnabled
-                  ? 'Enabled — used for flood zone detection'
-                  : 'Disabled',
-              style: TextStyle(fontSize: 13.sp),
+            SizedBox(height: 20.h),
+            SwitchListTile(
+              contentPadding: EdgeInsets.zero,
+              secondary: Icon(
+                Icons.location_on_outlined,
+                color: accentColor,
+              ),
+              title: Text(
+                'Location Access',
+                style: TextStyle(
+                  fontSize: 15.sp,
+                  fontWeight: FontWeight.w600,
+                  color: textColor,
+                ),
+              ),
+              subtitle: Text(
+                settings.locationEnabled
+                    ? 'Enabled — used for flood zone detection'
+                    : 'Disabled',
+                style: TextStyle(
+                  fontSize: 13.sp,
+                  color: subtitleColor,
+                ),
+              ),
+              value: settings.locationEnabled,
+              activeColor: accentColor,
+              onChanged: (_) =>
+                  ref.read(appSettingsProvider.notifier).toggleLocation(),
             ),
-            value: settings.locationEnabled,
-            activeColor: _accentColor,
-            onChanged: (_) =>
-                ref.read(appSettingsProvider.notifier).toggleLocation(),
-          ),
-          Divider(height: 24.h),
-          ListTile(
-            contentPadding: EdgeInsets.zero,
-            leading: const Icon(
-              Icons.delete_outline,
-              color: Color(0xFFD32F2F),
+            Divider(color: dividerColor, height: 24.h),
+            ListTile(
+              contentPadding: EdgeInsets.zero,
+              leading: const Icon(
+                Icons.delete_outline,
+                color: Color(0xFFD32F2F),
+              ),
+              title: Text(
+                'Delete Account',
+                style: TextStyle(
+                  fontSize: 15.sp,
+                  fontWeight: FontWeight.w600,
+                  color: const Color(0xFFD32F2F),
+                ),
+              ),
+              subtitle: Text(
+                'Permanently remove your data',
+                style: TextStyle(
+                  fontSize: 13.sp,
+                  color: subtitleColor,
+                ),
+              ),
+              trailing: Icon(
+                Icons.chevron_right_rounded,
+                size: 22.sp,
+                color: chevronColor,
+              ),
+              onTap: () {
+                Navigator.pop(context);
+                _showDeleteAccountDialog(context);
+              },
             ),
-            title: Text(
-              'Delete Account',
+            SizedBox(height: 8.h),
+            Text(
+              'Your data is securely stored and never shared with third parties without your consent.',
               style: TextStyle(
-                fontSize: 15.sp,
-                fontWeight: FontWeight.w600,
-                color: const Color(0xFFD32F2F),
+                fontSize: 12.sp,
+                color: footnoteColor,
+                height: 1.5,
               ),
             ),
-            subtitle: Text(
-              'Permanently remove your data',
-              style: TextStyle(fontSize: 13.sp),
-            ),
-            trailing: Icon(
-              Icons.chevron_right_rounded,
-              size: 22.sp,
-              color: const Color(0xFFBDBDBD),
-            ),
-            onTap: () {
-              Navigator.pop(context);
-              _showDeleteAccountDialog(context);
-            },
-          ),
-          SizedBox(height: 8.h),
-          Text(
-            'Your data is securely stored and never shared with third parties without your consent.',
-            style: TextStyle(
-              fontSize: 12.sp,
-              color: const Color(0xFF9E9E9E),
-              height: 1.5,
-            ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
 
   void _showDeleteAccountDialog(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final colorScheme = theme.colorScheme;
+    
+    final dialogBgColor = isDark ? colorScheme.surface : Colors.white;
+    final textColor = isDark ? colorScheme.onSurface : const Color(0xFF424242);
+    final cancelTextColor = isDark ? colorScheme.onSurface.withOpacity(0.7) : const Color(0xFF757575);
+
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
+        backgroundColor: dialogBgColor,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(20.r),
         ),
@@ -120,7 +153,7 @@ class PrivacySecuritySheet extends ConsumerWidget {
           'This will permanently delete your account and all associated data. This action cannot be undone.',
           style: TextStyle(
             fontSize: 14.sp,
-            color: const Color(0xFF616161),
+            color: textColor,
             height: 1.5,
           ),
         ),
@@ -132,7 +165,7 @@ class PrivacySecuritySheet extends ConsumerWidget {
               style: TextStyle(
                 fontSize: 15.sp,
                 fontWeight: FontWeight.w600,
-                color: const Color(0xFF757575),
+                color: cancelTextColor,
               ),
             ),
           ),
@@ -160,8 +193,10 @@ class PrivacySecuritySheet extends ConsumerWidget {
             },
             child: Text(
               'Delete',
-              style:
-                  TextStyle(fontSize: 15.sp, fontWeight: FontWeight.w600),
+              style: TextStyle(
+                fontSize: 15.sp,
+                fontWeight: FontWeight.w600,
+              ),
             ),
           ),
         ],
@@ -169,13 +204,13 @@ class PrivacySecuritySheet extends ConsumerWidget {
     );
   }
 
-  Widget _buildHandle() {
+  Widget _buildHandle(Color color) {
     return Center(
       child: Container(
         width: 40.w,
         height: 4.h,
         decoration: BoxDecoration(
-          color: Colors.grey[300],
+          color: color,
           borderRadius: BorderRadius.circular(2.r),
         ),
       ),
@@ -188,6 +223,7 @@ Future<void> showPrivacySecuritySheet(BuildContext context) {
   return showModalBottomSheet(
     context: context,
     isScrollControlled: true,
+    backgroundColor: Colors.transparent, // Use our container's background
     shape: RoundedRectangleBorder(
       borderRadius: BorderRadius.vertical(top: Radius.circular(24.r)),
     ),

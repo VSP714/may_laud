@@ -39,9 +39,12 @@ class _ChangePasswordDialogState extends ConsumerState<ChangePasswordDialog> {
     final cs = theme.colorScheme;
 
     final titleColor = isDark ? cs.onSurface : HomeColors.deepAnchor;
-    final accentColor = isDark ? cs.primary : HomeColors.heritagePurple;
+    // FIX: always use purple, never colorScheme.primary
+    const accentColor = HomeColors.heritagePurple;
     final cardColor = isDark ? cs.surface : Colors.white;
     final handleColor = isDark ? cs.onSurface.withOpacity(0.2) : Colors.grey[300]!;
+    final subtitleColor = isDark ? cs.onSurface.withOpacity(0.5) : const Color(0xFF9E9E9E);
+    final closeIconColor = isDark ? cs.onSurface.withOpacity(0.5) : const Color(0xFF9E9E9E);
 
     return Dialog(
       backgroundColor: Colors.transparent,
@@ -70,7 +73,7 @@ class _ChangePasswordDialogState extends ConsumerState<ChangePasswordDialog> {
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Drag handle (centered, cosmetic)
+                  // Drag handle
                   Center(
                     child: Container(
                       width: 40.w,
@@ -113,23 +116,18 @@ class _ChangePasswordDialogState extends ConsumerState<ChangePasswordDialog> {
                               'Keep your account secure',
                               style: TextStyle(
                                 fontSize: 13.sp,
-                                color: isDark
-                                    ? cs.onSurface.withOpacity(0.5)
-                                    : const Color(0xFF9E9E9E),
+                                color: subtitleColor,
                               ),
                             ),
                           ],
                         ),
                       ),
-                      // Close button
                       IconButton(
                         onPressed: () => Navigator.pop(context),
                         icon: Icon(
                           Icons.close_rounded,
                           size: 22.sp,
-                          color: isDark
-                              ? cs.onSurface.withOpacity(0.5)
-                              : const Color(0xFF9E9E9E),
+                          color: closeIconColor,
                         ),
                         padding: EdgeInsets.zero,
                         constraints: const BoxConstraints(),
@@ -183,7 +181,6 @@ class _ChangePasswordDialogState extends ConsumerState<ChangePasswordDialog> {
                   // Buttons row
                   Row(
                     children: [
-                      // Cancel
                       Expanded(
                         child: SizedBox(
                           height: 50.h,
@@ -213,7 +210,6 @@ class _ChangePasswordDialogState extends ConsumerState<ChangePasswordDialog> {
                         ),
                       ),
                       SizedBox(width: 12.w),
-                      // Update
                       Expanded(
                         child: SizedBox(
                           height: 50.h,
@@ -304,9 +300,10 @@ class _ChangePasswordDialogState extends ConsumerState<ChangePasswordDialog> {
     required VoidCallback toggle,
     String? Function(String?)? validator,
   }) {
-    final accentColor = isDark ? cs.primary : HomeColors.heritagePurple;
+    const accentColor = HomeColors.heritagePurple;
     final fillColor = isDark ? cs.surface.withOpacity(0.6) : Colors.grey[50]!;
     final borderColor = isDark ? cs.onSurface.withOpacity(0.15) : Colors.grey[300]!;
+    final iconColor = isDark ? cs.onSurface.withOpacity(0.4) : const Color(0xFF9E9E9E);
 
     return TextFormField(
       controller: controller,
@@ -321,7 +318,7 @@ class _ChangePasswordDialogState extends ConsumerState<ChangePasswordDialog> {
           icon: Icon(
             obscure ? Icons.visibility_off : Icons.visibility,
             size: 20.sp,
-            color: isDark ? cs.onSurface.withOpacity(0.4) : const Color(0xFF9E9E9E),
+            color: iconColor,
           ),
           onPressed: toggle,
         ),
@@ -335,7 +332,7 @@ class _ChangePasswordDialogState extends ConsumerState<ChangePasswordDialog> {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14.r),
-          borderSide: BorderSide(color: accentColor, width: 1.5),
+          borderSide: const BorderSide(color: accentColor, width: 1.5),
         ),
         filled: true,
         fillColor: fillColor,

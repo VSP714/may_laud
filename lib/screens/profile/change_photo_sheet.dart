@@ -8,93 +8,110 @@ class ChangePhotoSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final _theme = Theme.of(context);
-    final _isDark = _theme.brightness == Brightness.dark;
-    final _cs = _theme.colorScheme;
-    final _titleColor = _isDark ? _cs.onSurface : HomeColors.deepAnchor;
-    final _accentColor = _isDark ? _cs.primary : HomeColors.heritagePurple;
-    return Padding(
-      padding: EdgeInsets.fromLTRB(24.w, 20.h, 24.w, 32.h),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _buildHandle(),
-          SizedBox(height: 20.h),
-          Text(
-            'Change Profile Photo',
-            style: TextStyle(
-              fontSize: 20.sp,
-              fontWeight: FontWeight.w700,
-              color: _titleColor,
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final colorScheme = theme.colorScheme;
+
+    // Adaptive colors (backgrounds, text)
+    final backgroundColor = isDark ? colorScheme.surface : Colors.white;
+    final titleColor = isDark ? colorScheme.onSurface : HomeColors.deepAnchor;
+    final subtitleColor = isDark ? colorScheme.onSurface.withOpacity(0.6) : const Color(0xFF9E9E9E);
+    final handleColor = isDark ? colorScheme.onSurface.withOpacity(0.2) : Colors.grey[300]!;
+    final borderColor = isDark ? colorScheme.onSurface.withOpacity(0.15) : Colors.grey[200]!;
+    
+    // Fixed purple accent – same as ProfileScreen
+    const accentColor = HomeColors.heritagePurple;
+
+    return Container(
+      decoration: BoxDecoration(
+        color: backgroundColor,
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24.r)),
+      ),
+      child: Padding(
+        padding: EdgeInsets.fromLTRB(24.w, 12.h, 24.w, 32.h),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _buildHandle(handleColor),
+            SizedBox(height: 20.h),
+            Text(
+              'Change Profile Photo',
+              style: TextStyle(
+                fontSize: 20.sp,
+                fontWeight: FontWeight.w700,
+                color: titleColor,
+              ),
             ),
-          ),
-          SizedBox(height: 8.h),
-          Text(
-            'Profile photo upload requires camera/gallery permissions. '
-            'This feature connects to Supabase Storage when permissions are granted.',
-            style: TextStyle(
-              fontSize: 13.sp,
-              color: const Color(0xFF9E9E9E),
-              height: 1.5,
+            SizedBox(height: 8.h),
+            Text(
+              'Profile photo upload requires camera/gallery permissions. '
+              'This feature connects to Supabase Storage when permissions are granted.',
+              style: TextStyle(
+                fontSize: 13.sp,
+                color: subtitleColor,
+                height: 1.5,
+              ),
             ),
-          ),
-          SizedBox(height: 24.h),
-          _optionTile(
-            context: context,
-            icon: Icons.camera_alt_outlined,
-            label: 'Take a photo',
-            accentColor: _accentColor,
-            titleColor: _titleColor,
-            onTap: () {
-              Navigator.pop(context);
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: const Text(
-                      'Camera access not yet configured on this build.'),
-                  behavior: SnackBarBehavior.floating,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10.r),
+            SizedBox(height: 24.h),
+            _optionTile(
+              context: context,
+              icon: Icons.camera_alt_outlined,
+              label: 'Take a photo',
+              accentColor: accentColor,
+              titleColor: titleColor,
+              borderColor: borderColor,
+              onTap: () {
+                Navigator.pop(context);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: const Text(
+                        'Camera access not yet configured on this build.'),
+                    behavior: SnackBarBehavior.floating,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10.r),
+                    ),
+                    margin: EdgeInsets.all(12.w),
                   ),
-                  margin: EdgeInsets.all(12.w),
-                ),
-              );
-            },
-          ),
-          SizedBox(height: 12.h),
-          _optionTile(
-            context: context,
-            icon: Icons.photo_library_outlined,
-            label: 'Choose from gallery',
-            accentColor: _accentColor,
-            titleColor: _titleColor,
-            onTap: () {
-              Navigator.pop(context);
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: const Text(
-                      'Gallery access not yet configured on this build.'),
-                  behavior: SnackBarBehavior.floating,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10.r),
+                );
+              },
+            ),
+            SizedBox(height: 12.h),
+            _optionTile(
+              context: context,
+              icon: Icons.photo_library_outlined,
+              label: 'Choose from gallery',
+              accentColor: accentColor,
+              titleColor: titleColor,
+              borderColor: borderColor,
+              onTap: () {
+                Navigator.pop(context);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: const Text(
+                        'Gallery access not yet configured on this build.'),
+                    behavior: SnackBarBehavior.floating,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10.r),
+                    ),
+                    margin: EdgeInsets.all(12.w),
                   ),
-                  margin: EdgeInsets.all(12.w),
-                ),
-              );
-            },
-          ),
-        ],
+                );
+              },
+            ),
+          ],
+        ),
       ),
     );
   }
 
-  Widget _buildHandle() {
+  Widget _buildHandle(Color color) {
     return Center(
       child: Container(
         width: 40.w,
         height: 4.h,
         decoration: BoxDecoration(
-          color: Colors.grey[300],
+          color: color,
           borderRadius: BorderRadius.circular(2.r),
         ),
       ),
@@ -107,6 +124,7 @@ class ChangePhotoSheet extends StatelessWidget {
     required String label,
     required Color accentColor,
     required Color titleColor,
+    required Color borderColor,
     required VoidCallback onTap,
   }) {
     return InkWell(
@@ -116,7 +134,7 @@ class ChangePhotoSheet extends StatelessWidget {
         width: double.infinity,
         padding: EdgeInsets.symmetric(vertical: 16.h, horizontal: 16.w),
         decoration: BoxDecoration(
-          border: Border.all(color: Colors.grey[200]!),
+          border: Border.all(color: borderColor),
           borderRadius: BorderRadius.circular(14.r),
         ),
         child: Row(
@@ -142,6 +160,7 @@ class ChangePhotoSheet extends StatelessWidget {
 Future<void> showChangePhotoSheet(BuildContext context) {
   return showModalBottomSheet(
     context: context,
+    backgroundColor: Colors.transparent, // Use container's background
     shape: RoundedRectangleBorder(
       borderRadius: BorderRadius.vertical(top: Radius.circular(24.r)),
     ),

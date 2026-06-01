@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
@@ -78,8 +77,8 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
     final scaffoldBg = isDark ? cs.background : const Color(0xFFFEF7FF);
     final appBarBg = isDark ? cs.surface : Colors.white;
     final statsBg = isDark ? cs.surface : Colors.white;
-    final accentPurple = isDark ? cs.primary : const Color(0xFF4C229C);
-    final accentPurple2 = isDark ? cs.primary : const Color(0xFF643EB5);
+    final accentPurple = const Color(0xFF4C229C);
+    final accentPurple2 = const Color(0xFF643EB5);
 
     final filteredNotifications = _notifications.where((notification) {
       if (_filter == 'unread') return !notification.isRead;
@@ -96,7 +95,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
           style: TextStyle(
             fontSize: 24.sp,
             fontWeight: FontWeight.w700,
-            color: accentPurple,
+            color: Colors.white,
           ),
         ),
         backgroundColor: appBarBg,
@@ -178,7 +177,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                         Icon(
                           Icons.notifications_none,
                           size: 64.sp,
-                          color: cs.onSurface.withOpacity(0.4),
+                          color: isDark ? Colors.white38 : cs.onSurface.withOpacity(0.4),
                         ),
                         SizedBox(height: 16.h),
                         Text(
@@ -186,7 +185,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                           style: TextStyle(
                             fontSize: 20.sp,
                             fontWeight: FontWeight.w600,
-                            color: cs.onSurface.withOpacity(0.7),
+                            color: isDark ? Colors.white70 : cs.onSurface.withOpacity(0.7),
                           ),
                         ),
                         SizedBox(height: 8.h),
@@ -198,7 +197,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                                   : 'All notifications are cleared',
                           style: TextStyle(
                             fontSize: 14.sp,
-                            color: cs.onSurface.withOpacity(0.5),
+                            color: isDark ? Colors.white54 : cs.onSurface.withOpacity(0.5),
                           ),
                         ),
                       ],
@@ -248,7 +247,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
         break;
       default:
         icon = Icons.info;
-        iconColor = isDark ? cs.primary : const Color(0xFF4C229C);
+        iconColor = const Color(0xFF4C229C);
     }
 
     final timeAgo = _getTimeAgo(notification.timestamp);
@@ -256,11 +255,11 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
     // Dark mode: use surface/surface variant instead of white/light purple
     final readBg = isDark ? cs.surface : Colors.white;
     final unreadBg = isDark ? cs.surface.withOpacity(0.7) : const Color(0xFFF5F0F8);
-    final unreadBgDark = isDark ? cs.primary.withOpacity(0.08) : const Color(0xFFF5F0F8);
-    final titleColor = isDark ? cs.onSurface : const Color(0xFF333333);
-    final bodyColor = isDark ? cs.onSurface.withOpacity(0.65) : const Color(0xFF666666);
-    final timeColor = isDark ? cs.onSurface.withOpacity(0.45) : const Color(0xFF999999);
-    final dotColor = isDark ? cs.primary : const Color(0xFF4C229C);
+    final unreadBgDark = isDark ? const Color(0xFF2A2A3A) : const Color(0xFF4C229C).withOpacity(0.08);
+    final titleColor = isDark ? Colors.white : const Color(0xFF333333);
+    final bodyColor = isDark ? Colors.white70 : const Color(0xFF666666);
+    final timeColor = isDark ? Colors.white54 : const Color(0xFF999999);
+    final dotColor = const Color(0xFF4C229C);
 
     return InkWell(
       onTap: () {

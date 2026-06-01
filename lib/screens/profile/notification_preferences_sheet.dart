@@ -12,90 +12,111 @@ class NotificationPreferencesSheet extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final settings = ref.watch(appSettingsProvider);
 
-    final _theme = Theme.of(context);
-    final _isDark = _theme.brightness == Brightness.dark;
-    final _cs = _theme.colorScheme;
-    final _titleColor = _isDark ? _cs.onSurface : HomeColors.deepAnchor;
-    final _accentColor = _isDark ? _cs.primary : HomeColors.heritagePurple;
-        return Padding(
-      padding: EdgeInsets.fromLTRB(24.w, 20.h, 24.w, 32.h),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _buildHandle(),
-          SizedBox(height: 20.h),
-          Text(
-            'Notification Preferences',
-            style: TextStyle(
-              fontSize: 20.sp,
-              fontWeight: FontWeight.w700,
-              color: _titleColor,
-            ),
-          ),
-          SizedBox(height: 20.h),
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final colorScheme = theme.colorScheme;
 
-          // Master toggle
-          SwitchListTile(
-            contentPadding: EdgeInsets.zero,
-            secondary: Icon(
-              Icons.notifications_outlined,
-              color: _accentColor,
-            ),
-            title: Text(
-              'All Notifications',
-              style:
-                  TextStyle(fontSize: 15.sp, fontWeight: FontWeight.w600),
-            ),
-            subtitle: Text(
-              settings.notificationsEnabled ? 'On' : 'Off',
-              style: TextStyle(fontSize: 13.sp),
-            ),
-            value: settings.notificationsEnabled,
-            activeColor: _accentColor,
-            onChanged: (_) =>
-                ref.read(appSettingsProvider.notifier).toggleNotifications(),
-          ),
+    final backgroundColor = isDark ? colorScheme.surface : Colors.white;
+    final titleColor = isDark ? colorScheme.onSurface : HomeColors.deepAnchor;
+    final subtitleColor = isDark ? colorScheme.onSurface.withOpacity(0.6) : const Color(0xFF757575);
+    final textColor = isDark ? colorScheme.onSurface : const Color(0xFF424242);
+    final handleColor = isDark ? colorScheme.onSurface.withOpacity(0.2) : Colors.grey[300]!;
+    final dividerColor = isDark ? colorScheme.onSurface.withOpacity(0.12) : const Color(0xFFE0E0E0);
+    
+    // Fixed purple accent – matches ProfileScreen
+    const accentColor = HomeColors.heritagePurple;
 
-          Divider(height: 8.h),
+    return Container(
+      decoration: BoxDecoration(
+        color: backgroundColor,
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24.r)),
+      ),
+      child: Padding(
+        padding: EdgeInsets.fromLTRB(24.w, 12.h, 24.w, 32.h),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _buildHandle(handleColor),
+            SizedBox(height: 20.h),
+            Text(
+              'Notification Preferences',
+              style: TextStyle(
+                fontSize: 20.sp,
+                fontWeight: FontWeight.w700,
+                color: titleColor,
+              ),
+            ),
+            SizedBox(height: 20.h),
 
-          // Per-category rows (local state only — extend with Supabase prefs later)
-          _NotifSubTile(
-            title: 'Flood Alerts',
-            icon: Icons.water_outlined,
-            subtitle: 'Critical disaster warnings',
-            defaultVal: true,
-          ),
-          _NotifSubTile(
-            title: 'Announcements',
-            icon: Icons.campaign_outlined,
-            subtitle: 'Barangay news and updates',
-            defaultVal: true,
-          ),
-          _NotifSubTile(
-            title: 'Document Updates',
-            icon: Icons.description_outlined,
-            subtitle: 'Request status changes',
-            defaultVal: true,
-          ),
-          _NotifSubTile(
-            title: 'General',
-            icon: Icons.info_outline,
-            subtitle: 'App updates and reminders',
-            defaultVal: false,
-          ),
-        ],
+            // Master toggle
+            SwitchListTile(
+              contentPadding: EdgeInsets.zero,
+              secondary: Icon(
+                Icons.notifications_outlined,
+                color: accentColor,
+              ),
+              title: Text(
+                'All Notifications',
+                style: TextStyle(
+                  fontSize: 15.sp, 
+                  fontWeight: FontWeight.w600,
+                  color: textColor,
+                ),
+              ),
+              subtitle: Text(
+                settings.notificationsEnabled ? 'On' : 'Off',
+                style: TextStyle(
+                  fontSize: 13.sp,
+                  color: subtitleColor,
+                ),
+              ),
+              value: settings.notificationsEnabled,
+              activeColor: accentColor,
+              onChanged: (_) =>
+                  ref.read(appSettingsProvider.notifier).toggleNotifications(),
+            ),
+
+            Divider(color: dividerColor, height: 24.h),
+
+            // Per-category rows
+            _NotifSubTile(
+              title: 'Flood Alerts',
+              icon: Icons.water_outlined,
+              subtitle: 'Critical disaster warnings',
+              defaultVal: true,
+            ),
+            _NotifSubTile(
+              title: 'Announcements',
+              icon: Icons.campaign_outlined,
+              subtitle: 'Barangay news and updates',
+              defaultVal: true,
+            ),
+            _NotifSubTile(
+              title: 'Document Updates',
+              icon: Icons.description_outlined,
+              subtitle: 'Request status changes',
+              defaultVal: true,
+            ),
+            _NotifSubTile(
+              title: 'General',
+              icon: Icons.info_outline,
+              subtitle: 'App updates and reminders',
+              defaultVal: false,
+            ),
+          ],
+        ),
       ),
     );
   }
 
-  Widget _buildHandle() {
+  Widget _buildHandle(Color color) {
     return Center(
       child: Container(
         width: 40.w,
         height: 4.h,
         decoration: BoxDecoration(
-          color: Colors.grey[300],
+          color: color,
           borderRadius: BorderRadius.circular(2.r),
         ),
       ),
@@ -132,22 +153,39 @@ class _NotifSubTileState extends State<_NotifSubTile> {
 
   @override
   Widget build(BuildContext context) {
-    final _accentColor = Theme.of(context).brightness == Brightness.dark
-        ? Theme.of(context).colorScheme.primary
-        : HomeColors.heritagePurple;
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final colorScheme = theme.colorScheme;
+    
+    const accentColor = HomeColors.heritagePurple;
+    final iconColor = isDark ? colorScheme.onSurface.withOpacity(0.5) : const Color(0xFF9E9E9E);
+    final titleColor = isDark ? colorScheme.onSurface : const Color(0xFF424242);
+    final subtitleColor = isDark ? colorScheme.onSurface.withOpacity(0.6) : const Color(0xFF757575);
 
     return SwitchListTile(
       contentPadding: EdgeInsets.only(left: 8.w),
-      secondary: Icon(widget.icon,
-          size: 20.sp, color: const Color(0xFF9E9E9E)),
+      secondary: Icon(
+        widget.icon,
+        size: 20.sp,
+        color: iconColor,
+      ),
       title: Text(
         widget.title,
-        style: TextStyle(fontSize: 14.sp, fontWeight: FontWeight.w500),
+        style: TextStyle(
+          fontSize: 14.sp,
+          fontWeight: FontWeight.w500,
+          color: titleColor,
+        ),
       ),
-      subtitle:
-          Text(widget.subtitle, style: TextStyle(fontSize: 12.sp)),
+      subtitle: Text(
+        widget.subtitle,
+        style: TextStyle(
+          fontSize: 12.sp,
+          color: subtitleColor,
+        ),
+      ),
       value: _val,
-      activeColor: _accentColor,
+      activeColor: accentColor,
       onChanged: (v) => setState(() => _val = v),
     );
   }
@@ -158,6 +196,7 @@ Future<void> showNotificationPreferencesSheet(BuildContext context) {
   return showModalBottomSheet(
     context: context,
     isScrollControlled: true,
+    backgroundColor: Colors.transparent, // Use our container's background
     shape: RoundedRectangleBorder(
       borderRadius: BorderRadius.vertical(top: Radius.circular(24.r)),
     ),
