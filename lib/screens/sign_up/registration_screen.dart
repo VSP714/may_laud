@@ -27,18 +27,63 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
 
   final List<String> _barangays = [
     "San Roque", "Del Rosario", "San Jose", "Amparado", "Lipot",
-    "Borongborongan", "San Antonio", "Capucnasan", "Sto Dominggo"
+    "Borongborongan", "San Antonio", "Capucnasan", "Santo Domingo",
+    "Alimbuyog", "Balagbag", "Cabugao", "Dalipay", "Flordeliz",
+    "Mayaopayawan", "Maycatmon", "Maydaso", "San Miguel", "San Vicente", "Tarusanan"
   ];
+
+  @override
+  void initState() {
+    super.initState();
+    _phoneController.addListener(_formatPhoneNumber);
+  }
 
   @override
   void dispose() {
     _firstNameController.dispose();
     _lastNameController.dispose();
     _emailController.dispose();
+    _phoneController.removeListener(_formatPhoneNumber);
     _phoneController.dispose();
     _passwordController.dispose();
     _confirmPasswordController.dispose();
     super.dispose();
+  }
+
+  void _formatPhoneNumber() {
+    final text = _phoneController.text;
+    // Remove all non-digit characters
+    String digits = text.replaceAll(RegExp(r'\D'), '');
+    
+    // Limit to 10 digits (Philippine number without country code)
+    if (digits.length > 10) {
+      digits = digits.substring(0, 10);
+    }
+    
+    // Format the number: XXX-XXX-XXXX
+    String formatted = '';
+    if (digits.isNotEmpty) {
+      if (digits.length <= 3) {
+        formatted = digits;
+      } else if (digits.length <= 6) {
+        formatted = '${digits.substring(0, 3)}-${digits.substring(3)}';
+      } else {
+        formatted = '${digits.substring(0, 3)}-${digits.substring(3, 6)}-${digits.substring(6)}';
+      }
+    }
+    
+    // Update the text field if the formatted text is different
+    if (_phoneController.text != formatted) {
+      final selection = _phoneController.selection;
+      _phoneController.value = TextEditingValue(
+        text: formatted,
+        selection: TextSelection.collapsed(offset: formatted.length),
+      );
+    }
+  }
+
+  String _getRawPhoneNumber() {
+    return _phoneController.text.replaceAll(RegExp(r'\D'), '');
   }
 
   Future<void> _register() async {
@@ -53,6 +98,15 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
       );
       return;
     }
+    
+    final rawPhone = _getRawPhoneNumber();
+    if (rawPhone.length != 10) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please enter a valid 10-digit phone number')),
+      );
+      return;
+    }
+    
     if (_passwordController.text != _confirmPasswordController.text) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Passwords do not match')),
@@ -65,7 +119,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
       name: '${_firstNameController.text.trim()} ${_lastNameController.text.trim()}',
       email: _emailController.text.trim(),
       password: _passwordController.text,
-      phone: _phoneController.text.trim(),
+      phone: rawPhone,
       address: _selectedBarangay!,
     );
 
@@ -696,9 +750,9 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                   style: TextStyle(color: cs.onSurface),
                   decoration: InputDecoration(
                     hintText: "Enter your phone number",
-                    border: InputBorder.none,
                     hintStyle: TextStyle(
                         color: cs.onSurface.withOpacity(0.4)),
+                    border: InputBorder.none,
                   ),
                 ),
               ),

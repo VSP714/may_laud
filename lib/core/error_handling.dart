@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:may_laud/theme/app_theme.dart';
+import 'package:may_laud/theme/app_colors.dart';
 
 /// Custom exception for app-specific errors
 class AppException implements Exception {
@@ -40,7 +40,7 @@ class ErrorHandler {
           message,
           style: const TextStyle(color: Colors.white),
         ),
-        backgroundColor: AppTheme.philippineRed,
+        backgroundColor: AppColors.error,
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(12),
@@ -83,7 +83,7 @@ class ErrorHandler {
           message,
           style: const TextStyle(color: Colors.white),
         ),
-        backgroundColor: AppTheme.milaorBlue,
+        backgroundColor: AppColors.milaorBlue,
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(12),
@@ -122,7 +122,7 @@ class ErrorHandler {
         title: Text(
           title,
           style: TextStyle(
-            color: AppTheme.philippineRed,
+            color: AppColors.error,
             fontWeight: FontWeight.bold,
           ),
         ),
@@ -152,7 +152,7 @@ class ErrorHandler {
     required String message,
     String confirmText = 'Confirm',
     String cancelText = 'Cancel',
-    Color confirmColor = AppTheme.milaorBlue,
+    Color confirmColor = AppColors.milaorBlue,
   }) async {
     final result = await showDialog<bool>(
       context: context,
@@ -206,7 +206,7 @@ class LoadingOverlay extends StatelessWidget {
                 children: [
                   CircularProgressIndicator(
                     valueColor: AlwaysStoppedAnimation<Color>(
-                      AppTheme.philippineGold,
+                      AppColors.philippineGold,
                     ),
                     strokeWidth: 3,
                   ),
@@ -262,7 +262,7 @@ extension AsyncValueUI<T> on AsyncValue<T> {
             children: [
               Icon(
                 Icons.error_outline,
-                color: AppTheme.philippineRed,
+                color: AppColors.error,
                 size: 48,
               ),
               const SizedBox(height: 16),
@@ -277,7 +277,7 @@ extension AsyncValueUI<T> on AsyncValue<T> {
                   // Refresh logic would need a ref to the provider – not included here.
                 },
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: AppTheme.milaorBlue,
+                  backgroundColor: AppColors.milaorBlue,
                   foregroundColor: Colors.white,
                 ),
                 child: const Text('Retry'),
@@ -325,7 +325,7 @@ class RetryButton extends StatelessWidget {
           icon: const Icon(Icons.refresh),
           label: const Text('Retry'),
           style: ElevatedButton.styleFrom(
-            backgroundColor: AppTheme.milaorBlue,
+            backgroundColor: AppColors.milaorBlue,
             foregroundColor: Colors.white,
           ),
         ),
@@ -387,7 +387,7 @@ class EmptyState extends StatelessWidget {
               ElevatedButton(
                 onPressed: onAction,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: AppTheme.milaorBlue,
+                  backgroundColor: AppColors.milaorBlue,
                   foregroundColor: Colors.white,
                 ),
                 child: Text(actionText!),

@@ -48,7 +48,6 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
 
       if (!mounted) return;
 
-      // Navigate to OTP screen, passing the email
       Navigator.push(
         context,
         MaterialPageRoute(
@@ -74,231 +73,239 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final cs = theme.colorScheme;
+
+    // Adaptive colors matching sign-in screen
+    final scaffoldBg = isDark ? cs.background : Colors.white;
+    final bubbleBg1 = isDark ? cs.primary.withOpacity(0.12) : const Color(0xFFEDE7F6);
+    final bubbleBg2Gradient = isDark
+        ? [cs.primary.withOpacity(0.10), Colors.transparent]
+        : [const Color(0xFFD1C4E9).withOpacity(0.35), Colors.transparent];
+    final titleColor = isDark ? cs.onBackground : const Color(0xFF2E0C6D);
+    final subtitleColor = isDark ? cs.onBackground.withOpacity(0.6) : const Color(0xFF6E6A75);
+    final formBg = isDark ? cs.surface : const Color(0xFFF6F2FC);
+    final inputBg = isDark ? cs.background : Colors.white;
+    final inputBorder = isDark ? cs.onSurface.withOpacity(0.15) : const Color(0xFFDDDDDD);
+    final inputIconColor = isDark ? cs.onSurface.withOpacity(0.5) : const Color(0xFF666666);
+    final labelColor = isDark ? cs.onSurface.withOpacity(0.85) : const Color(0xFF555555);
+
     return Scaffold(
-      backgroundColor: Theme.of(context).colorScheme.surface,
+      backgroundColor: scaffoldBg,
       body: Stack(
         children: [
-          /// TOP LEFT SHAPE
+          // Background decorations matching sign-in screen
           Positioned(
             top: -120.h,
             left: -120.w,
             child: Container(
               width: 280.w,
               height: 280.w,
+              decoration: BoxDecoration(shape: BoxShape.circle, color: bubbleBg1),
+            ),
+          ),
+          Positioned(
+            top: 100.h,
+            right: -60.w,
+            child: Container(
+              width: 160.w,
+              height: 160.w,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: const Color(0xFFF3E5F5).withOpacity(0.6),
+                gradient: RadialGradient(colors: bubbleBg2Gradient),
               ),
             ),
           ),
-
-          /// BOTTOM RIGHT SHAPE
           Positioned(
-            bottom: 150.h,
+            bottom: 180.h,
             right: -80.w,
             child: Container(
-              width: 200.w,
-              height: 200.w,
+              width: 180.w,
+              height: 180.w,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: const Color(0xFFE1D5F5).withOpacity(0.5),
+                gradient: RadialGradient(
+                  colors: isDark
+                      ? [cs.primary.withOpacity(0.12), Colors.transparent]
+                      : [const Color(0xFFD1C4E9).withOpacity(0.4), Colors.transparent],
+                ),
               ),
             ),
           ),
-
+          Align(
+            alignment: Alignment.bottomCenter,
+            child: SizedBox(
+              height: 240.h,
+              width: double.infinity,
+              child: CustomPaint(painter: _WavePainter(isDark: isDark, cs: cs)),
+            ),
+          ),
           SafeArea(
             child: SingleChildScrollView(
-              padding: EdgeInsets.symmetric(horizontal: 24.w),
+              padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 30.h),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  SizedBox(height: 20.h),
-
-                  /// BACK BUTTON
-                  Align(
-                    alignment: Alignment.centerLeft,
-                    child: IconButton(
-                      icon: const Icon(Icons.arrow_back_ios,
-                          color: Color(0xFF5E35B1)),
-                      onPressed: () => Navigator.pop(context),
-                    ),
-                  ),
-
-                  SizedBox(height: 20.h),
-
-                  /// ICON
+                  SizedBox(height: 30.h),
+                  
+                  // Logo
                   Container(
-                    width: 100.w,
-                    height: 100.w,
                     decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(30.r),
-                      gradient: const LinearGradient(
-                        colors: [Color(0xFF4C229C), Color(0xFF643EB5)],
-                      ),
                       boxShadow: [
                         BoxShadow(
-                          color: const Color(0xFF643EB5).withOpacity(0.4),
-                          blurRadius: 15,
-                          offset: const Offset(0, 6),
+                          color: const Color(0xFF7B2CBF).withOpacity(0.18),
+                          blurRadius: 25.r,
+                          spreadRadius: 2,
                         ),
                       ],
                     ),
-                    child: Icon(
-                      Icons.lock_reset,
-                      color: Colors.white,
-                      size: 40.sp,
+                    child: Image.asset('assets/images/milaudlogo.png',
+                        height: 100.h),
+                  ),
+                  SizedBox(height: 15.h),
+                  
+                  Text(
+                    "Forgot Password?",
+                    style: TextStyle(
+                      fontSize: 32.sp,
+                      fontWeight: FontWeight.w700,
+                      color: titleColor,
                     ),
                   ),
-
+                  SizedBox(height: 8.h),
+                  
+                  Text(
+                    "Enter your registered email address",
+                    style: TextStyle(fontSize: 14.sp, color: subtitleColor),
+                  ),
                   SizedBox(height: 30.h),
-
-                  /// TITLE
-                  Text(
-                    'Forgot Password?',
-                    style: TextStyle(
-                      fontSize: 28.sp,
-                      fontWeight: FontWeight.bold,
-                      color: const Color(0xFF2E0C6D),
-                    ),
-                  ),
-
-                  SizedBox(height: 10.h),
-
-                  /// SUBTITLE
-                  Text(
-                    "Enter your registered email address and\n"
-                    "we'll send you a verification code to\n"
-                    "reset your password.",
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: 15.sp,
-                      color: const Color(0xFF666666),
-                      height: 1.5,
-                    ),
-                  ),
-
-                  SizedBox(height: 35.h),
-
-                  /// INPUT LABEL
-                  Align(
-                    alignment: Alignment.centerLeft,
-                    child: Text(
-                      'Email Address',
-                      style: TextStyle(
-                        fontWeight: FontWeight.w600,
-                        color: const Color(0xFF555555),
-                        fontSize: 14.sp,
-                      ),
-                    ),
-                  ),
-
-                  SizedBox(height: 10.h),
-
-                  /// EMAIL FIELD
+                  
                   Container(
-                    padding:
-                        EdgeInsets.symmetric(horizontal: 20.w, vertical: 4.h),
+                    padding: EdgeInsets.all(20.w),
                     decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(16.r),
-                      border: Border.all(
-                        color: _errorMessage != null
-                            ? Colors.red.shade300
-                            : const Color(0xFFDDDDDD),
-                        width: 1.5,
-                      ),
-                    ),
-                    child: Row(
-                      children: [
-                        Icon(
-                          Icons.email_outlined,
-                          color: const Color(0xFF9E9E9E),
-                          size: 22.sp,
+                      color: formBg,
+                      borderRadius: BorderRadius.circular(28.r),
+                      boxShadow: [
+                        BoxShadow(
+                          color: const Color(0xFF7B2CBF).withOpacity(isDark ? 0.05 : 0.08),
+                          blurRadius: 20.r,
+                          offset: Offset(0, 8.h),
                         ),
-                        SizedBox(width: 12.w),
-                        Expanded(
-                          child: TextField(
-                            controller: _emailController,
-                            keyboardType: TextInputType.emailAddress,
-                            autocorrect: false,
-                            onChanged: (_) =>
-                                setState(() => _errorMessage = null),
-                            decoration: InputDecoration(
-                              hintText: 'yourname@email.com',
-                              border: InputBorder.none,
-                              hintStyle:
-                                  const TextStyle(color: Color(0xFFAAAAAA)),
+                      ],
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          "Email Address",
+                          style: TextStyle(
+                            fontWeight: FontWeight.w600,
+                            fontSize: 14.sp,
+                            color: labelColor,
+                          ),
+                        ),
+                        SizedBox(height: 6.h),
+                        Text(
+                          "We'll send a verification code to reset your password",
+                          style: TextStyle(
+                            fontSize: 12.sp,
+                            color: subtitleColor,
+                          ),
+                        ),
+                        SizedBox(height: 10.h),
+                        
+                        Container(
+                          padding: EdgeInsets.symmetric(
+                              horizontal: 20.w, vertical: 4.h),
+                          decoration: BoxDecoration(
+                            color: inputBg,
+                            borderRadius: BorderRadius.circular(16.r),
+                            border: Border.all(color: inputBorder, width: 1.5),
+                          ),
+                          child: Row(
+                            children: [
+                              Icon(Icons.email_outlined,
+                                  color: inputIconColor),
+                              SizedBox(width: 12.w),
+                              Expanded(
+                                child: TextField(
+                                  controller: _emailController,
+                                  keyboardType: TextInputType.emailAddress,
+                                  style: TextStyle(color: cs.onSurface),
+                                  decoration: InputDecoration(
+                                    hintText: "Enter your email",
+                                    border: InputBorder.none,
+                                    hintStyle: TextStyle(
+                                        color: cs.onSurface.withOpacity(0.4)),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        
+                        if (_errorMessage != null) ...[
+                          SizedBox(height: 10.h),
+                          Text(
+                            _errorMessage!,
+                            style: TextStyle(
+                              color: Colors.red,
+                              fontSize: 13.sp,
+                            ),
+                          ),
+                        ],
+                        
+                        SizedBox(height: 30.h),
+                        
+                        GestureDetector(
+                          onTap: _isLoading ? null : _sendResetCode,
+                          child: Container(
+                            width: double.infinity,
+                            padding: EdgeInsets.symmetric(vertical: 16.h),
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(40.r),
+                              gradient: _isLoading
+                                  ? LinearGradient(
+                                      colors: [Colors.grey.shade400, Colors.grey.shade500])
+                                  : const LinearGradient(
+                                      colors: [Color(0xFF4C229C), Color(0xFF643EB5)],
+                                    ),
+                              boxShadow: _isLoading
+                                  ? []
+                                  : [
+                                      BoxShadow(
+                                        color: const Color(0xFF4C229C).withOpacity(0.3),
+                                        blurRadius: 12.r,
+                                        offset: Offset(0, 4.h),
+                                      ),
+                                    ],
+                            ),
+                            child: Center(
+                              child: _isLoading
+                                  ? SizedBox(
+                                      width: 24.w,
+                                      height: 24.w,
+                                      child: const CircularProgressIndicator(
+                                        color: Colors.white,
+                                        strokeWidth: 2.5,
+                                      ),
+                                    )
+                                  : Text(
+                                      "Send Reset Code",
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 18.sp,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
                             ),
                           ),
                         ),
                       ],
                     ),
                   ),
-
-                  // Error message
-                  if (_errorMessage != null) ...[
-                    SizedBox(height: 10.h),
-                    Align(
-                      alignment: Alignment.centerLeft,
-                      child: Text(
-                        _errorMessage!,
-                        style: TextStyle(
-                          color: Colors.red.shade600,
-                          fontSize: 13.sp,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                    ),
-                  ],
-
-                  SizedBox(height: 35.h),
-
-                  /// SEND RESET CODE BUTTON
-                  GestureDetector(
-                    onTap: _isLoading ? null : _sendResetCode,
-                    child: Container(
-                      width: double.infinity,
-                      padding: EdgeInsets.symmetric(vertical: 16.h),
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(40.r),
-                        gradient: LinearGradient(
-                          colors: _isLoading
-                              ? [Colors.grey.shade400, Colors.grey.shade500]
-                              : const [Color(0xFF4C229C), Color(0xFF643EB5)],
-                        ),
-                        boxShadow: _isLoading
-                            ? []
-                            : [
-                                BoxShadow(
-                                  color: const Color(0xFF643EB5),
-                                  blurRadius: 12,
-                                  offset: const Offset(0, 6),
-                                ),
-                              ],
-                      ),
-                      child: Center(
-                        child: _isLoading
-                            ? const SizedBox(
-                                width: 24,
-                                height: 24,
-                                child: CircularProgressIndicator(
-                                  color: Colors.white,
-                                  strokeWidth: 2.5,
-                                ),
-                              )
-                            : Text(
-                                'Send Reset Code',
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 18.sp,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                      ),
-                    ),
-                  ),
-
-                  SizedBox(height: 20.h),
+                  SizedBox(height: 30.h),
                 ],
               ),
             ),
@@ -307,4 +314,49 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
       ),
     );
   }
+}
+
+class _WavePainter extends CustomPainter {
+  final bool isDark;
+  final ColorScheme cs;
+
+  _WavePainter({required this.isDark, required this.cs});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final fillColor =
+        isDark ? cs.primary.withOpacity(0.08) : const Color(0xFFF3F0FA);
+    final strokeColor =
+        isDark ? cs.primary.withOpacity(0.25) : const Color(0xFFB39DDB);
+
+    final fillWave = Paint()
+      ..color = fillColor
+      ..style = PaintingStyle.fill;
+
+    final lineWave = Paint()
+      ..color = strokeColor
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2;
+
+    final path1 = Path();
+    path1.moveTo(0, 70);
+    path1.quadraticBezierTo(size.width * 0.25, 20, size.width * 0.5, 90);
+    path1.quadraticBezierTo(size.width * 0.75, 150, size.width, 70);
+    path1.lineTo(size.width, size.height);
+    path1.lineTo(0, size.height);
+    path1.close();
+
+    canvas.drawPath(path1, fillWave);
+
+    final path2 = Path();
+    path2.moveTo(0, 90);
+    path2.quadraticBezierTo(size.width * 0.3, 40, size.width * 0.6, 110);
+    path2.quadraticBezierTo(size.width * 0.85, 170, size.width, 100);
+
+    canvas.drawPath(path2, lineWave);
+  }
+
+  @override
+  bool shouldRepaint(covariant _WavePainter oldDelegate) =>
+      oldDelegate.isDark != isDark;
 }

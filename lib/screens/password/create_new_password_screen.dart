@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import '../success/password_reset_success_screen.dart';
 
 /// ---------------- NEW PASSWORD CREATION----------------
@@ -19,14 +20,20 @@ class _CreateNewPasswordScreenState extends State<CreateNewPasswordScreen> {
 
   bool obscure1 = true;
   bool obscure2 = true;
+  bool _isLoading = false;
 
   String strength = "Weak";
   Color strengthColor = Colors.red;
 
   String errorText = "";
 
+  SupabaseClient get _client => Supabase.instance.client;
+
   void checkStrength(String value) {
-    if (value.length < 6) {
+    if (value.isEmpty) {
+      strength = "Weak";
+      strengthColor = Colors.red;
+    } else if (value.length < 6) {
       strength = "Weak";
       strengthColor = Colors.red;
     } else if (value.length < 10) {
@@ -40,7 +47,7 @@ class _CreateNewPasswordScreenState extends State<CreateNewPasswordScreen> {
   }
 
   void validatePasswords() {
-    if (pass1.text != pass2.text) {
+    if (pass2.text.isNotEmpty && pass1.text != pass2.text) {
       errorText = "Passwords do not match";
     } else {
       errorText = "";
@@ -48,40 +55,96 @@ class _CreateNewPasswordScreenState extends State<CreateNewPasswordScreen> {
     setState(() {});
   }
 
-  void handleSubmit() {
+  Future<void> handleSubmit() async {
     validatePasswords();
 
     if (errorText.isEmpty && pass1.text.isNotEmpty) {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(
-          builder: (_) => const SuccessScreen(),
-        ),
-      );
+      setState(() => _isLoading = true);
+
+      try {
+        // Update the user's password
+        await _client.auth.updateUser(
+          UserAttributes(password: pass1.text),
+        );
+
+        if (!mounted) return;
+
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (_) => const SuccessScreen(),
+          ),
+        );
+      } catch (e) {
+        if (mounted) {
+          setState(() {
+            _isLoading = false;
+            errorText = 'Failed to update password. Please try again.';
+          });
+        }
+      }
     }
   }
 
   @override
+  void dispose() {
+    pass1.dispose();
+    pass2.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final cs = theme.colorScheme;
+
+    // Adaptive colors (matching sign in screen)
+    final scaffoldBg = isDark ? cs.background : Colors.white;
+    final bubbleBg1 = isDark ? cs.primary.withOpacity(0.12) : const Color(0xFFEDE7F6);
+    final bubbleBg2Gradient = isDark
+        ? [cs.primary.withOpacity(0.10), Colors.transparent]
+        : [const Color(0xFFD1C4E9).withOpacity(0.35), Colors.transparent];
+    final bubbleBg3Gradient = isDark
+        ? [cs.primary.withOpacity(0.12), Colors.transparent]
+        : [const Color(0xFFD1C4E9).withOpacity(0.4), Colors.transparent];
+    final titleColor = isDark ? cs.onBackground : const Color(0xFF2E0C6D);
+    final subtitleColor = isDark ? cs.onBackground.withOpacity(0.6) : const Color(0xFF6E6A75);
+    final formBg = isDark ? cs.surface : const Color(0xFFF6F2FC);
+    final inputBg = isDark ? cs.background : Colors.white;
+    final inputBorder = isDark ? cs.onSurface.withOpacity(0.15) : const Color(0xFFDDDDDD);
+    final inputIconColor = isDark ? cs.onSurface.withOpacity(0.5) : const Color(0xFF666666);
+    final labelColor = isDark ? cs.onSurface.withOpacity(0.85) : const Color(0xFF555555);
+    final hintColor = isDark ? cs.onSurface.withOpacity(0.45) : const Color(0xFF888888);
+    final accentPurple = isDark ? cs.primary : const Color(0xFF4C229C);
+    final linkColor = isDark ? cs.onBackground.withOpacity(0.6) : Colors.black54;
+
     return Scaffold(
-      backgroundColor: Theme.of(context).colorScheme.surface,
+      backgroundColor: scaffoldBg,
       body: Stack(
         children: [
-          /// TOP LEFT SOFT CIRCLE
+          // Background decorations (matching sign in screen)
           Positioned(
             top: -120.h,
             left: -120.w,
             child: Container(
               width: 280.w,
               height: 280.w,
+              decoration: BoxDecoration(shape: BoxShape.circle, color: bubbleBg1),
+            ),
+          ),
+          Positioned(
+            top: 100.h,
+            right: -60.w,
+            child: Container(
+              width: 160.w,
+              height: 160.w,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: const Color(0xFFF3E5F5).withOpacity(0.6),
+                gradient: RadialGradient(colors: bubbleBg2Gradient),
               ),
             ),
           ),
-
-          /// BOTTOM RIGHT GLOW
           Positioned(
             bottom: 180.h,
             right: -80.w,
@@ -90,152 +153,44 @@ class _CreateNewPasswordScreenState extends State<CreateNewPasswordScreen> {
               height: 180.w,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: const Color(0xFFE1D5F5).withOpacity(0.5),
+                gradient: RadialGradient(colors: bubbleBg3Gradient),
               ),
             ),
           ),
-
+          Align(
+            alignment: Alignment.bottomCenter,
+            child: SizedBox(
+              height: 240.h,
+              width: double.infinity,
+              child: CustomPaint(painter: _WavePainter(isDark: isDark, cs: cs)),
+            ),
+          ),
           SafeArea(
             child: SingleChildScrollView(
-              padding: EdgeInsets.symmetric(horizontal: 24.w),
+              padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 30.h),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  SizedBox(height: 20.h),
+                  SizedBox(height: 30.h),
 
-                  /// BACK BUTTON
-                  Align(
-                    alignment: Alignment.centerLeft,
-                    child: IconButton(
-                      icon: const Icon(Icons.arrow_back_ios,
-                          color: Color(0xFF5E35B1)),
-                      onPressed: () => Navigator.pop(context),
-                    ),
-                  ),
-
-                  SizedBox(height: 20.h),
-
-                  /// TITLE
-                  Text(
-                    "Create New",
-                    style: TextStyle(
-                      fontSize: 35.sp,
-                      fontWeight: FontWeight.bold,
-                      color: const Color(0xFF2E0C6D),
-                    ),
-                  ),
-                  Text(
-                    "Password",
-                    style: TextStyle(
-                      fontSize: 35.sp,
-                      fontWeight: FontWeight.bold,
-                      fontStyle: FontStyle.italic,
-                      color: const Color(0xFF5E35B1),
-                    ),
-                  ),
-
-                  SizedBox(height: 15.h),
-
-                  /// SUBTEXT
-                  Text(
-                    "Your new password must be different from previous.",
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: 16.sp,
-                      color: Colors.black,
-                      height: 1.5,
-                    ),
-                  ),
-
-                  SizedBox(height: 25.h),
-
-                  /// NEW PASSWORD FIELD
-                  Align(
-                    alignment: Alignment.centerLeft,
-                    child: Text(
-                      "New Password",
-                      style: TextStyle(
-                        fontWeight: FontWeight.w600,
-                        color: const Color(0xFF555555),
-                        fontSize: 14.sp,
-                        letterSpacing: 0.5,
-                      ),
-                    ),
-                  ),
-                  SizedBox(height: 6.h),
-                  Align(
-                    alignment: Alignment.centerLeft,
-                    child: Text(
-                      "Create a strong password with at least 8 characters",
-                      style: TextStyle(
-                        fontSize: 12.sp,
-                        color: const Color(0xFF888888),
-                      ),
-                    ),
-                  ),
-                  SizedBox(height: 10.h),
-
-                  Container(
-                    padding:
-                        EdgeInsets.symmetric(horizontal: 20.w, vertical: 4.h),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(16.r),
-                      border: Border.all(
-                        color: const Color(0xFFDDDDDD),
-                        width: 1.5,
-                      ),
-                    ),
-                    child: Row(
-                      children: [
-                        const Icon(Icons.lock_outline,
-                            color: Color(0xFF666666)),
-                        SizedBox(width: 12.w),
-                        Expanded(
-                          child: TextField(
-                            controller: pass1,
-                            obscureText: obscure1,
-                            onChanged: (val) {
-                              checkStrength(val);
-                              validatePasswords();
-                            },
-                            decoration: InputDecoration(
-                              hintText: "Enter new password",
-                              border: InputBorder.none,
-                              hintStyle:
-                                  TextStyle(color: const Color(0xFFAAAAAA)),
-                            ),
-                          ),
-                        ),
-                        IconButton(
-                          icon: Icon(
-                            obscure1 ? Icons.visibility_off : Icons.visibility,
-                            color: const Color(0xFF666666),
-                          ),
-                          onPressed: () => setState(() => obscure1 = !obscure1),
-                        ),
-                      ],
-                    ),
-                  ),
-
-                  SizedBox(height: 10.h),
-
-                  /// STRENGTH INDICATOR
-                  Row(
+                  // Back button + Title
+                  Stack(
+                    alignment: Alignment.center,
                     children: [
-                      Text(
-                        "Strength: ",
-                        style: TextStyle(
-                          fontSize: 13.sp,
-                          color: const Color(0xFF666666),
+                      Align(
+                        alignment: Alignment.centerLeft,
+                        child: IconButton(
+                          icon: Icon(Icons.arrow_back_ios,
+                              color: isDark ? cs.primary : const Color(0xFF4C229C)),
+                          onPressed: () => Navigator.pop(context),
                         ),
                       ),
                       Text(
-                        strength,
+                        "Create New Password",
                         style: TextStyle(
-                          fontSize: 13.sp,
-                          color: strengthColor,
-                          fontWeight: FontWeight.bold,
+                          fontSize: 20.sp,
+                          fontWeight: FontWeight.w600,
+                          color: titleColor,
                         ),
                       ),
                     ],
@@ -243,116 +198,263 @@ class _CreateNewPasswordScreenState extends State<CreateNewPasswordScreen> {
 
                   SizedBox(height: 20.h),
 
-                  /// CONFIRM PASSWORD FIELD
-                  Align(
-                    alignment: Alignment.centerLeft,
-                    child: Text(
-                      "Confirm Password",
-                      style: TextStyle(
-                        fontWeight: FontWeight.w600,
-                        color: const Color(0xFF555555),
-                        fontSize: 14.sp,
-                        letterSpacing: 0.5,
-                      ),
-                    ),
-                  ),
-                  SizedBox(height: 6.h),
-                  Align(
-                    alignment: Alignment.centerLeft,
-                    child: Text(
-                      "Re‑enter your password to confirm",
-                      style: TextStyle(
-                        fontSize: 12.sp,
-                        color: const Color(0xFF888888),
-                      ),
-                    ),
-                  ),
-                  SizedBox(height: 10.h),
-
+                  // Icon
                   Container(
-                    padding:
-                        EdgeInsets.symmetric(horizontal: 20.w, vertical: 4.h),
+                    width: 100.w,
+                    height: 100.w,
                     decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(16.r),
-                      border: Border.all(
-                        color: const Color(0xFFDDDDDD),
-                        width: 1.5,
+                      shape: BoxShape.circle,
+                      gradient: const LinearGradient(
+                        colors: [Color(0xFF4C229C), Color(0xFF643EB5)],
                       ),
-                    ),
-                    child: Row(
-                      children: [
-                        const Icon(Icons.lock_outline,
-                            color: Color(0xFF666666)),
-                        SizedBox(width: 12.w),
-                        Expanded(
-                          child: TextField(
-                            controller: pass2,
-                            obscureText: obscure2,
-                            onChanged: (val) => validatePasswords(),
-                            decoration: InputDecoration(
-                              hintText: "Confirm password",
-                              border: InputBorder.none,
-                              hintStyle:
-                                  TextStyle(color: const Color(0xFFAAAAAA)),
-                            ),
-                          ),
-                        ),
-                        IconButton(
-                          icon: Icon(
-                            obscure2 ? Icons.visibility_off : Icons.visibility,
-                            color: const Color(0xFF666666),
-                          ),
-                          onPressed: () => setState(() => obscure2 = !obscure2),
+                      boxShadow: [
+                        BoxShadow(
+                          color: const Color(0xFF4C229C).withOpacity(0.3),
+                          blurRadius: 20.r,
+                          offset: Offset(0, 8.h),
                         ),
                       ],
                     ),
+                    child: Icon(
+                      Icons.lock_reset,
+                      size: 50.sp,
+                      color: Colors.white,
+                    ),
                   ),
 
-                  /// ERROR MESSAGE
-                  if (errorText.isNotEmpty)
-                    Padding(
-                      padding: EdgeInsets.only(top: 8.h),
-                      child: Text(
-                        errorText,
-                        style: TextStyle(
-                          color: Colors.red,
-                          fontSize: 12.sp,
-                        ),
-                      ),
+                  SizedBox(height: 32.h),
+
+                  Text(
+                    "Create New Password",
+                    style: TextStyle(
+                      fontSize: 28.sp,
+                      fontWeight: FontWeight.w700,
+                      color: titleColor,
                     ),
+                  ),
 
-                  SizedBox(height: 20.h),
+                  SizedBox(height: 12.h),
 
-                  /// RESET PASSWORD BUTTON
-                  GestureDetector(
-                    onTap: handleSubmit,
-                    child: Container(
-                      width: double.infinity,
-                      padding: EdgeInsets.symmetric(vertical: 15.h),
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(40.r),
-                        gradient: const LinearGradient(
-                          colors: [Color(0xFF4C229C), Color(0xFF643EB5)],
+                  Text(
+                    "Your new password must be different from previous",
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 14.sp,
+                      color: subtitleColor,
+                      height: 1.5,
+                    ),
+                  ),
+
+                  SizedBox(height: 30.h),
+
+                  // Form container (matching sign in screen)
+                  Container(
+                    padding: EdgeInsets.all(20.w),
+                    decoration: BoxDecoration(
+                      color: formBg,
+                      borderRadius: BorderRadius.circular(28.r),
+                      boxShadow: [
+                        BoxShadow(
+                          color: const Color(0xFF7B2CBF).withOpacity(isDark ? 0.05 : 0.08),
+                          blurRadius: 20.r,
+                          offset: Offset(0, 8.h),
                         ),
-                        boxShadow: [
-                          BoxShadow(
-                            color: const Color(0xFF643EB5),
-                            blurRadius: 12,
-                            offset: const Offset(0, 6),
-                          )
-                        ],
-                      ),
-                      child: Center(
-                        child: Text(
-                          "Reset Password",
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 18.sp,
-                            fontWeight: FontWeight.bold,
+                      ],
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // New Password Field
+                        Text("New Password",
+                            style: TextStyle(
+                                fontWeight: FontWeight.w600,
+                                fontSize: 14.sp,
+                                color: labelColor)),
+                        SizedBox(height: 6.h),
+                        Text("Create a strong password with at least 8 characters",
+                            style: TextStyle(
+                                fontSize: 12.sp, color: hintColor)),
+                        SizedBox(height: 10.h),
+                        Container(
+                          padding: EdgeInsets.symmetric(
+                              horizontal: 20.w, vertical: 4.h),
+                          decoration: BoxDecoration(
+                            color: inputBg,
+                            borderRadius: BorderRadius.circular(16.r),
+                            border: Border.all(color: inputBorder, width: 1.5),
+                          ),
+                          child: Row(
+                            children: [
+                              Icon(Icons.lock_outline, color: inputIconColor),
+                              SizedBox(width: 12.w),
+                              Expanded(
+                                child: TextField(
+                                  controller: pass1,
+                                  obscureText: obscure1,
+                                  onChanged: (val) {
+                                    checkStrength(val);
+                                    validatePasswords();
+                                  },
+                                  style: TextStyle(color: cs.onSurface),
+                                  decoration: InputDecoration(
+                                    hintText: "Enter new password",
+                                    border: InputBorder.none,
+                                    hintStyle: TextStyle(
+                                        color: cs.onSurface.withOpacity(0.4)),
+                                  ),
+                                ),
+                              ),
+                              IconButton(
+                                icon: Icon(
+                                    obscure1 ? Icons.visibility_off : Icons.visibility,
+                                    color: inputIconColor),
+                                onPressed: () => setState(() => obscure1 = !obscure1),
+                              ),
+                            ],
                           ),
                         ),
-                      ),
+
+                        SizedBox(height: 10.h),
+
+                        // Strength Indicator
+                        Row(
+                          children: [
+                            Text(
+                              "Strength: ",
+                              style: TextStyle(
+                                fontSize: 13.sp,
+                                color: hintColor,
+                              ),
+                            ),
+                            Text(
+                              strength,
+                              style: TextStyle(
+                                fontSize: 13.sp,
+                                color: strengthColor,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
+
+                        SizedBox(height: 20.h),
+
+                        // Confirm Password Field
+                        Text("Confirm Password",
+                            style: TextStyle(
+                                fontWeight: FontWeight.w600,
+                                fontSize: 14.sp,
+                                color: labelColor)),
+                        SizedBox(height: 6.h),
+                        Text("Re-enter your password to confirm",
+                            style: TextStyle(
+                                fontSize: 12.sp, color: hintColor)),
+                        SizedBox(height: 10.h),
+                        Container(
+                          padding: EdgeInsets.symmetric(
+                              horizontal: 20.w, vertical: 4.h),
+                          decoration: BoxDecoration(
+                            color: inputBg,
+                            borderRadius: BorderRadius.circular(16.r),
+                            border: Border.all(color: inputBorder, width: 1.5),
+                          ),
+                          child: Row(
+                            children: [
+                              Icon(Icons.lock_outline, color: inputIconColor),
+                              SizedBox(width: 12.w),
+                              Expanded(
+                                child: TextField(
+                                  controller: pass2,
+                                  obscureText: obscure2,
+                                  onChanged: (val) => validatePasswords(),
+                                  style: TextStyle(color: cs.onSurface),
+                                  decoration: InputDecoration(
+                                    hintText: "Confirm your password",
+                                    border: InputBorder.none,
+                                    hintStyle: TextStyle(
+                                        color: cs.onSurface.withOpacity(0.4)),
+                                  ),
+                                ),
+                              ),
+                              IconButton(
+                                icon: Icon(
+                                    obscure2 ? Icons.visibility_off : Icons.visibility,
+                                    color: inputIconColor),
+                                onPressed: () => setState(() => obscure2 = !obscure2),
+                              ),
+                            ],
+                          ),
+                        ),
+
+                        // Error message
+                        if (errorText.isNotEmpty) ...[
+                          SizedBox(height: 12.h),
+                          Text(
+                            errorText,
+                            style: TextStyle(
+                                color: Colors.red, fontSize: 13.sp),
+                          ),
+                        ],
+
+                        SizedBox(height: 20.h),
+
+                        // Reset Password Button
+                        if (_isLoading)
+                          const Center(child: CircularProgressIndicator())
+                        else
+                          GestureDetector(
+                            onTap: handleSubmit,
+                            child: Container(
+                              width: double.infinity,
+                              padding: EdgeInsets.symmetric(vertical: 16.h),
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(40.r),
+                                gradient: const LinearGradient(
+                                  colors: [Color(0xFF4C229C), Color(0xFF643EB5)],
+                                ),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: const Color(0xFF4C229C).withOpacity(0.3),
+                                    blurRadius: 12.r,
+                                    offset: Offset(0, 4.h),
+                                  ),
+                                ],
+                              ),
+                              child: Center(
+                                child: Text(
+                                  "Reset Password",
+                                  style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 18.sp,
+                                      fontWeight: FontWeight.bold),
+                                ),
+                              ),
+                            ),
+                          ),
+
+                        SizedBox(height: 20.h),
+
+                        // Security note
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              Icons.lock_outline,
+                              size: 16.w,
+                              color: isDark ? cs.primary.withOpacity(0.6) : const Color(0xFF4C229C).withOpacity(0.6),
+                            ),
+                            SizedBox(width: 8.w),
+                            Text(
+                              'End-to-end encrypted',
+                              style: TextStyle(
+                                color: isDark ? cs.primary.withOpacity(0.6) : const Color(0xFF4C229C).withOpacity(0.6),
+                                fontSize: 13.sp,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
                     ),
                   ),
 
@@ -365,4 +467,49 @@ class _CreateNewPasswordScreenState extends State<CreateNewPasswordScreen> {
       ),
     );
   }
+}
+
+class _WavePainter extends CustomPainter {
+  final bool isDark;
+  final ColorScheme cs;
+
+  _WavePainter({required this.isDark, required this.cs});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final fillColor =
+        isDark ? cs.primary.withOpacity(0.08) : const Color(0xFFF3F0FA);
+    final strokeColor =
+        isDark ? cs.primary.withOpacity(0.25) : const Color(0xFFB39DDB);
+
+    final fillWave = Paint()
+      ..color = fillColor
+      ..style = PaintingStyle.fill;
+
+    final lineWave = Paint()
+      ..color = strokeColor
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2;
+
+    final path1 = Path();
+    path1.moveTo(0, 70);
+    path1.quadraticBezierTo(size.width * 0.25, 20, size.width * 0.5, 90);
+    path1.quadraticBezierTo(size.width * 0.75, 150, size.width, 70);
+    path1.lineTo(size.width, size.height);
+    path1.lineTo(0, size.height);
+    path1.close();
+
+    canvas.drawPath(path1, fillWave);
+
+    final path2 = Path();
+    path2.moveTo(0, 90);
+    path2.quadraticBezierTo(size.width * 0.3, 40, size.width * 0.6, 110);
+    path2.quadraticBezierTo(size.width * 0.85, 170, size.width, 100);
+
+    canvas.drawPath(path2, lineWave);
+  }
+
+  @override
+  bool shouldRepaint(covariant _WavePainter oldDelegate) =>
+      oldDelegate.isDark != isDark;
 }

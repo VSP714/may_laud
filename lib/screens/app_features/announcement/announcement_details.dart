@@ -1,220 +1,282 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:google_fonts/google_fonts.dart';
 
-// ===================== ANNOUNCEMENTS FEED SCREEN =====================
-class AnnouncementsFeedScreen extends StatelessWidget {
-  const AnnouncementsFeedScreen({super.key});
+import '../../../providers/content_providers.dart';
+import '../../home/home.dart';
+
+/// ─── PROFESSIONAL ANNOUNCEMENT DETAIL SCREEN ─────────────
+/// Designed for Milaor residents — clear hierarchy, municipal
+/// brand colors, accessible typography & actionable layout.
+class AnnouncementFeedScreen extends StatelessWidget {
+  final Announcement announcement;
+
+  const AnnouncementFeedScreen({super.key, required this.announcement});
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final cs = Theme.of(context).colorScheme;
-    final bg = isDark ? cs.background : const Color(0xFFF6F1FA);
-    final dark = isDark ? cs.onSurface : const Color(0xFF2D145F);
-    final muted = isDark ? cs.onSurface.withOpacity(0.55) : const Color(0xFF7C7487);
-    final cardBg = isDark ? cs.surface : Colors.white;
-    final searchBg = isDark ? cs.surface : const Color(0xFFF0EAF5);
+    final topPadding = MediaQuery.of(context).padding.top;
+    final imageHeight = 280.h;
+    final cardLift = 36.h;
 
     return Scaffold(
-      backgroundColor: bg,
-      bottomNavigationBar: Container(
-        height: 82,
-        padding: const EdgeInsets.symmetric(horizontal: 18),
-        decoration: BoxDecoration(
-          color: isDark ? cs.surface : Colors.white,
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: const [
-            _BottomNavItem(icon: Icons.home_outlined, label: 'HOME'),
-            _BottomNavItem(icon: Icons.newspaper, label: 'NEWS', active: true),
-            _BottomNavItem(icon: Icons.event_note_outlined, label: 'EVENTS'),
-            _BottomNavItem(icon: Icons.person_outline, label: 'PROFILE'),
+      backgroundColor: HomeColors.warmHearth,
+      body: SingleChildScrollView(
+        physics: const BouncingScrollPhysics(),
+        child: Column(
+          children: [
+            _buildHeroSection(context, imageHeight, cardLift, topPadding),
+            _buildTitleCard(cardLift),
+            _buildInfoBoxes(),
+            _buildDescriptionSection(),
+            _buildActionButtons(context),
+            SizedBox(height: 40.h),
           ],
-        ),
-      ),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // ── Header ──
-              Row(
-                children: [
-                  Icon(Icons.menu, color: dark),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: Text(
-                      'Civic Square',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w700,
-                        color: dark,
-                      ),
-                    ),
-                  ),
-                  const CircleAvatar(radius: 18, child: Icon(Icons.person)),
-                ],
-              ),
-              const SizedBox(height: 26),
-              const Text(
-                'THE DAILY FLOW',
-                style: TextStyle(
-                  color: Color(0xFF7A5BC8),
-                  fontSize: 14,
-                  letterSpacing: 1.2,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                'Announcements',
-                style: TextStyle(
-                  fontSize: 34,
-                  fontWeight: FontWeight.w500,
-                  color: dark,
-                ),
-              ),
-              const SizedBox(height: 6),
-              Text(
-                'Your digital porch for everything happening in Milaor, from emergency alerts to local festivities.',
-                style: TextStyle(fontSize: 16, height: 1.6, color: muted),
-              ),
-              const SizedBox(height: 20),
-              // ── Search bar ──
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-                decoration: BoxDecoration(
-                  color: searchBg,
-                  borderRadius: BorderRadius.circular(30),
-                ),
-                child: Row(
-                  children: [
-                    Icon(Icons.search, color: muted),
-                    const SizedBox(width: 10),
-                    Text(
-                      'Find specific updates...',
-                      style: TextStyle(
-                        color: isDark
-                            ? cs.onSurface.withOpacity(0.35)
-                            : const Color(0xFFB0A9BA),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 18),
-              // ── Filter chips ──
-              Wrap(
-                spacing: 10,
-                runSpacing: 10,
-                children: const [
-                  _FilterChip(label: 'All', active: true),
-                  _FilterChip(label: 'Emergency'),
-                  _FilterChip(label: 'Events'),
-                  _FilterChip(label: 'Public Notices'),
-                ],
-              ),
-              const SizedBox(height: 28),
-              // ── Cards ──
-              _AnnouncementCard(
-                cardBg: cardBg,
-                dark: dark,
-                image: 'https://images.unsplash.com/photo-1500375592092-40eb2168fd21?q=80&w=1200&auto=format&fit=crop',
-                tag: 'EMERGENCY',
-                time: '2 hours ago',
-                title: 'Bicol River Level Warning: Precautionary Measures',
-                desc: 'Local authorities advise residents near the riverbank to remain vigilant as water levels rise due to monsoon rains.',
-                footer: 'Read Full Alert  ➜',
-                footerPurple: true,
-              ),
-              const SizedBox(height: 22),
-              _TextOnlyCard(cardBg: cardBg, dark: dark),
-              const SizedBox(height: 22),
-              _RecyclingCard(cardBg: cardBg, dark: dark),
-              const SizedBox(height: 22),
-              _SpotlightCard(isDark: isDark),
-              const SizedBox(height: 20),
-            ],
-          ),
         ),
       ),
     );
   }
-}
 
-// ── Announcement image card ──────────────────────────────────────────
-class _AnnouncementCard extends StatelessWidget {
-  final Color cardBg;
-  final Color dark;
-  final String image, tag, time, title, desc, footer;
-  final bool footerPurple;
+  // ─── HERO IMAGE + GRADIENT + FLOATING BUTTONS ────────────
+  Widget _buildHeroSection(
+    BuildContext context,
+    double imageHeight,
+    double cardLift,
+    double topPadding,
+  ) {
+    return Stack(
+      clipBehavior: Clip.none,
+      children: [
+        SizedBox(
+          height: imageHeight,
+          width: double.infinity,
+          child: announcement.imageUrl != null
+              ? Image.network(
+                  announcement.imageUrl!,
+                  fit: BoxFit.cover,
+                  errorBuilder: (_, __, ___) => _heroPlaceholder(),
+                )
+              : _heroPlaceholder(),
+        ),
+        SizedBox(
+          height: imageHeight,
+          width: double.infinity,
+          child: DecoratedBox(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  HomeColors.deepAnchor.withValues(alpha: 0.55),
+                  HomeColors.heritagePurple.withValues(alpha: 0.35),
+                  HomeColors.deepAnchor.withValues(alpha: 0.8),
+                ],
+              ),
+            ),
+          ),
+        ),
+        Positioned(
+          top: topPadding + 8.h,
+          left: 8.w,
+          right: 8.w,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              _iconCircle(icon: Icons.arrow_back_rounded, onTap: () => Navigator.pop(context)),
+              Row(
+                children: [
+                  _iconCircle(
+                    icon: announcement.isRead ? Icons.bookmark_outline : Icons.bookmark_rounded,
+                    onTap: () {},
+                  ),
+                  SizedBox(width: 8.w),
+                  _iconCircle(icon: Icons.share_outlined, onTap: () {}),
+                ],
+              ),
+            ],
+          ),
+        ),
+        Positioned(
+          bottom: cardLift + 12.h,
+          left: 20.w,
+          right: 20.w,
+          child: Row(
+            children: [
+              _categoryBadge(announcement.category),
+              if (announcement.isImportant) ...[
+                SizedBox(width: 8.w),
+                _importantBadge(),
+              ],
+            ],
+          ),
+        ),
+      ],
+    );
+  }
 
-  const _AnnouncementCard({
-    required this.cardBg,
-    required this.dark,
-    required this.image,
-    required this.tag,
-    required this.time,
-    required this.title,
-    required this.desc,
-    required this.footer,
-    this.footerPurple = false,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final bodyColor = isDark
-        ? Theme.of(context).colorScheme.onSurface.withOpacity(0.65)
-        : const Color(0xFF6D6678);
-
+  Widget _heroPlaceholder() {
     return Container(
       decoration: BoxDecoration(
-        color: cardBg,
-        borderRadius: BorderRadius.circular(34),
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            HomeColors.riverFlow.withValues(alpha: 0.6),
+            HomeColors.heritagePurple.withValues(alpha: 0.4),
+          ],
+        ),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      child: Center(
+        child: Icon(Icons.campaign_rounded, size: 64.sp, color: Colors.white.withValues(alpha: 0.7)),
+      ),
+    );
+  }
+
+  static Widget _iconCircle({required IconData icon, required VoidCallback onTap}) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: 40.w, height: 40.w,
+        decoration: BoxDecoration(
+          color: Colors.white.withValues(alpha: 0.18),
+          shape: BoxShape.circle,
+          border: Border.all(color: Colors.white.withValues(alpha: 0.25), width: 1),
+        ),
+        child: Icon(icon, size: 20.sp, color: Colors.white),
+      ),
+    );
+  }
+
+  static Widget _categoryBadge(String label) {
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 7.h),
+      decoration: BoxDecoration(
+        color: HomeColors.heritagePurple,
+        borderRadius: BorderRadius.circular(20.r),
+        boxShadow: [BoxShadow(color: HomeColors.heritagePurple.withValues(alpha: 0.35), blurRadius: 8, offset: const Offset(0, 3))],
+      ),
+      child: Text(
+        label.toUpperCase(),
+        style: GoogleFonts.inter(fontSize: 11.sp, fontWeight: FontWeight.w800, color: Colors.white, letterSpacing: 0.6),
+      ),
+    );
+  }
+
+  static Widget _importantBadge() {
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 7.h),
+      decoration: BoxDecoration(
+        color: HomeColors.dangerRed,
+        borderRadius: BorderRadius.circular(20.r),
+        boxShadow: [BoxShadow(color: HomeColors.dangerRed.withValues(alpha: 0.3), blurRadius: 6, offset: const Offset(0, 2))],
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
         children: [
-          ClipRRect(
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(34)),
-            child: Image.network(image,
-                height: 220, width: double.infinity, fit: BoxFit.cover),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(24),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+          Icon(Icons.priority_high_rounded, size: 13.sp, color: Colors.white),
+          SizedBox(width: 3.w),
+          Text('IMPORTANT', style: GoogleFonts.inter(fontSize: 10.sp, fontWeight: FontWeight.w800, color: Colors.white, letterSpacing: 0.5)),
+        ],
+      ),
+    );
+  }
+
+  // ─── OVERLAPPING TITLE CARD ────────────────────────────
+  Widget _buildTitleCard(double cardLift) {
+    return Transform.translate(
+      offset: Offset(0, -cardLift),
+      child: Container(
+        margin: EdgeInsets.symmetric(horizontal: 16.w),
+        padding: EdgeInsets.all(22.w),
+        decoration: BoxDecoration(
+          color: HomeColors.cardWhite,
+          borderRadius: BorderRadius.circular(22.r),
+          boxShadow: [BoxShadow(color: HomeColors.deepAnchor.withValues(alpha: 0.07), blurRadius: 24, offset: const Offset(0, 10))],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
               children: [
-                Row(children: [
+                Icon(Icons.calendar_today_rounded, size: 14.sp, color: HomeColors.riverFlow),
+                SizedBox(width: 6.w),
+                Text(
+                  'Published ${announcement.formattedDate}',
+                  style: GoogleFonts.inter(fontSize: 12.sp, fontWeight: FontWeight.w500, color: HomeColors.riverFlow),
+                ),
+                const Spacer(),
+                if (!announcement.isRead)
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    width: 10.w, height: 10.w,
                     decoration: BoxDecoration(
-                      color: const Color(0xFFFFE2E2),
-                      borderRadius: BorderRadius.circular(14),
+                      color: HomeColors.infoBlue,
+                      shape: BoxShape.circle,
+                      boxShadow: [BoxShadow(color: HomeColors.infoBlue.withValues(alpha: 0.4), blurRadius: 6)],
                     ),
-                    child: Text(tag,
-                        style: const TextStyle(
-                            fontSize: 10,
-                            color: Color(0xFFD14A4A),
-                            fontWeight: FontWeight.w700)),
                   ),
-                  const SizedBox(width: 10),
-                  Text(time, style: const TextStyle(color: Color(0xFF9B94A5))),
-                ]),
-                const SizedBox(height: 18),
-                Text(title,
-                    style: TextStyle(fontSize: 22, height: 1.15, color: dark)),
-                const SizedBox(height: 14),
-                Text(desc, style: TextStyle(height: 1.7, color: bodyColor)),
-                const SizedBox(height: 18),
-                Text(footer,
-                    style: TextStyle(
-                        color: footerPurple
-                            ? const Color(0xFF5B21B6)
-                            : bodyColor,
-                        fontWeight: FontWeight.w700)),
+              ],
+            ),
+            SizedBox(height: 16.h),
+            Text(
+              announcement.title,
+              style: GoogleFonts.poppins(fontSize: 22.sp, fontWeight: FontWeight.w700, color: HomeColors.deepAnchor, height: 1.25),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // ─── KEY INFO BOXES ────────────────────────────────────
+  Widget _buildInfoBoxes() {
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: 16.w),
+      child: Column(
+        children: [
+          SizedBox(height: 4.h),
+          _infoCard(icon: Icons.access_time_rounded, iconColor: HomeColors.infoBlue, label: 'TIMEFRAME', value: 'Refer to details below', accentColor: HomeColors.infoBlue),
+          SizedBox(height: 12.h),
+          _infoCard(icon: Icons.location_on_rounded, iconColor: HomeColors.warningAmber, label: 'COVERAGE', value: 'Milaor, Camarines Sur', accentColor: HomeColors.warningAmber),
+          SizedBox(height: 12.h),
+          Container(
+            width: double.infinity,
+            padding: EdgeInsets.all(16.w),
+            decoration: BoxDecoration(
+              color: announcement.isRead ? HomeColors.successGreen.withValues(alpha: 0.06) : HomeColors.warmHearth,
+              borderRadius: BorderRadius.circular(16.r),
+              border: Border.all(
+                color: announcement.isRead
+                    ? HomeColors.successGreen.withValues(alpha: 0.15)
+                    : HomeColors.heritagePurple.withValues(alpha: 0.1),
+              ),
+            ),
+            child: Row(
+              children: [
+                Container(
+                  width: 38.w, height: 38.w,
+                  decoration: BoxDecoration(
+                    color: announcement.isRead
+                        ? HomeColors.successGreen.withValues(alpha: 0.12)
+                        : HomeColors.heritagePurple.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(10.r),
+                  ),
+                  child: Icon(
+                    announcement.isRead ? Icons.check_circle_outline_rounded : Icons.info_outline_rounded,
+                    size: 20.sp,
+                    color: announcement.isRead ? HomeColors.successGreen : HomeColors.heritagePurple,
+                  ),
+                ),
+                SizedBox(width: 14.w),
+                Expanded(
+                  child: Text(
+                    announcement.isRead ? 'You have read this announcement' : 'New announcement — tap for full details',
+                    style: GoogleFonts.inter(
+                      fontSize: 13.sp,
+                      fontWeight: FontWeight.w500,
+                      color: announcement.isRead ? HomeColors.successGreen : HomeColors.riverFlow,
+                    ),
+                  ),
+                ),
               ],
             ),
           ),
@@ -222,246 +284,157 @@ class _AnnouncementCard extends StatelessWidget {
       ),
     );
   }
-}
 
-// ── Text-only card ───────────────────────────────────────────────────
-class _TextOnlyCard extends StatelessWidget {
-  final Color cardBg;
-  final Color dark;
-  const _TextOnlyCard({required this.cardBg, required this.dark});
-
-  @override
-  Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final bodyColor = isDark
-        ? Theme.of(context).colorScheme.onSurface.withOpacity(0.65)
-        : const Color(0xFF6D6678);
-
+  Widget _infoCard({
+    required IconData icon,
+    required Color iconColor,
+    required String label,
+    required String value,
+    required Color accentColor,
+  }) {
     return Container(
-      padding: const EdgeInsets.all(24),
+      width: double.infinity,
+      padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
-          color: cardBg, borderRadius: BorderRadius.circular(30)),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(children: [
-            const _MiniTag(label: 'EVENTS'),
-            const Spacer(),
-            const Text('5 hours ago',
-                style: TextStyle(color: Color(0xFF9B94A5))),
-          ]),
-          const SizedBox(height: 18),
-          Text('Upcoming Town Hall Meeting',
-              style: TextStyle(fontSize: 20, color: dark)),
-          const SizedBox(height: 12),
-          Text(
-              'Join us this Saturday at the Civic Plaza to discuss the new urban gardening initiative and heritage preservation projects.',
-              style: TextStyle(height: 1.7, color: bodyColor)),
-        ],
+        color: HomeColors.cardWhite,
+        borderRadius: BorderRadius.circular(16.r),
+        border: Border(left: BorderSide(color: accentColor, width: 3.w)),
+        boxShadow: [BoxShadow(color: HomeColors.deepAnchor.withValues(alpha: 0.03), blurRadius: 8, offset: const Offset(0, 3))],
       ),
-    );
-  }
-}
-
-// ── Recycling card ───────────────────────────────────────────────────
-class _RecyclingCard extends StatelessWidget {
-  final Color cardBg;
-  final Color dark;
-  const _RecyclingCard({required this.cardBg, required this.dark});
-
-  @override
-  Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final bodyColor = isDark
-        ? Theme.of(context).colorScheme.onSurface.withOpacity(0.65)
-        : const Color(0xFF6D6678);
-
-    return Container(
-      padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-          color: cardBg, borderRadius: BorderRadius.circular(30)),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(children: [
-            const _MiniTag(label: 'PUBLIC NOTICES'),
-            const Spacer(),
-            const Text('Yesterday',
-                style: TextStyle(color: Color(0xFF9B94A5))),
-          ]),
-          const SizedBox(height: 18),
-          Text('New Recycling Schedule',
-              style: TextStyle(fontSize: 20, color: dark)),
-          const SizedBox(height: 12),
+          Row(
+            children: [
+              Icon(icon, size: 15.sp, color: iconColor),
+              SizedBox(width: 7.w),
+              Text(
+                label,
+                style: GoogleFonts.inter(
+                  fontSize: 10.sp,
+                  fontWeight: FontWeight.w700,
+                  color: HomeColors.textMuted,
+                  letterSpacing: 1.2,
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: 6.h),
           Text(
-              'Starting next Monday, plastic and paper collection will move to bi-weekly intervals.',
-              style: TextStyle(height: 1.7, color: bodyColor)),
-          const SizedBox(height: 18),
-          ClipRRect(
-            borderRadius: BorderRadius.circular(24),
-            child: Image.network(
-                'https://images.unsplash.com/photo-1532996122724-e3c354a0b15b?q=80&w=1200&auto=format&fit=crop',
-                height: 130,
-                width: double.infinity,
-                fit: BoxFit.cover),
+            value,
+            style: GoogleFonts.inter(fontSize: 14.sp, fontWeight: FontWeight.w600, color: HomeColors.deepAnchor),
           ),
         ],
       ),
     );
   }
-}
 
-// ── Spotlight card ───────────────────────────────────────────────────
-class _SpotlightCard extends StatelessWidget {
-  final bool isDark;
-  const _SpotlightCard({required this.isDark});
-
-  @override
-  Widget build(BuildContext context) {
-    final spotBg = isDark ? const Color(0xFF2A1A4E) : const Color(0xFFE9DDFC);
-    final spotBodyColor =
-        isDark ? Colors.white.withOpacity(0.65) : const Color(0xFF6D6678);
-    final spotTitleColor =
-        isDark ? Colors.white : const Color(0xFF2D145F);
-    final iconBg = isDark ? const Color(0xFF1E1240) : const Color(0xFFF2EAFB);
-    final iconColor = isDark ? Colors.white54 : const Color(0xFF2D145F);
-
-    return Container(
-      padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-          color: spotBg, borderRadius: BorderRadius.circular(34)),
-      child: Column(children: [
-        const Text('CIVIC SPOTLIGHT',
-            style: TextStyle(
-                letterSpacing: 2,
-                color: Color(0xFF9B7FE8),
-                fontWeight: FontWeight.w700)),
-        const SizedBox(height: 16),
-        Text('Milaor Heritage Festival: Vendor Applications Open',
-            textAlign: TextAlign.center,
-            style: TextStyle(
-                fontSize: 22,
-                fontWeight: FontWeight.w700,
-                color: spotTitleColor)),
-        const SizedBox(height: 14),
-        Text(
-            "Celebrate our roots! We're inviting local artisans and food vendors to showcase their craft.",
-            textAlign: TextAlign.center,
-            style: TextStyle(height: 1.7, color: spotBodyColor)),
-        const SizedBox(height: 20),
-        ElevatedButton(
-            onPressed: () {},
-            style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF5B21B6),
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(28))),
-            child: const Padding(
-                padding: EdgeInsets.symmetric(horizontal: 22, vertical: 14),
-                child:
-                    Text('Apply Now', style: TextStyle(color: Colors.white)))),
-        const SizedBox(height: 22),
-        Container(
-          height: 180,
-          width: double.infinity,
-          decoration: BoxDecoration(
-              color: iconBg, borderRadius: BorderRadius.circular(28)),
-          child: Icon(Icons.storefront_outlined, size: 56, color: iconColor),
-        ),
-      ]),
-    );
-  }
-}
-
-// ── Shared small widgets ─────────────────────────────────────────────
-class _FilterChip extends StatelessWidget {
-  final String label;
-  final bool active;
-  const _FilterChip({required this.label, this.active = false});
-
-  @override
-  Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final inactiveBg =
-        isDark ? Theme.of(context).colorScheme.surface : const Color(0xFFEFE8F4);
-    final inactiveFg =
-        isDark ? Theme.of(context).colorScheme.onSurface.withOpacity(0.7) : const Color(0xFF625B6D);
-
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
-      decoration: BoxDecoration(
-        color: active ? const Color(0xFF5B21B6) : inactiveBg,
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: Text(label,
-          style: TextStyle(
-              color: active ? Colors.white : inactiveFg,
-              fontWeight: FontWeight.w600)),
-    );
-  }
-}
-
-class _MiniTag extends StatelessWidget {
-  final String label;
-  const _MiniTag({required this.label});
-
-  @override
-  Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final bg = isDark
-        ? Theme.of(context).colorScheme.primary.withOpacity(0.2)
-        : const Color(0xFFE9DDFC);
-
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-      decoration:
-          BoxDecoration(color: bg, borderRadius: BorderRadius.circular(14)),
-      child: Text(label,
-          style: const TextStyle(
-              fontSize: 10,
-              color: Color(0xFF9B7FE8),
-              fontWeight: FontWeight.w700)),
-    );
-  }
-}
-
-class _BottomNavItem extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final bool active;
-  const _BottomNavItem(
-      {required this.icon, required this.label, this.active = false});
-
-  @override
-  Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final iconColor = isDark
-        ? Theme.of(context).colorScheme.onSurface
-        : const Color(0xFF2D145F);
-    final labelColor = isDark
-        ? Theme.of(context).colorScheme.onSurface
-        : const Color(0xFF2D145F);
-    final activeBg = isDark
-        ? Theme.of(context).colorScheme.primary.withOpacity(0.15)
-        : const Color(0xFFE9DDFC);
-
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        Container(
-          padding: const EdgeInsets.all(10),
-          decoration: BoxDecoration(
-            color: active ? activeBg : Colors.transparent,
-            borderRadius: BorderRadius.circular(16),
+  // ─── FULL DESCRIPTION SECTION ──────────────────────────
+  Widget _buildDescriptionSection() {
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: 16.w),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SizedBox(height: 28.h),
+          Row(
+            children: [
+              Container(
+                width: 4.w, height: 22.h,
+                decoration: BoxDecoration(color: HomeColors.heritagePurple, borderRadius: BorderRadius.circular(2.r)),
+              ),
+              SizedBox(width: 10.w),
+              Text(
+                'Full Details',
+                style: GoogleFonts.poppins(fontSize: 19.sp, fontWeight: FontWeight.w700, color: HomeColors.deepAnchor),
+              ),
+            ],
           ),
-          child: Icon(icon, color: iconColor, size: 20),
-        ),
-        const SizedBox(height: 4),
-        Text(label,
-            style: TextStyle(
-                fontSize: 11,
-                fontWeight: FontWeight.w700,
-                color: labelColor)),
-      ],
+          SizedBox(height: 14.h),
+          Container(
+            width: double.infinity,
+            padding: EdgeInsets.all(22.w),
+            decoration: BoxDecoration(
+              color: HomeColors.cardWhite,
+              borderRadius: BorderRadius.circular(18.r),
+              border: Border.all(color: HomeColors.heritagePurple.withValues(alpha: 0.08)),
+              boxShadow: [BoxShadow(color: HomeColors.deepAnchor.withValues(alpha: 0.03), blurRadius: 10, offset: const Offset(0, 4))],
+            ),
+            child: Text(
+              announcement.description,
+              style: GoogleFonts.inter(fontSize: 14.sp, height: 1.75, color: const Color(0xFF495057)),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ─── ACTION BUTTONS ────────────────────────────────────
+  Widget _buildActionButtons(BuildContext context) {
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: 16.w),
+      child: Column(
+        children: [
+          SizedBox(height: 28.h),
+          Row(
+            children: [
+              Expanded(
+                child: OutlinedButton.icon(
+                  onPressed: () {},
+                  icon: Icon(Icons.print_outlined, size: 17.sp),
+                  label: Text('Print', style: GoogleFonts.inter(fontSize: 13.sp, fontWeight: FontWeight.w600)),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: HomeColors.heritagePurple,
+                    side: BorderSide(color: HomeColors.heritagePurple.withValues(alpha: 0.5)),
+                    padding: EdgeInsets.symmetric(vertical: 14.h),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14.r)),
+                  ),
+                ),
+              ),
+              SizedBox(width: 12.w),
+              Expanded(
+                child: ElevatedButton.icon(
+                  onPressed: () {},
+                  icon: Icon(Icons.share_outlined, size: 17.sp),
+                  label: Text('Share', style: GoogleFonts.inter(fontSize: 13.sp, fontWeight: FontWeight.w600)),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: HomeColors.heritagePurple,
+                    foregroundColor: Colors.white,
+                    elevation: 0,
+                    padding: EdgeInsets.symmetric(vertical: 14.h),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14.r)),
+                  ),
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: 12.h),
+          SizedBox(
+            width: double.infinity,
+            child: OutlinedButton.icon(
+              onPressed: () {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('Thank you! Your concern has been forwarded to the LGU.', style: GoogleFonts.inter(fontSize: 13.sp)),
+                    backgroundColor: HomeColors.successGreen,
+                    behavior: SnackBarBehavior.floating,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
+                  ),
+                );
+              },
+              icon: Icon(Icons.flag_outlined, size: 17.sp),
+              label: Text('Report an Issue with this Announcement', style: GoogleFonts.inter(fontSize: 13.sp, fontWeight: FontWeight.w600)),
+              style: OutlinedButton.styleFrom(
+                foregroundColor: HomeColors.dangerRed,
+                side: BorderSide(color: HomeColors.dangerRed.withValues(alpha: 0.3)),
+                padding: EdgeInsets.symmetric(vertical: 14.h),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14.r)),
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

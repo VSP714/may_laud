@@ -75,7 +75,7 @@ class _AnnouncementsListScreenState
 
     final scaffoldBg = isDark ? cs.background : const Color(0xFFF5F0F8);
     final accentPurple = const Color(0xFF4C229C); // heritagePurple — fixed, was cs.primary in dark
-    final titleColor = isDark ? cs.onBackground : const Color(0xFF311B6B);
+    final titleColor = isDark ? cs.onSurface : const Color(0xFF311B6B);
     final searchFill = isDark ? cs.surface : Colors.white;
 
     return Scaffold(
@@ -189,7 +189,7 @@ class _AnnouncementsListScreenState
                     style: TextStyle(
                         fontSize: 14.sp,
                         color: isDark
-                            ? cs.onSurface.withOpacity(0.6)
+                            ? cs.onSurface.withValues(alpha: 0.6)
                             : Colors.grey.shade600),
                   ),
                 ],
@@ -204,14 +204,14 @@ class _AnnouncementsListScreenState
                         children: [
                           Icon(Icons.campaign_outlined,
                               size: 56.sp,
-                              color: accentPurple.withOpacity(0.3)),
+                              color: accentPurple.withValues(alpha: 0.3)),
                           SizedBox(height: 16.h),
                           Text(
                             'No announcements yet',
                             style: TextStyle(
                                 fontSize: 16.sp,
                                 color: isDark
-                                    ? cs.onSurface.withOpacity(0.5)
+                                    ? cs.onSurface.withValues(alpha: 0.5)
                                     : Colors.grey.shade500),
                           ),
                         ],
@@ -224,7 +224,7 @@ class _AnnouncementsListScreenState
                             style: TextStyle(
                                 fontSize: 14.sp,
                                 color: isDark
-                                    ? cs.onSurface.withOpacity(0.5)
+                                    ? cs.onSurface.withValues(alpha: 0.5)
                                     : Colors.grey.shade500),
                           ),
                         )
@@ -243,9 +243,9 @@ class _AnnouncementsListScreenState
 
   Widget _buildCard(Announcement a, bool isDark, ColorScheme cs) {
     final accentPurple = const Color(0xFF4C229C); // heritagePurple — fixed, was cs.primary in dark
-    final categoryBg = isDark ? const Color(0xFF4C229C).withOpacity(0.18) : const Color(0xFFEADCFB);
+    final categoryBg = isDark ? const Color(0xFF4C229C).withValues(alpha: 0.18) : const Color(0xFFEADCFB);
     final titleColor = isDark ? cs.onSurface : const Color(0xFF2E2438);
-    final bodyColor = isDark ? cs.onSurface.withOpacity(0.65) : const Color(0xFF6F6878);
+    final bodyColor = isDark ? cs.onSurface.withValues(alpha: 0.65) : const Color(0xFF6F6878);
 
     return Card(
       margin: EdgeInsets.only(bottom: 16.h),
@@ -390,8 +390,8 @@ class _AnnouncementsListScreenState
   }
 
   Widget _imageFallback(Announcement a, bool isDark, ColorScheme cs) {
-    final fallbackBg = isDark ? const Color(0xFF4C229C).withOpacity(0.15) : const Color(0xFFEADCFB);
-    final fallbackIcon = const Color(0xFF4C229C).withOpacity(0.4);
+    final fallbackBg = isDark ? const Color(0xFF4C229C).withValues(alpha: 0.15) : const Color(0xFFEADCFB);
+    final fallbackIcon = const Color(0xFF4C229C).withValues(alpha: 0.4);
     return Container(
       height: 180.h,
       width: double.infinity,
@@ -420,12 +420,12 @@ class AnnouncementDetailScreen extends StatelessWidget {
 
     final scaffoldBg = isDark ? cs.background : HomeColors.warmHearth;
     final accentPurple = const Color(0xFF4C229C); // heritagePurple — fixed, was cs.primary in dark
-    final categoryBg = isDark ? const Color(0xFF4C229C).withOpacity(0.18) : const Color(0xFFEADCFB);
+    final categoryBg = isDark ? const Color(0xFF4C229C).withValues(alpha: 0.18) : const Color(0xFFEADCFB);
     final imageFallbackBg = isDark ? cs.surface : const Color(0xFFEADCFB);
-    final backBtnBg = isDark ? cs.surface.withOpacity(0.9) : Colors.white.withOpacity(0.9);
+    final backBtnBg = isDark ? cs.surface.withValues(alpha: 0.9) : Colors.white.withValues(alpha: 0.9);
     final titleColor = isDark ? cs.onSurface : const Color(0xFF2E2438);
-    final metaColor = isDark ? cs.onSurface.withOpacity(0.55) : const Color(0xFF6F6878);
-    final bodyColor = isDark ? cs.onSurface.withOpacity(0.85) : const Color(0xFF3D3549);
+    final metaColor = isDark ? cs.onSurface.withValues(alpha: 0.55) : const Color(0xFF6F6878);
+    final bodyColor = isDark ? cs.onSurface.withValues(alpha: 0.85) : const Color(0xFF3D3549);
 
     return Scaffold(
       backgroundColor: scaffoldBg,

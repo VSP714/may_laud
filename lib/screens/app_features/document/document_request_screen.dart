@@ -26,20 +26,20 @@ class _DocumentRequestScreenState
   Color get _scaffoldBg =>
       _isDark ? _cs!.background : HomeColors.warmHearth;
   Color get _cardBg => _isDark ? _cs!.surface : HomeColors.cardWhite;
-  Color get _cardBg70 => _cardBg.withOpacity(0.7);
-  Color get _cardBg60 => _cardBg.withOpacity(0.6);
+  Color get _cardBg70 => _cardBg.withValues(alpha: 0.7);
+  Color get _cardBg60 => _cardBg.withValues(alpha: 0.6);
   Color get _titleText =>
       _isDark ? _cs!.onSurface : HomeColors.deepAnchor;
   Color get _bodyText =>
-      _isDark ? _cs!.onSurface.withOpacity(0.65) : const Color(0xFF374151);
+      _isDark ? _cs!.onSurface.withValues(alpha: 0.65) : const Color(0xFF374151);
   Color get _mutedText =>
-      _isDark ? _cs!.onSurface.withOpacity(0.45) : const Color(0xFF9CA3AF);
+      _isDark ? _cs!.onSurface.withValues(alpha: 0.45) : const Color(0xFF9CA3AF);
   Color get _inputFill =>
-      _isDark ? _cs!.surface.withOpacity(0.8) : HomeColors.warmHearth;
+      _isDark ? _cs!.surface.withValues(alpha: 0.8) : HomeColors.warmHearth;
   Color get _borderColor =>
-      _isDark ? _cs!.onSurface.withOpacity(0.15) : const Color(0xFFE5E7EB);
+      _isDark ? _cs!.onSurface.withValues(alpha: 0.15) : const Color(0xFFE5E7EB);
   Color get _subtitleText =>
-      _isDark ? _cs!.onSurface.withOpacity(0.5) : const Color(0xFF9CA3AF);
+      _isDark ? _cs!.onSurface.withValues(alpha: 0.5) : const Color(0xFF9CA3AF);
   Color get _dragHandle =>
       _isDark ? Colors.white24 : const Color(0xFFD1D5DB);
 
@@ -421,23 +421,23 @@ class _DocumentRequestScreenState
         : available
             ? (_isDark ? _cs!.background : HomeColors.warmHearth)
             : (_isDark
-                ? _cs!.background.withOpacity(0.5)
+                ? _cs!.background.withValues(alpha: 0.5)
                 : const Color(0xFFF5F5F5));
 
     final tileBorder = isSelected
         ? accent
         : available
             ? _borderColor
-            : (_isDark ? _cs!.onSurface.withOpacity(0.1) : const Color(0xFFE0E0E0));
+            : (_isDark ? _cs!.onSurface.withValues(alpha: 0.1) : const Color(0xFFE0E0E0));
 
     final iconBg = isSelected
         ? accent.withValues(alpha: 0.12)
         : available
             ? (_isDark
-                ? _cs!.onSurface.withOpacity(0.08)
+                ? _cs!.onSurface.withValues(alpha: 0.08)
                 : const Color(0xFFF3F4F6))
             : (_isDark
-                ? _cs!.onSurface.withOpacity(0.05)
+                ? _cs!.onSurface.withValues(alpha: 0.05)
                 : const Color(0xFFEEEEEE));
 
     return Material(
@@ -478,7 +478,7 @@ class _DocumentRequestScreenState
                       ? accent
                       : available
                           ? (_isDark
-                              ? _cs!.onSurface.withOpacity(0.4)
+                              ? _cs!.onSurface.withValues(alpha: 0.4)
                               : const Color(0xFF9CA3AF))
                           : _mutedText,
                 ),
@@ -508,12 +508,12 @@ class _DocumentRequestScreenState
                                 horizontal: 8.w, vertical: 3.h),
                             decoration: BoxDecoration(
                               color: _isDark
-                                  ? const Color(0xFFDC2626).withOpacity(0.15)
+                                  ? const Color(0xFFDC2626).withValues(alpha: 0.15)
                                   : const Color(0xFFFEF2F2),
                               borderRadius: BorderRadius.circular(6.r),
                               border: Border.all(
                                   color: _isDark
-                                      ? const Color(0xFFDC2626).withOpacity(0.3)
+                                      ? const Color(0xFFDC2626).withValues(alpha: 0.3)
                                       : const Color(0xFFFECACA)),
                             ),
                             child: Text(
@@ -616,7 +616,7 @@ class _DocumentRequestScreenState
         _isDark ? const Color(0xFFFFD97A) : const Color(0xFF92400E);
     final refBg = _isDark ? _cs!.background : _scaffoldBg;
     final refBorder =
-        _isDark ? _cs!.onSurface.withOpacity(0.12) : const Color(0xFFE8E0F0);
+        _isDark ? _cs!.onSurface.withValues(alpha: 0.12) : const Color(0xFFE8E0F0);
 
     return Dialog(
       backgroundColor: Colors.transparent,
@@ -992,7 +992,7 @@ class _DocumentRequestScreenState
     final isActive = _currentStep >= step;
     final isPast = _currentStep > step;
     final inactiveCircle =
-        _isDark ? _cs!.onSurface.withOpacity(0.15) : const Color(0xFFE5E7EB);
+        _isDark ? _cs!.onSurface.withValues(alpha: 0.15) : const Color(0xFFE5E7EB);
 
     return Expanded(
       child: Column(
@@ -1049,7 +1049,7 @@ class _DocumentRequestScreenState
   Widget _stepLine(int fromStep) {
     final isPast = _currentStep > fromStep;
     final inactiveLine =
-        _isDark ? _cs!.onSurface.withOpacity(0.12) : const Color(0xFFE5E7EB);
+        _isDark ? _cs!.onSurface.withValues(alpha: 0.12) : const Color(0xFFE5E7EB);
     return Expanded(
       child: Padding(
         padding: EdgeInsets.only(bottom: 24.h),
@@ -1132,14 +1132,14 @@ class _DocumentRequestScreenState
                                   decoration: BoxDecoration(
                                     color: _isDark
                                         ? const Color(0xFFDC2626)
-                                            .withOpacity(0.15)
+                                            .withValues(alpha: 0.15)
                                         : const Color(0xFFFEF2F2),
                                     borderRadius:
                                         BorderRadius.circular(6.r),
                                     border: Border.all(
                                         color: _isDark
                                             ? const Color(0xFFDC2626)
-                                                .withOpacity(0.3)
+                                                .withValues(alpha: 0.3)
                                             : const Color(0xFFFECACA)),
                                   ),
                                   child: Text(
@@ -1218,7 +1218,7 @@ class _DocumentRequestScreenState
             decoration: BoxDecoration(
               color: _isFree
                   ? (_isDark
-                      ? const Color(0xFF16A34A).withOpacity(0.15)
+                      ? const Color(0xFF16A34A).withValues(alpha: 0.15)
                       : const Color(0xFFF0FDF4))
                   : HomeColors.heritagePurple.withValues(alpha: 0.08),
               borderRadius: BorderRadius.circular(14.r),
@@ -1355,7 +1355,7 @@ class _DocumentRequestScreenState
             final bg = _urgencyBg(urgency['label']!);
             final icon = _urgencyIcon(urgency['icon']!);
             final inactiveIconBg = _isDark
-                ? _cs!.onSurface.withOpacity(0.08)
+                ? _cs!.onSurface.withValues(alpha: 0.08)
                 : const Color(0xFFF3F4F6);
 
             return Padding(
@@ -1594,7 +1594,7 @@ class _DocumentRequestScreenState
                 height: 38.w,
                 decoration: BoxDecoration(
                   color: _isDark
-                      ? const Color(0xFFDC2626).withOpacity(0.15)
+                      ? const Color(0xFFDC2626).withValues(alpha: 0.15)
                       : const Color(0xFFFEF2F2),
                   borderRadius: BorderRadius.circular(10.r),
                 ),
@@ -1727,7 +1727,7 @@ class _DocumentRequestScreenState
   // ─── INFO BANNER ──────────────────────────────────────
   Widget _buildInfoBanner() {
     final bannerBorder = _isDark
-        ? _cs!.onSurface.withOpacity(0.12)
+        ? _cs!.onSurface.withValues(alpha: 0.12)
         : const Color(0xFFE8E0F0);
 
     return Container(

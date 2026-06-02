@@ -70,7 +70,7 @@ class _CitizenReportScreenState extends ConsumerState<CitizenReportScreen> {
   Color get _bodyText    => _isDark ? const Color(0xFFCFCFE8) : const Color(0xFF374151);
   Color get _mutedText   => _isDark ? Colors.white60 : Colors.grey.shade500;
   Color get _inputFill   => _isDark ? _darkElevated : ReportColors.warmHearth;
-  Color get _borderColor => _isDark ? Colors.white.withOpacity(0.10) : Colors.grey.shade200;
+  Color get _borderColor => _isDark ? Colors.white.withValues(alpha: 0.10) : Colors.grey.shade200;
 
   final _formKey = GlobalKey<FormState>();
   final TextEditingController _titleController = TextEditingController();
@@ -375,7 +375,7 @@ class _CitizenReportScreenState extends ConsumerState<CitizenReportScreen> {
                         width: 52.w,
                         height: 52.w,
                         decoration: BoxDecoration(
-                          color: _cardBg.withOpacity(0.18),
+                          color: _cardBg.withValues(alpha: 0.18),
                           borderRadius: BorderRadius.circular(16.r),
                         ),
                         child: Icon(Icons.report_problem_rounded,
@@ -450,7 +450,7 @@ class _CitizenReportScreenState extends ConsumerState<CitizenReportScreen> {
                       EdgeInsets.symmetric(horizontal: 14.w, vertical: 10.h),
                   decoration: BoxDecoration(
                     color: isSelected
-                        ? (cat['color'] as Color).withOpacity(0.1)
+                        ? (cat['color'] as Color).withValues(alpha: 0.1)
                         : Colors.transparent,
                     borderRadius: BorderRadius.circular(14.r),
                     border: Border.all(
@@ -518,7 +518,7 @@ class _CitizenReportScreenState extends ConsumerState<CitizenReportScreen> {
                         EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
                     decoration: BoxDecoration(
                       color: isSelected
-                          ? color.withOpacity(0.06)
+                          ? color.withValues(alpha: 0.06)
                           : Colors.transparent,
                       borderRadius: BorderRadius.circular(16.r),
                       border: Border.all(
@@ -532,12 +532,12 @@ class _CitizenReportScreenState extends ConsumerState<CitizenReportScreen> {
                           width: 40.w,
                           height: 40.w,
                           decoration: BoxDecoration(
-                            color: isSelected ? color : color.withOpacity(0.1),
+                            color: isSelected ? color : color.withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(12.r),
                             boxShadow: isSelected
                                 ? [
                                     BoxShadow(
-                                        color: color.withOpacity(0.3),
+                                        color: color.withValues(alpha: 0.3),
                                         blurRadius: 8,
                                         offset: const Offset(0, 3))
                                   ]
@@ -663,10 +663,10 @@ class _CitizenReportScreenState extends ConsumerState<CitizenReportScreen> {
                   width: 52.w,
                   height: 52.w,
                   decoration: BoxDecoration(
-                    color: ReportColors.heritagePurple.withOpacity(0.08),
+                    color: ReportColors.heritagePurple.withValues(alpha: 0.08),
                     borderRadius: BorderRadius.circular(14.r),
                     border: Border.all(
-                        color: ReportColors.heritagePurple.withOpacity(0.15)),
+                        color: ReportColors.heritagePurple.withValues(alpha: 0.15)),
                   ),
                   child: Icon(Icons.my_location_rounded,
                       size: 22.sp, color: ReportColors.heritagePurple),
@@ -699,7 +699,7 @@ class _CitizenReportScreenState extends ConsumerState<CitizenReportScreen> {
                   padding:
                       EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
                   decoration: BoxDecoration(
-                    color: ReportColors.heritagePurple.withOpacity(0.08),
+                    color: ReportColors.heritagePurple.withValues(alpha: 0.08),
                     borderRadius: BorderRadius.circular(8.r),
                   ),
                   child: Text(
@@ -752,7 +752,7 @@ class _CitizenReportScreenState extends ConsumerState<CitizenReportScreen> {
           color: _scaffoldBg,
           borderRadius: BorderRadius.circular(16.r),
           border: Border.all(
-              color: ReportColors.heritagePurple.withOpacity(0.15), width: 1.5),
+              color: ReportColors.heritagePurple.withValues(alpha: 0.15), width: 1.5),
         ),
         child: Column(
           children: [
@@ -760,7 +760,7 @@ class _CitizenReportScreenState extends ConsumerState<CitizenReportScreen> {
               width: 52.w,
               height: 52.w,
               decoration: BoxDecoration(
-                color: ReportColors.heritagePurple.withOpacity(0.08),
+                color: ReportColors.heritagePurple.withValues(alpha: 0.08),
                 borderRadius: BorderRadius.circular(14.r),
               ),
               child: Icon(Icons.add_a_photo_rounded,
@@ -793,13 +793,13 @@ class _CitizenReportScreenState extends ConsumerState<CitizenReportScreen> {
         width: 110.w,
         height: 120.h,
         decoration: BoxDecoration(
-          color: ReportColors.heritagePurple.withOpacity(0.04),
+          color: ReportColors.heritagePurple.withValues(alpha: 0.04),
           borderRadius: BorderRadius.circular(14.r),
           border: Border.all(
-              color: ReportColors.heritagePurple.withOpacity(0.2), width: 1.5),
+              color: ReportColors.heritagePurple.withValues(alpha: 0.2), width: 1.5),
         ),
         child: Icon(Icons.add_rounded,
-            size: 30.sp, color: ReportColors.heritagePurple.withOpacity(0.6)),
+            size: 30.sp, color: ReportColors.heritagePurple.withValues(alpha: 0.6)),
       ),
     );
   }
@@ -854,7 +854,7 @@ class _CitizenReportScreenState extends ConsumerState<CitizenReportScreen> {
               width: 40.w,
               height: 4.h,
               decoration: BoxDecoration(
-                  color: _isDark ? Colors.white.withOpacity(0.18) : Colors.grey[300],
+                  color: _isDark ? Colors.white.withValues(alpha: 0.18) : Colors.grey[300],
                   borderRadius: BorderRadius.circular(2.r)),
             ),
             SizedBox(height: 22.h),
@@ -900,7 +900,7 @@ class _CitizenReportScreenState extends ConsumerState<CitizenReportScreen> {
         width: 48.w,
         height: 48.w,
         decoration: BoxDecoration(
-          color: ReportColors.heritagePurple.withOpacity(0.08),
+          color: ReportColors.heritagePurple.withValues(alpha: 0.08),
           borderRadius: BorderRadius.circular(14.r),
         ),
         child: Icon(icon, size: 24.sp, color: ReportColors.heritagePurple),
@@ -925,7 +925,7 @@ class _CitizenReportScreenState extends ConsumerState<CitizenReportScreen> {
         borderRadius: BorderRadius.circular(18.r),
         boxShadow: [
           BoxShadow(
-            color: ReportColors.heritagePurple.withOpacity(0.35),
+            color: ReportColors.heritagePurple.withValues(alpha: 0.35),
             blurRadius: 18,
             offset: const Offset(0, 8),
           ),
@@ -986,7 +986,7 @@ class _CitizenReportScreenState extends ConsumerState<CitizenReportScreen> {
             width: 36.w,
             height: 36.w,
             decoration: BoxDecoration(
-              color: ReportColors.heritagePurple.withOpacity(0.08),
+              color: ReportColors.heritagePurple.withValues(alpha: 0.08),
               borderRadius: BorderRadius.circular(10.r),
             ),
             child: Icon(Icons.info_outline_rounded,
@@ -1014,13 +1014,13 @@ class _CitizenReportScreenState extends ConsumerState<CitizenReportScreen> {
       color: _cardBg,
       borderRadius: BorderRadius.circular(24.r),
       border: _isDark
-          ? Border.all(color: Colors.white.withOpacity(0.06))
+          ? Border.all(color: Colors.white.withValues(alpha: 0.06))
           : null,
       boxShadow: [
         BoxShadow(
           color: _isDark
               ? Colors.black.withValues(alpha: 0.30)
-              : ReportColors.heritagePurple.withOpacity(0.06),
+              : ReportColors.heritagePurple.withValues(alpha: 0.06),
           blurRadius: 20,
           offset: const Offset(0, 8),
         ),
@@ -1035,7 +1035,7 @@ class _CitizenReportScreenState extends ConsumerState<CitizenReportScreen> {
           width: 34.w,
           height: 34.w,
           decoration: BoxDecoration(
-            color: ReportColors.heritagePurple.withOpacity(0.08),
+            color: ReportColors.heritagePurple.withValues(alpha: 0.08),
             borderRadius: BorderRadius.circular(10.r),
           ),
           child: Icon(icon, size: 18.sp, color: ReportColors.heritagePurple),
@@ -1074,7 +1074,7 @@ class _CitizenReportScreenState extends ConsumerState<CitizenReportScreen> {
         prefixIcon: Padding(
           padding: EdgeInsets.only(left: 4.w),
           child: Icon(icon,
-              size: 20.sp, color: ReportColors.heritagePurple.withOpacity(0.5)),
+              size: 20.sp, color: ReportColors.heritagePurple.withValues(alpha: 0.5)),
         ),
         filled: true,
         fillColor: _inputFill,

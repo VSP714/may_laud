@@ -5,6 +5,7 @@ import 'package:may_laud/screens/sign_in/sign_in_screen.dart';
 import 'package:may_laud/screens/sign_up/registration_screen.dart';
 import 'package:may_laud/screens/home/nav_bar_button.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:may_laud/theme/app_colors.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
@@ -38,27 +39,27 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     // Same adaptive palette as sign-in & register screens
     final scaffoldBg = isDark ? cs.background : Colors.white;
     final bubbleBg1 =
-        isDark ? cs.primary.withOpacity(0.12) : const Color(0xFFEDE7F6);
+        isDark ? cs.primary.withValues(alpha: 0.12) : AppColors.heritagePurple.withValues(alpha: 0.08);
     final bubbleBg2Gradient = isDark
-        ? [cs.primary.withOpacity(0.10), Colors.transparent]
-        : [const Color(0xFFD1C4E9).withOpacity(0.35), Colors.transparent];
+        ? [cs.primary.withValues(alpha: 0.10), Colors.transparent]
+        : [AppColors.heritagePurple.withValues(alpha: 0.35), Colors.transparent];
     final bubbleBg3Gradient = isDark
-        ? [cs.primary.withOpacity(0.12), Colors.transparent]
-        : [const Color(0xFFD1C4E9).withOpacity(0.4), Colors.transparent];
+        ? [cs.primary.withValues(alpha: 0.12), Colors.transparent]
+        : [AppColors.heritagePurple.withValues(alpha: 0.4), Colors.transparent];
     final titleColor =
-        isDark ? cs.onBackground : const Color(0xFF2E0C6D);
+        isDark ? cs.onSurface : AppColors.deepAnchor;
     final subtitleColor = isDark
-        ? cs.onBackground.withOpacity(0.6)
-        : const Color(0xFF6E6A75);
-    final formBg = isDark ? cs.surface : const Color(0xFFF6F2FC);
+        ? cs.onSurface.withValues(alpha: 0.6)
+        : AppColors.of(context).textMuted;
+    final formBg = isDark ? cs.surface : AppColors.of(context).formSurface;
     final guestBg = isDark ? cs.surface : Colors.white;
-    final guestText = isDark ? cs.primary : Colors.deepPurple;
+    final guestText = isDark ? cs.primary : AppColors.heritagePurple;
     final footerColor = isDark
-        ? cs.onBackground.withOpacity(0.45)
-        : const Color(0xFF6A6A8A);
+        ? cs.onSurface.withValues(alpha: 0.45)
+        : AppColors.of(context).textMuted;
     final footerLinkColor = isDark
-        ? cs.primary.withOpacity(0.8)
-        : const Color(0xFF8A8AC4);
+        ? cs.primary.withValues(alpha: 0.8)
+        : AppColors.of(context).accentPurple.withValues(alpha: 0.7);
 
     return Scaffold(
       backgroundColor: scaffoldBg,
@@ -126,7 +127,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       boxShadow: [
                         BoxShadow(
                           color:
-                              const Color(0xFF7B2CBF).withOpacity(0.18),
+                              AppColors.heritagePurple.withValues(alpha: 0.18),
                           blurRadius: 25.r,
                           spreadRadius: 2,
                         ),
@@ -170,8 +171,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       borderRadius: BorderRadius.circular(28.r),
                       boxShadow: [
                         BoxShadow(
-                          color: const Color(0xFF7B2CBF)
-                              .withOpacity(isDark ? 0.05 : 0.08),
+                          color: AppColors.heritagePurple
+                              .withValues(alpha: isDark ? 0.05 : 0.08),
                           blurRadius: 20.r,
                           offset: Offset(0, 8.h),
                         ),
@@ -190,14 +191,14 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                               borderRadius: BorderRadius.circular(40.r),
                               gradient: const LinearGradient(
                                 colors: [
-                                  Color(0xFF4C229C),
-                                  Color(0xFF643EB5),
+                                  AppColors.heritagePurple,
+                                  AppColors.riverFlow,
                                 ],
                               ),
                               boxShadow: [
                                 BoxShadow(
-                                  color: const Color(0xFF4C229C)
-                                      .withOpacity(0.3),
+                                  color: AppColors.heritagePurple
+                                      .withValues(alpha: 0.3),
                                   blurRadius: 12.r,
                                   offset: Offset(0, 4.h),
                                 ),
@@ -230,16 +231,15 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                               color: guestBg,
                               border: Border.all(
                                 color: isDark
-                                    ? cs.primary.withOpacity(0.4)
-                                    : const Color(0xFF4C229C)
-                                        .withOpacity(0.35),
+                                    ? cs.primary.withValues(alpha: 0.4)
+                                    : AppColors.heritagePurple
+                                        .withValues(alpha: 0.35),
                                 width: 1.5,
                               ),
                               boxShadow: [
                                 BoxShadow(
-                                  color: const Color(0xFF4C229C)
-                                      .withOpacity(
-                                          isDark ? 0.08 : 0.10),
+                                  color: AppColors.heritagePurple
+                                      .withValues(alpha: isDark ? 0.08 : 0.10),
                                   blurRadius: 12.r,
                                   offset: Offset(0, 4.h),
                                 ),
@@ -324,9 +324,9 @@ class _WavePainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final fillColor =
-        isDark ? cs.primary.withOpacity(0.08) : const Color(0xFFF3F0FA);
+        isDark ? cs.primary.withValues(alpha: 0.08) : AppColors.heritagePurple.withValues(alpha: 0.06);
     final strokeColor =
-        isDark ? cs.primary.withOpacity(0.25) : const Color(0xFFB39DDB);
+        isDark ? cs.primary.withValues(alpha: 0.25) : AppColors.heritagePurple.withValues(alpha: 0.25);
 
     final fillWave = Paint()
       ..color = fillColor

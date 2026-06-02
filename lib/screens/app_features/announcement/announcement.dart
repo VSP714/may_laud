@@ -80,9 +80,9 @@ class AnnouncementFeedScreen extends StatelessWidget {
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
                 colors: [
-                  HomeColors.deepAnchor.withOpacity(0.55),
-                  HomeColors.heritagePurple.withOpacity(0.35),
-                  HomeColors.deepAnchor.withOpacity(0.8),
+                  HomeColors.deepAnchor.withValues(alpha: 0.55),
+                  HomeColors.heritagePurple.withValues(alpha: 0.35),
+                  HomeColors.deepAnchor.withValues(alpha: 0.8),
                 ],
               ),
             ),
@@ -146,8 +146,8 @@ class AnnouncementFeedScreen extends StatelessWidget {
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            HomeColors.riverFlow.withOpacity(0.6),
-            HomeColors.heritagePurple.withOpacity(0.4),
+            HomeColors.riverFlow.withValues(alpha: 0.6),
+            HomeColors.heritagePurple.withValues(alpha: 0.4),
           ],
         ),
       ),
@@ -155,7 +155,7 @@ class AnnouncementFeedScreen extends StatelessWidget {
         child: Icon(
           Icons.campaign_rounded,
           size: 64.sp,
-          color: Colors.white.withOpacity(0.7),
+          color: Colors.white.withValues(alpha: 0.7),
         ),
       ),
     );
@@ -172,10 +172,10 @@ class AnnouncementFeedScreen extends StatelessWidget {
         width: 40.w,
         height: 40.w,
         decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.18),
+          color: Colors.white.withValues(alpha: 0.18),
           shape: BoxShape.circle,
           border: Border.all(
-            color: Colors.white.withOpacity(0.25),
+            color: Colors.white.withValues(alpha: 0.25),
             width: 1,
           ),
         ),
@@ -193,7 +193,7 @@ class AnnouncementFeedScreen extends StatelessWidget {
         borderRadius: BorderRadius.circular(20.r),
         boxShadow: [
           BoxShadow(
-            color: HomeColors.heritagePurple.withOpacity(0.35),
+            color: HomeColors.heritagePurple.withValues(alpha: 0.35),
             blurRadius: 8,
             offset: const Offset(0, 3),
           ),
@@ -220,7 +220,7 @@ class AnnouncementFeedScreen extends StatelessWidget {
         borderRadius: BorderRadius.circular(20.r),
         boxShadow: [
           BoxShadow(
-            color: HomeColors.dangerRed.withOpacity(0.3),
+            color: HomeColors.dangerRed.withValues(alpha: 0.3),
             blurRadius: 6,
             offset: const Offset(0, 2),
           ),
@@ -257,7 +257,7 @@ class AnnouncementFeedScreen extends StatelessWidget {
           borderRadius: BorderRadius.circular(22.r),
           boxShadow: [
             BoxShadow(
-              color: HomeColors.deepAnchor.withOpacity(0.07),
+              color: HomeColors.deepAnchor.withValues(alpha: 0.07),
               blurRadius: 24,
               offset: const Offset(0, 10),
             ),
@@ -290,7 +290,7 @@ class AnnouncementFeedScreen extends StatelessWidget {
                       shape: BoxShape.circle,
                       boxShadow: [
                         BoxShadow(
-                          color: HomeColors.infoBlue.withOpacity(0.4),
+                          color: HomeColors.infoBlue.withValues(alpha: 0.4),
                           blurRadius: 6,
                         ),
                       ],
@@ -346,13 +346,13 @@ class AnnouncementFeedScreen extends StatelessWidget {
             padding: EdgeInsets.all(16.w),
             decoration: BoxDecoration(
               color: announcement.isRead
-                  ? HomeColors.successGreen.withOpacity(0.06)
+                  ? HomeColors.successGreen.withValues(alpha: 0.06)
                   : HomeColors.warmHearth,
               borderRadius: BorderRadius.circular(16.r),
               border: Border.all(
                 color: announcement.isRead
-                    ? HomeColors.successGreen.withOpacity(0.15)
-                    : HomeColors.heritagePurple.withOpacity(0.1),
+                    ? HomeColors.successGreen.withValues(alpha: 0.15)
+                    : HomeColors.heritagePurple.withValues(alpha: 0.1),
               ),
             ),
             child: Row(
@@ -362,8 +362,8 @@ class AnnouncementFeedScreen extends StatelessWidget {
                   height: 38.w,
                   decoration: BoxDecoration(
                     color: announcement.isRead
-                        ? HomeColors.successGreen.withOpacity(0.12)
-                        : HomeColors.heritagePurple.withOpacity(0.1),
+                        ? HomeColors.successGreen.withValues(alpha: 0.12)
+                        : HomeColors.heritagePurple.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(10.r),
                   ),
                   child: Icon(
@@ -417,7 +417,7 @@ class AnnouncementFeedScreen extends StatelessWidget {
         ),
         boxShadow: [
           BoxShadow(
-            color: HomeColors.deepAnchor.withOpacity(0.03),
+            color: HomeColors.deepAnchor.withValues(alpha: 0.03),
             blurRadius: 8,
             offset: const Offset(0, 3),
           ),
@@ -494,11 +494,11 @@ class AnnouncementFeedScreen extends StatelessWidget {
               color: HomeColors.cardWhite,
               borderRadius: BorderRadius.circular(18.r),
               border: Border.all(
-                color: HomeColors.heritagePurple.withOpacity(0.08),
+                color: HomeColors.heritagePurple.withValues(alpha: 0.08),
               ),
               boxShadow: [
                 BoxShadow(
-                  color: HomeColors.deepAnchor.withOpacity(0.03),
+                  color: HomeColors.deepAnchor.withValues(alpha: 0.03),
                   blurRadius: 10,
                   offset: const Offset(0, 4),
                 ),
@@ -541,7 +541,7 @@ class AnnouncementFeedScreen extends StatelessWidget {
                   style: OutlinedButton.styleFrom(
                     foregroundColor: HomeColors.heritagePurple,
                     side: BorderSide(
-                      color: HomeColors.heritagePurple.withOpacity(0.5),
+                      color: HomeColors.heritagePurple.withValues(alpha: 0.5),
                     ),
                     padding: EdgeInsets.symmetric(vertical: 14.h),
                     shape: RoundedRectangleBorder(
@@ -605,7 +605,7 @@ class AnnouncementFeedScreen extends StatelessWidget {
               style: OutlinedButton.styleFrom(
                 foregroundColor: HomeColors.dangerRed,
                 side: BorderSide(
-                  color: HomeColors.dangerRed.withOpacity(0.3),
+                  color: HomeColors.dangerRed.withValues(alpha: 0.3),
                 ),
                 padding: EdgeInsets.symmetric(vertical: 14.h),
                 shape: RoundedRectangleBorder(

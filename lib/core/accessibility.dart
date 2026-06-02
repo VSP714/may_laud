@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:may_laud/theme/app_colors.dart';
 import 'package:may_laud/theme/app_theme.dart';
 
 /// Accessibility utilities for screen reader support, contrast, and focus management
@@ -191,7 +192,7 @@ class Accessibility {
 
     // Adjust for text scaling
     final fontSize =
-        (base.fontSize ?? minFontSize) * mediaQuery.textScaleFactor;
+        (base.fontSize ?? minFontSize) * mediaQuery.textScaler.scale(1.0);
 
     // Ensure minimum font size
     final finalFontSize = fontSize < minFontSize ? minFontSize : fontSize;
@@ -211,19 +212,17 @@ class Accessibility {
   static ColorScheme getAccessibleColorScheme(bool isDarkMode) {
     if (isDarkMode) {
       return const ColorScheme.dark(
-        primary: AppTheme.milaorBlue,
-        secondary: AppTheme.philippineGold,
-        error: AppTheme.philippineRed,
+        primary: AppColors.milaorBlue,
+        secondary: AppColors.philippineGold,
+        error: AppColors.error,
         surface: Color(0xFF121212),
-        background: Color(0xFF121212),
       );
     } else {
       return const ColorScheme.light(
-        primary: AppTheme.milaorBlue,
-        secondary: AppTheme.philippineGold,
-        error: AppTheme.philippineRed,
+        primary: AppColors.milaorBlue,
+        secondary: AppColors.philippineGold,
+        error: AppColors.error,
         surface: Colors.white,
-        background: Colors.white,
       );
     }
   }
@@ -346,7 +345,7 @@ class _AccessibilitySetting extends StatelessWidget {
         Switch(
           value: value,
           onChanged: onChanged,
-          activeColor: AppTheme.milaorBlue,
+          activeColor: AppColors.milaorBlue,
         ),
       ],
     );

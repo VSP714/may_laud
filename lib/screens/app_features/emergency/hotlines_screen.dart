@@ -8,14 +8,15 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../theme/app_theme.dart';
+import '../../../theme/app_colors.dart';
 
-// ─── BRAND PALETTE (mirrors FloodColors / other app features) ───
+// ─── BRAND PALETTE — delegates to AppColors (single source of truth) ───
 class HotlineColors {
-  static const Color heritagePurple = Color(0xFF4C229C);
-  static const Color riverFlow = Color(0xFF643EB5);
-  static const Color deepAnchor = Color(0xFF24005B);
-  static const Color warmHearth = Color(0xFFF8F5FF);
-  static const Color cardWhite = Colors.white;
+  static const Color heritagePurple = AppColors.heritagePurple;
+  static const Color riverFlow      = AppColors.riverFlow;
+  static const Color deepAnchor     = AppColors.deepAnchor;
+  static const Color warmHearth     = AppColors.warmHearth;
+  static const Color cardWhite      = AppColors.cardWhite;
 
   // Semantic accents
   static const Color emergencyRed = Color(0xFFDC2626);
@@ -129,13 +130,13 @@ class _HotlinesScreenState extends State<HotlinesScreen> {
   // Dark mode helpers — set in build(), used by helper methods
   bool _isDark = false;
   ColorScheme? _cs;
-  Color get _scaffoldBg => _isDark ? _cs!.background : HotlineColors.warmHearth;
+  Color get _scaffoldBg => _isDark ? _cs!.surface : HotlineColors.warmHearth;
   Color get _cardBg => _isDark ? _cs!.surface : HotlineColors.cardWhite;
   Color get _titleText => _isDark ? _cs!.onSurface : HotlineColors.deepAnchor;
-  Color get _bodyText => _isDark ? _cs!.onSurface.withOpacity(0.65) : AppTheme.neutralGray800;
-  Color get _mutedText => _isDark ? _cs!.onSurface.withOpacity(0.45) : AppTheme.neutralGray500;
-  Color get _dividerColor => _isDark ? _cs!.onSurface.withOpacity(0.12) : AppTheme.neutralGray200;
-  Color get _chipBorder => _isDark ? _cs!.onSurface.withOpacity(0.2) : AppTheme.neutralGray200;
+  Color get _bodyText => _isDark ? _cs!.onSurface.withValues(alpha: 0.65) : AppTheme.neutralGray800;
+  Color get _mutedText => _isDark ? _cs!.onSurface.withValues(alpha: 0.45) : AppTheme.neutralGray500;
+  Color get _dividerColor => _isDark ? _cs!.onSurface.withValues(alpha: 0.12) : AppTheme.neutralGray200;
+  Color get _chipBorder => _isDark ? _cs!.onSurface.withValues(alpha: 0.2) : AppTheme.neutralGray200;
 
   late final List<EmergencyContact> _contacts;
   late final List<Map<String, dynamic>> _filterOptions;
@@ -547,7 +548,7 @@ class _HotlinesScreenState extends State<HotlinesScreen> {
         Container(
           padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 2.h),
           decoration: BoxDecoration(
-            color: HotlineColors.heritagePurple.withOpacity(0.1),
+            color: HotlineColors.heritagePurple.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(AppTheme.borderRadiusCircle),
           ),
           child: Text(
@@ -702,7 +703,7 @@ class _HotlinesScreenState extends State<HotlinesScreen> {
         color: HotlineColors.purpleTint,
         borderRadius: BorderRadius.circular(AppTheme.borderRadiusLg),
         border:
-            Border.all(color: HotlineColors.heritagePurple.withOpacity(0.15)),
+            Border.all(color: HotlineColors.heritagePurple.withValues(alpha: 0.15)),
       ),
       child: Row(
         children: [
@@ -710,7 +711,7 @@ class _HotlinesScreenState extends State<HotlinesScreen> {
             width: 40.w,
             height: 40.w,
             decoration: BoxDecoration(
-              color: HotlineColors.heritagePurple.withOpacity(0.1),
+              color: HotlineColors.heritagePurple.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(AppTheme.borderRadiusMd),
             ),
             child: const Icon(
@@ -807,7 +808,7 @@ class _ContactDetailSheet extends StatelessWidget {
                       padding:
                           EdgeInsets.symmetric(horizontal: 10.w, vertical: 3.h),
                       decoration: BoxDecoration(
-                        color: color.withOpacity(0.1),
+                        color: color.withValues(alpha: 0.1),
                         borderRadius:
                             BorderRadius.circular(AppTheme.borderRadiusSm),
                       ),
@@ -842,7 +843,7 @@ class _ContactDetailSheet extends StatelessWidget {
               color: scaffoldBg,
               borderRadius: BorderRadius.circular(AppTheme.borderRadiusLg),
               border: Border.all(
-                  color: HotlineColors.heritagePurple.withOpacity(0.1)),
+                  color: HotlineColors.heritagePurple.withValues(alpha: 0.1)),
             ),
             child: Text(
               contact.number,

@@ -5,14 +5,15 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../../../theme/app_colors.dart';
 
-// ─── BRAND PALETTE (mirrors home.dart for consistency) ───
+// ─── BRAND PALETTE — delegates to AppColors (single source of truth) ───
 class FloodColors {
-  static const Color heritagePurple = Color(0xFF4C229C);
-  static const Color riverFlow = Color(0xFF643EB5);
-  static const Color deepAnchor = Color(0xFF24005B);
-  static const Color warmHearth = Color(0xFFF8F5FF);
-  static const Color cardWhite = Colors.white;
+  static const Color heritagePurple = AppColors.heritagePurple;
+  static const Color riverFlow      = AppColors.riverFlow;
+  static const Color deepAnchor     = AppColors.deepAnchor;
+  static const Color warmHearth     = AppColors.warmHearth;
+  static const Color cardWhite      = AppColors.cardWhite;
 
   // Flood severity
   static const Color safe = Color(0xFF22C55E);
@@ -293,22 +294,22 @@ class _FloodAlertScreenState extends State<FloodAlertScreen> {
     switch (statusText.toLowerCase()) {
       case 'normal':
         statusColor = FloodColors.safe;
-        glowColor = FloodColors.safe.withOpacity(0.3);
+        glowColor = FloodColors.safe.withValues(alpha: 0.3);
         statusIcon = Icons.check_circle_rounded;
         break;
       case 'alert':
         statusColor = FloodColors.alert;
-        glowColor = FloodColors.alert.withOpacity(0.3);
+        glowColor = FloodColors.alert.withValues(alpha: 0.3);
         statusIcon = Icons.warning_amber_rounded;
         break;
       case 'warning':
         statusColor = FloodColors.danger;
-        glowColor = FloodColors.danger.withOpacity(0.3);
+        glowColor = FloodColors.danger.withValues(alpha: 0.3);
         statusIcon = Icons.dangerous_rounded;
         break;
       default:
         statusColor = FloodColors.heritagePurple;
-        glowColor = FloodColors.heritagePurple.withOpacity(0.3);
+        glowColor = FloodColors.heritagePurple.withValues(alpha: 0.3);
         statusIcon = Icons.info_rounded;
     }
 
@@ -320,7 +321,7 @@ class _FloodAlertScreenState extends State<FloodAlertScreen> {
         borderRadius: BorderRadius.circular(28.r),
         boxShadow: [
           BoxShadow(
-            color: FloodColors.heritagePurple.withOpacity(0.08),
+            color: FloodColors.heritagePurple.withValues(alpha: 0.08),
             blurRadius: 30,
             offset: const Offset(0, 12),
           ),
@@ -343,9 +344,9 @@ class _FloodAlertScreenState extends State<FloodAlertScreen> {
               Container(
                 padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
                 decoration: BoxDecoration(
-                  color: statusColor.withOpacity(0.1),
+                  color: statusColor.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(100.r),
-                  border: Border.all(color: statusColor.withOpacity(0.3)),
+                  border: Border.all(color: statusColor.withValues(alpha: 0.3)),
                 ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
@@ -416,7 +417,7 @@ class _FloodAlertScreenState extends State<FloodAlertScreen> {
           Container(
             padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 12.h),
             decoration: BoxDecoration(
-              color: statusColor.withOpacity(0.08),
+              color: statusColor.withValues(alpha: 0.08),
               borderRadius: BorderRadius.circular(16.r),
             ),
             child: Row(
@@ -508,7 +509,7 @@ class _FloodAlertScreenState extends State<FloodAlertScreen> {
         borderRadius: BorderRadius.circular(20.r),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withValues(alpha: 0.04),
             blurRadius: 12,
             offset: const Offset(0, 4),
           ),
@@ -520,7 +521,7 @@ class _FloodAlertScreenState extends State<FloodAlertScreen> {
             width: 40.w,
             height: 40.w,
             decoration: BoxDecoration(
-              color: color.withOpacity(0.1),
+              color: color.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(12.r),
             ),
             child: Icon(icon, color: color, size: 20.sp),
@@ -559,7 +560,7 @@ class _FloodAlertScreenState extends State<FloodAlertScreen> {
         borderRadius: BorderRadius.circular(28.r),
         boxShadow: [
           BoxShadow(
-            color: FloodColors.heritagePurple.withOpacity(0.06),
+            color: FloodColors.heritagePurple.withValues(alpha: 0.06),
             blurRadius: 24,
             offset: const Offset(0, 10),
           ),
@@ -645,14 +646,14 @@ class _FloodAlertScreenState extends State<FloodAlertScreen> {
                         gradient: LinearGradient(
                           begin: Alignment.bottomCenter,
                           end: Alignment.topCenter,
-                          colors: [barColor, barColor.withOpacity(0.6)],
+                          colors: [barColor, barColor.withValues(alpha: 0.6)],
                         ),
                         borderRadius: BorderRadius.vertical(
                           top: Radius.circular(10.r),
                         ),
                         boxShadow: [
                           BoxShadow(
-                            color: barColor.withOpacity(0.3),
+                            color: barColor.withValues(alpha: 0.3),
                             blurRadius: 8,
                             offset: const Offset(0, 4),
                           ),
@@ -705,7 +706,7 @@ class _FloodAlertScreenState extends State<FloodAlertScreen> {
             color: color,
             shape: BoxShape.circle,
             boxShadow: [
-              BoxShadow(color: color.withOpacity(0.4), blurRadius: 4),
+              BoxShadow(color: color.withValues(alpha: 0.4), blurRadius: 4),
             ],
           ),
         ),
@@ -730,7 +731,7 @@ class _FloodAlertScreenState extends State<FloodAlertScreen> {
           width: 36.w,
           height: 36.w,
           decoration: BoxDecoration(
-            color: FloodColors.heritagePurple.withOpacity(0.1),
+            color: FloodColors.heritagePurple.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(10.r),
           ),
           child: Icon(icon, color: FloodColors.heritagePurple, size: 20.sp),
@@ -758,10 +759,10 @@ class _FloodAlertScreenState extends State<FloodAlertScreen> {
       decoration: BoxDecoration(
         color: _cardBg,
         borderRadius: BorderRadius.circular(20.r),
-        border: Border.all(color: color.withOpacity(0.2)),
+        border: Border.all(color: color.withValues(alpha: 0.2)),
         boxShadow: [
           BoxShadow(
-            color: color.withOpacity(0.06),
+            color: color.withValues(alpha: 0.06),
             blurRadius: 12,
             offset: const Offset(0, 4),
           ),
@@ -857,7 +858,7 @@ class _FloodAlertScreenState extends State<FloodAlertScreen> {
         color: color,
         shape: BoxShape.circle,
         boxShadow: [
-          BoxShadow(color: color.withOpacity(0.5), blurRadius: 6),
+          BoxShadow(color: color.withValues(alpha: 0.5), blurRadius: 6),
         ],
       ),
     );
@@ -874,7 +875,7 @@ class _FloodAlertScreenState extends State<FloodAlertScreen> {
         borderRadius: BorderRadius.circular(20.r),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withValues(alpha: 0.04),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -900,7 +901,7 @@ class _FloodAlertScreenState extends State<FloodAlertScreen> {
                       width: 42.w,
                       height: 42.w,
                       decoration: BoxDecoration(
-                        color: FloodColors.heritagePurple.withOpacity(0.08),
+                        color: FloodColors.heritagePurple.withValues(alpha: 0.08),
                         borderRadius: BorderRadius.circular(12.r),
                       ),
                       child: Icon(
@@ -999,7 +1000,7 @@ class _FloodAlertScreenState extends State<FloodAlertScreen> {
         borderRadius: BorderRadius.circular(28.r),
         boxShadow: [
           BoxShadow(
-            color: FloodColors.heritagePurple.withOpacity(0.3),
+            color: FloodColors.heritagePurple.withValues(alpha: 0.3),
             blurRadius: 24,
             offset: const Offset(0, 14),
           ),
@@ -1078,7 +1079,7 @@ class _FloodAlertScreenState extends State<FloodAlertScreen> {
     required VoidCallback onTap,
   }) {
     return Material(
-      color: Colors.white.withOpacity(0.15),
+      color: Colors.white.withValues(alpha: 0.15),
       borderRadius: BorderRadius.circular(18.r),
       child: InkWell(
         borderRadius: BorderRadius.circular(18.r),
@@ -1087,7 +1088,7 @@ class _FloodAlertScreenState extends State<FloodAlertScreen> {
           padding: EdgeInsets.symmetric(vertical: 18.h),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(18.r),
-            border: Border.all(color: Colors.white.withOpacity(0.2)),
+            border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
           ),
           child: Column(
             children: [
@@ -1099,7 +1100,7 @@ class _FloodAlertScreenState extends State<FloodAlertScreen> {
                   borderRadius: BorderRadius.circular(14.r),
                   boxShadow: [
                     BoxShadow(
-                      color: color.withOpacity(0.4),
+                      color: color.withValues(alpha: 0.4),
                       blurRadius: 12,
                       offset: const Offset(0, 4),
                     ),
@@ -1151,7 +1152,7 @@ class _FloodAlertScreenState extends State<FloodAlertScreen> {
                 width: 40.w,
                 height: 4.h,
                 decoration: BoxDecoration(
-                  color: _isDark ? Colors.white.withOpacity(0.18) : Colors.grey[300],
+                  color: _isDark ? Colors.white.withValues(alpha: 0.18) : Colors.grey[300],
                   borderRadius: BorderRadius.circular(2.r),
                 ),
               ),

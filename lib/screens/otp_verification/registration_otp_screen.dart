@@ -8,7 +8,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../success/registration_verified_success_screen.dart';
 
 class VerificationScreen extends StatefulWidget {
-  final String email; // email passed from RegisterScreen
+  final String email;
 
   const VerificationScreen({super.key, required this.email});
 
@@ -40,7 +40,10 @@ class _VerificationScreenState extends State<VerificationScreen> {
   void startTimer() {
     timer?.cancel();
     timer = Timer.periodic(const Duration(seconds: 1), (t) {
-      if (!mounted) { t.cancel(); return; }
+      if (!mounted) {
+        t.cancel();
+        return;
+      }
       if (secondsRemaining == 0) {
         t.cancel();
       } else {
@@ -60,14 +63,20 @@ class _VerificationScreenState extends State<VerificationScreen> {
 
   Future<void> _resendCode() async {
     if (secondsRemaining > 0) return;
-    setState(() { _isLoading = true; _errorMessage = null; });
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
     try {
       await _client.auth.resend(
         type: OtpType.signup,
         email: widget.email,
       );
       if (mounted) {
-        setState(() { secondsRemaining = 59; _isLoading = false; });
+        setState(() {
+          secondsRemaining = 59;
+          _isLoading = false;
+        });
         startTimer();
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -94,7 +103,10 @@ class _VerificationScreenState extends State<VerificationScreen> {
       return;
     }
 
-    setState(() { _isLoading = true; _errorMessage = null; });
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
 
     try {
       final response = await _client.auth.verifyOTP(
@@ -142,70 +154,93 @@ class _VerificationScreenState extends State<VerificationScreen> {
   }
 
   Widget _otpBox(int index) {
-    return Container(
-      width: 60.w,
-      height: 60.h,
-      margin: EdgeInsets.symmetric(horizontal: 2.w),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12.r),
-        border: Border.all(
-          color: _errorMessage != null
-              ? Colors.red.shade300
-              : focusNodes[index].hasFocus
-                  ? const Color(0xFF6A4FB6)
-                  : const Color(0xFFE0E0E0),
-          width: focusNodes[index].hasFocus ? 2 : 1,
+    return Expanded(
+      child: Container(
+        margin: EdgeInsets.symmetric(horizontal: 4.w),
+        height: 56.h,
+        child: TextField(
+          controller: controllers[index],
+          focusNode: focusNodes[index],
+          textAlign: TextAlign.center,
+          textAlignVertical: TextAlignVertical.center,
+          keyboardType: TextInputType.number,
+          inputFormatters: [
+            FilteringTextInputFormatter.digitsOnly,
+            LengthLimitingTextInputFormatter(1),
+          ],
+          style: TextStyle(
+            fontSize: 24.sp,
+            fontWeight: FontWeight.w600,
+            color: const Color(0xFF2E0C6D),
+          ),
+          decoration: InputDecoration(
+            counterText: '',
+            filled: true,
+            fillColor: Colors.white,
+            contentPadding: EdgeInsets.zero,
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12.r),
+              borderSide: BorderSide(
+                color: _errorMessage != null
+                    ? Colors.red.shade300
+                    : focusNodes[index].hasFocus
+                        ? const Color(0xFF4C229C)
+                        : const Color(0xFFE0E0E0),
+                width: focusNodes[index].hasFocus ? 2 : 1.5,
+              ),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12.r),
+              borderSide: const BorderSide(
+                color: Color(0xFF4C229C),
+                width: 2,
+              ),
+            ),
+            errorBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12.r),
+              borderSide: BorderSide(
+                color: Colors.red.shade300,
+                width: 1.5,
+              ),
+            ),
+          ),
+          onChanged: (value) => _onOtpChanged(value, index),
         ),
-        boxShadow: focusNodes[index].hasFocus
-            ? [
-                BoxShadow(
-                  color: const Color(0xFF6A4FB6).withValues(alpha: 0.15),
-                  blurRadius: 8,
-                  offset: const Offset(0, 2),
-                ),
-              ]
-            : [],
-      ),
-      child: TextField(
-        controller: controllers[index],
-        focusNode: focusNodes[index],
-        textAlign: TextAlign.center,
-        textAlignVertical: TextAlignVertical.center,
-        keyboardType: TextInputType.number,
-        inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-        maxLength: 1,
-        style: TextStyle(
-          fontSize: 30.sp,
-          fontWeight: FontWeight.w600,
-          color: Colors.black,
-        ),
-        decoration: const InputDecoration(
-          counterText: '',
-          border: InputBorder.none,
-          contentPadding: EdgeInsets.zero,
-        ),
-        onChanged: (value) => _onOtpChanged(value, index),
       ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final cs = theme.colorScheme;
+
+    final scaffoldBg = isDark ? cs.background : Colors.white;
+    final bubbleBg1 = isDark ? cs.primary.withOpacity(0.12) : const Color(0xFFEDE7F6);
+    final bubbleBg2Gradient = isDark
+        ? [cs.primary.withOpacity(0.10), Colors.transparent]
+        : [const Color(0xFFD1C4E9).withOpacity(0.35), Colors.transparent];
+    final bubbleBg3Gradient = isDark
+        ? [cs.primary.withOpacity(0.12), Colors.transparent]
+        : [const Color(0xFFD1C4E9).withOpacity(0.4), Colors.transparent];
+    final titleColor = isDark ? cs.onBackground : const Color(0xFF2E0C6D);
+    final subtitleColor = isDark ? cs.onBackground.withOpacity(0.6) : const Color(0xFF6E6A75);
+    final formBg = isDark ? cs.surface : const Color(0xFFF6F2FC);
+    final linkColor = isDark ? cs.onBackground.withOpacity(0.6) : Colors.black54;
+
     return Scaffold(
-      backgroundColor: Theme.of(context).colorScheme.surface,
+      backgroundColor: scaffoldBg,
       body: Stack(
         children: [
+          // Background decorations (matching sign in screen)
           Positioned(
             top: -120.h,
             left: -120.w,
             child: Container(
               width: 280.w,
               height: 280.w,
-              decoration: const BoxDecoration(
-                shape: BoxShape.circle,
-                color: Color(0xFFEDE7F6),
-              ),
+              decoration: BoxDecoration(shape: BoxShape.circle, color: bubbleBg1),
             ),
           ),
           Positioned(
@@ -216,12 +251,7 @@ class _VerificationScreenState extends State<VerificationScreen> {
               height: 160.w,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                gradient: RadialGradient(
-                  colors: [
-                    const Color(0xFFD1C4E9).withValues(alpha: 0.35),
-                    Colors.transparent,
-                  ],
-                ),
+                gradient: RadialGradient(colors: bubbleBg2Gradient),
               ),
             ),
           ),
@@ -233,12 +263,7 @@ class _VerificationScreenState extends State<VerificationScreen> {
               height: 180.w,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                gradient: RadialGradient(
-                  colors: [
-                    const Color(0xFFD1C4E9).withValues(alpha: 0.4),
-                    Colors.transparent,
-                  ],
-                ),
+                gradient: RadialGradient(colors: bubbleBg3Gradient),
               ),
             ),
           ),
@@ -247,215 +272,239 @@ class _VerificationScreenState extends State<VerificationScreen> {
             child: SizedBox(
               height: 240.h,
               width: double.infinity,
-              child: CustomPaint(painter: _MilaudWavePainter()),
+              child: CustomPaint(painter: _WavePainter(isDark: isDark, cs: cs)),
             ),
           ),
           SafeArea(
             child: SingleChildScrollView(
-              child: Padding(
-                padding: EdgeInsets.symmetric(horizontal: 24.w),
-                child: Column(
-                  children: [
-                    SizedBox(height: 16.h),
+              padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 30.h),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  SizedBox(height: 20.h),
 
-                    // Back + Title
-                    Stack(
-                      alignment: Alignment.center,
-                      children: [
-                        Align(
-                          alignment: Alignment.centerLeft,
-                          child: IconButton(
-                            icon: const Icon(Icons.arrow_back,
-                                color: Color(0xFF6A4FB6)),
-                            onPressed: () => Navigator.pop(context),
-                          ),
+                  // Back button + Title
+                  Stack(
+                    alignment: Alignment.center,
+                    children: [
+                      Align(
+                        alignment: Alignment.centerLeft,
+                        child: IconButton(
+                          icon: Icon(Icons.arrow_back_ios,
+                              color: isDark ? cs.primary : const Color(0xFF4C229C)),
+                          onPressed: () => Navigator.pop(context),
                         ),
-                        Text(
-                          'Verification',
+                      ),
+                      Text(
+                        "Verification",
+                        style: TextStyle(
+                          fontSize: 20.sp,
+                          fontWeight: FontWeight.w600,
+                          color: titleColor,
+                        ),
+                      ),
+                    ],
+                  ),
+
+                  SizedBox(height: 20.h),
+
+                  // Icon - Fixed to use existing icon
+                  Container(
+                    width: 80.w,
+                    height: 80.w,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      gradient: const LinearGradient(
+                        colors: [Color(0xFF4C229C), Color(0xFF643EB5)],
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: const Color(0xFF4C229C).withOpacity(0.3),
+                          blurRadius: 20.r,
+                          offset: Offset(0, 8.h),
+                        ),
+                      ],
+                    ),
+                    child: Icon(
+                      Icons.mark_email_read_outlined,
+                      size: 40.sp,
+                      color: Colors.white,
+                    ),
+                  ),
+
+                  SizedBox(height: 24.h),
+
+                  Text(
+                    "Verify Your Email",
+                    style: TextStyle(
+                      fontSize: 24.sp,
+                      fontWeight: FontWeight.w700,
+                      color: titleColor,
+                    ),
+                  ),
+
+                  SizedBox(height: 10.h),
+
+                  RichText(
+                    textAlign: TextAlign.center,
+                    text: TextSpan(
+                      style: TextStyle(
+                        fontSize: 13.sp,
+                        color: subtitleColor,
+                        height: 1.5,
+                      ),
+                      children: [
+                        const TextSpan(text: "We've sent a 6-digit code to\n"),
+                        TextSpan(
+                          text: widget.email,
                           style: TextStyle(
-                            fontSize: 20.sp,
-                            fontWeight: FontWeight.w600,
-                            color: const Color(0xFF6A4FB6),
+                            fontWeight: FontWeight.w700,
+                            color: isDark ? cs.primary : const Color(0xFF4C229C),
                           ),
                         ),
                       ],
                     ),
+                  ),
 
-                    SizedBox(height: 48.h),
+                  SizedBox(height: 32.h),
 
-                    Icon(
-                      Icons.lock_open_outlined,
-                      size: 80.w,
-                      color: const Color(0xFF6A4FB6).withAlpha(230),
-                    ),
-
-                    SizedBox(height: 32.h),
-
-                    Text(
-                      'Enter Verification Code',
-                      style: TextStyle(
-                        fontSize: 28.sp,
-                        fontWeight: FontWeight.w700,
-                        color: const Color(0xFF333333),
-                      ),
-                    ),
-
-                    SizedBox(height: 12.h),
-
-                    // Show email the code was sent to
-                    RichText(
-                      textAlign: TextAlign.center,
-                      text: TextSpan(
-                        style: TextStyle(
-                          fontSize: 15.sp,
-                          color: const Color(0xFF666666),
-                          height: 1.6,
+                  // Form container (matching sign in screen)
+                  Container(
+                    padding: EdgeInsets.all(20.w),
+                    decoration: BoxDecoration(
+                      color: formBg,
+                      borderRadius: BorderRadius.circular(28.r),
+                      boxShadow: [
+                        BoxShadow(
+                          color: const Color(0xFF7B2CBF).withOpacity(isDark ? 0.05 : 0.08),
+                          blurRadius: 20.r,
+                          offset: Offset(0, 8.h),
                         ),
-                        children: [
-                          const TextSpan(
-                              text: "We've sent a 6-digit code to\n"),
-                          TextSpan(
-                            text: widget.email,
-                            style: const TextStyle(
-                              fontWeight: FontWeight.w700,
-                              color: Color(0xFF4C229C),
+                      ],
+                    ),
+                    child: Column(
+                      children: [
+                        // OTP Fields - Using Row with Expanded to prevent overflow
+                        Row(
+                          children: List.generate(6, (index) => _otpBox(index)),
+                        ),
+
+                        if (_errorMessage != null) ...[
+                          SizedBox(height: 16.h),
+                          Text(
+                            _errorMessage!,
+                            style: TextStyle(
+                              color: Colors.red.shade600,
+                              fontSize: 12.sp,
+                              fontWeight: FontWeight.w500,
                             ),
+                            textAlign: TextAlign.center,
                           ),
                         ],
-                      ),
-                    ),
 
-                    SizedBox(height: 45.h),
+                        SizedBox(height: 28.h),
 
-                    // OTP Fields
-                    SingleChildScrollView(
-                      scrollDirection: Axis.horizontal,
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: List.generate(6, _otpBox),
-                      ),
-                    ),
-
-                    // Error message
-                    if (_errorMessage != null) ...[
-                      SizedBox(height: 12.h),
-                      Text(
-                        _errorMessage!,
-                        style: TextStyle(
-                          color: Colors.red.shade600,
-                          fontSize: 13.sp,
-                          fontWeight: FontWeight.w500,
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
-                    ],
-
-                    SizedBox(height: 40.h),
-
-                    // Verify Button
-                    SizedBox(
-                      width: double.infinity,
-                      height: 56.h,
-                      child: ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF6A4FB6),
-                          foregroundColor: Colors.white,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(16.r),
-                          ),
-                          elevation: 0,
-                          shadowColor: Colors.transparent,
-                        ),
-                        onPressed: _isLoading ? null : _verifyOtp,
-                        child: _isLoading
-                            ? const SizedBox(
-                                width: 24,
-                                height: 24,
-                                child: CircularProgressIndicator(
-                                  color: Colors.white,
-                                  strokeWidth: 2.5,
+                        // Verify Button (matching sign in button style)
+                        if (_isLoading)
+                          const Center(child: CircularProgressIndicator())
+                        else
+                          GestureDetector(
+                            onTap: _verifyOtp,
+                            child: Container(
+                              width: double.infinity,
+                              padding: EdgeInsets.symmetric(vertical: 14.h),
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(40.r),
+                                gradient: const LinearGradient(
+                                  colors: [Color(0xFF4C229C), Color(0xFF643EB5)],
                                 ),
-                              )
-                            : Text(
-                                'Verify',
-                                style: TextStyle(
-                                  fontSize: 18.sp,
-                                  fontWeight: FontWeight.w700,
-                                  color: Colors.white,
-                                ),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: const Color(0xFF4C229C).withOpacity(0.3),
+                                    blurRadius: 12.r,
+                                    offset: Offset(0, 4.h),
+                                  ),
+                                ],
                               ),
-                      ),
-                    ),
-
-                    SizedBox(height: 24.h),
-
-                    // Resend Row
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text(
-                          "Didn't receive the code?",
-                          style: TextStyle(
-                            color: const Color(0xFF6E6A75),
-                            fontSize: 15.sp,
-                          ),
-                        ),
-                        SizedBox(width: 6.w),
-                        secondsRemaining > 0
-                            ? Text(
-                                'Resend in 00:${secondsRemaining.toString().padLeft(2, '0')}',
-                                style: TextStyle(
-                                  color: const Color(0xFF6A4FB6),
-                                  fontWeight: FontWeight.w700,
-                                  fontSize: 15.sp,
-                                ),
-                              )
-                            : TextButton(
-                                onPressed: _isLoading ? null : _resendCode,
-                                style: TextButton.styleFrom(
-                                  padding: EdgeInsets.zero,
-                                  minimumSize: Size.zero,
-                                  tapTargetSize:
-                                      MaterialTapTargetSize.shrinkWrap,
-                                ),
+                              child: Center(
                                 child: Text(
-                                  'Resend now',
+                                  "Verify Account",
                                   style: TextStyle(
-                                    color: const Color(0xFF6A4FB6),
-                                    fontWeight: FontWeight.w700,
-                                    fontSize: 15.sp,
-                                    decoration: TextDecoration.underline,
+                                    color: Colors.white,
+                                    fontSize: 16.sp,
+                                    fontWeight: FontWeight.bold,
                                   ),
                                 ),
                               ),
-                      ],
-                    ),
-
-                    SizedBox(height: 20.h),
-
-                    // Security note
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          Icons.lock_outline,
-                          size: 16.w,
-                          color: const Color(0xFF6A4FB6).withValues(alpha: 0.6),
-                        ),
-                        SizedBox(width: 8.w),
-                        Text(
-                          'End-to-end encrypted',
-                          style: TextStyle(
-                            color: const Color(0xFF6A4FB6).withValues(alpha: 0.6),
-                            fontSize: 13.sp,
-                            fontWeight: FontWeight.w600,
+                            ),
                           ),
+
+                        SizedBox(height: 18.h),
+
+                        // Resend Row
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              "Didn't receive the code?",
+                              style: TextStyle(
+                                color: linkColor,
+                                fontSize: 13.sp,
+                              ),
+                            ),
+                            SizedBox(width: 6.w),
+                            secondsRemaining > 0
+                                ? Text(
+                                    'Resend in 00:${secondsRemaining.toString().padLeft(2, '0')}',
+                                    style: TextStyle(
+                                      color: isDark ? cs.primary : const Color(0xFF4C229C),
+                                      fontWeight: FontWeight.w600,
+                                      fontSize: 13.sp,
+                                    ),
+                                  )
+                                : GestureDetector(
+                                    onTap: _isLoading ? null : _resendCode,
+                                    child: Text(
+                                      'Resend now',
+                                      style: TextStyle(
+                                        color: isDark ? cs.primary : const Color(0xFF4C229C),
+                                        fontWeight: FontWeight.w600,
+                                        fontSize: 13.sp,
+                                        decoration: TextDecoration.underline,
+                                      ),
+                                    ),
+                                  ),
+                          ],
+                        ),
+
+                        SizedBox(height: 20.h),
+
+                        // Security note
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              Icons.lock_outline,
+                              size: 14.w,
+                              color: isDark ? cs.primary.withOpacity(0.6) : const Color(0xFF4C229C).withOpacity(0.6),
+                            ),
+                            SizedBox(width: 6.w),
+                            Text(
+                              'End-to-end encrypted',
+                              style: TextStyle(
+                                color: isDark ? cs.primary.withOpacity(0.6) : const Color(0xFF4C229C).withOpacity(0.6),
+                                fontSize: 12.sp,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ],
                         ),
                       ],
                     ),
-                    SizedBox(height: 30.h),
-                  ],
-                ),
+                  ),
+
+                  SizedBox(height: 30.h),
+                ],
               ),
             ),
           ),
@@ -465,36 +514,47 @@ class _VerificationScreenState extends State<VerificationScreen> {
   }
 }
 
-class _MilaudWavePainter extends CustomPainter {
+class _WavePainter extends CustomPainter {
+  final bool isDark;
+  final ColorScheme cs;
+
+  _WavePainter({required this.isDark, required this.cs});
+
   @override
   void paint(Canvas canvas, Size size) {
+    final fillColor =
+        isDark ? cs.primary.withOpacity(0.08) : const Color(0xFFF3F0FA);
+    final strokeColor =
+        isDark ? cs.primary.withOpacity(0.25) : const Color(0xFFB39DDB);
+
     final fillWave = Paint()
-      ..color = const Color(0xFFF3F0FA)
+      ..color = fillColor
       ..style = PaintingStyle.fill;
 
     final lineWave = Paint()
-      ..color = const Color(0xFFB39DDB)
+      ..color = strokeColor
       ..style = PaintingStyle.stroke
       ..strokeWidth = 2;
 
-    final path1 = Path()
-      ..moveTo(0, 70)
-      ..quadraticBezierTo(size.width * 0.25, 20, size.width * 0.5, 90)
-      ..quadraticBezierTo(size.width * 0.75, 150, size.width, 70)
-      ..lineTo(size.width, size.height)
-      ..lineTo(0, size.height)
-      ..close();
+    final path1 = Path();
+    path1.moveTo(0, 70);
+    path1.quadraticBezierTo(size.width * 0.25, 20, size.width * 0.5, 90);
+    path1.quadraticBezierTo(size.width * 0.75, 150, size.width, 70);
+    path1.lineTo(size.width, size.height);
+    path1.lineTo(0, size.height);
+    path1.close();
 
     canvas.drawPath(path1, fillWave);
 
-    final path2 = Path()
-      ..moveTo(0, 90)
-      ..quadraticBezierTo(size.width * 0.3, 40, size.width * 0.6, 110)
-      ..quadraticBezierTo(size.width * 0.85, 170, size.width, 100);
+    final path2 = Path();
+    path2.moveTo(0, 90);
+    path2.quadraticBezierTo(size.width * 0.3, 40, size.width * 0.6, 110);
+    path2.quadraticBezierTo(size.width * 0.85, 170, size.width, 100);
 
     canvas.drawPath(path2, lineWave);
   }
 
   @override
-  bool shouldRepaint(CustomPainter oldDelegate) => false;
+  bool shouldRepaint(covariant _WavePainter oldDelegate) =>
+      oldDelegate.isDark != isDark;
 }
