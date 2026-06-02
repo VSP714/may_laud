@@ -115,7 +115,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     }
 
     final authNotifier = ref.read(authProvider.notifier);
-    await authNotifier.register(
+    final success = await authNotifier.register(
       name: '${_firstNameController.text.trim()} ${_lastNameController.text.trim()}',
       email: _emailController.text.trim(),
       password: _passwordController.text,
@@ -123,22 +123,25 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
       address: _selectedBarangay!,
     );
 
-    if (mounted) {
-      final authState = ref.read(authProvider);
-      if (authState.error != null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(authState.error!), backgroundColor: Colors.red),
-        );
-      } else {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (_) => VerificationScreen(
-              email: _emailController.text.trim(),
-            ),
+    if (!mounted) return;
+
+    if (success) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => VerificationScreen(
+            email: _emailController.text.trim(),
           ),
-        );
-      }
+        ),
+      );
+    } else {
+      final authState = ref.read(authProvider);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(authState.error ?? 'Registration failed. Please try again.'),
+          backgroundColor: Colors.red,
+        ),
+      );
     }
   }
 

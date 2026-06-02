@@ -204,12 +204,12 @@ class _CreateNewPasswordScreenState extends State<CreateNewPasswordScreen> {
                     height: 100.w,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      gradient: const LinearGradient(
-                        colors: [Color(0xFF4C229C), Color(0xFF643EB5)],
+                      gradient: LinearGradient(
+                        colors: [accentPurple, const Color(0xFF643EB5)],
                       ),
                       boxShadow: [
                         BoxShadow(
-                          color: const Color(0xFF4C229C).withOpacity(0.3),
+                          color: accentPurple.withOpacity(0.3),
                           blurRadius: 20.r,
                           offset: Offset(0, 8.h),
                         ),
@@ -409,12 +409,12 @@ class _CreateNewPasswordScreenState extends State<CreateNewPasswordScreen> {
                               padding: EdgeInsets.symmetric(vertical: 16.h),
                               decoration: BoxDecoration(
                                 borderRadius: BorderRadius.circular(40.r),
-                                gradient: const LinearGradient(
-                                  colors: [Color(0xFF4C229C), Color(0xFF643EB5)],
+                                gradient: LinearGradient(
+                                  colors: [accentPurple, const Color(0xFF643EB5)],
                                 ),
                                 boxShadow: [
                                   BoxShadow(
-                                    color: const Color(0xFF4C229C).withOpacity(0.3),
+                                    color: accentPurple.withOpacity(0.3),
                                     blurRadius: 12.r,
                                     offset: Offset(0, 4.h),
                                   ),

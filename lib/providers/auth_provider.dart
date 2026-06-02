@@ -48,7 +48,6 @@ class User {
   };
 }
 
-// Sentinel so copyWith can distinguish "set to null" vs "leave unchanged"
 const _unset = Object();
 
 class AuthState {
@@ -66,7 +65,6 @@ class AuthState {
     this.isGuest = false,
   });
 
-  // FIX #2 — nullable fields (user, error) can now be explicitly cleared
   AuthState copyWith({
     bool? isLoading,
     Object? user = _unset,
@@ -76,8 +74,8 @@ class AuthState {
   }) {
     return AuthState(
       isLoading:       isLoading       ?? this.isLoading,
-      user:            user       == _unset ? this.user       : user       as User?,
-      error:           error      == _unset ? this.error      : error      as String?,
+      user:            user  == _unset ? this.user  : user  as User?,
+      error:           error == _unset ? this.error : error as String?,
       isAuthenticated: isAuthenticated ?? this.isAuthenticated,
       isGuest:         isGuest         ?? this.isGuest,
     );
@@ -140,7 +138,8 @@ class AuthProvider extends StateNotifier<AuthState> {
     }
   }
 
-  Future<void> register({
+  /// Returns true on success, false on failure.
+  Future<bool> register({
     required String name,
     required String email,
     required String password,
@@ -159,34 +158,48 @@ class AuthProvider extends StateNotifier<AuthState> {
       if (response.user != null) {
         final uid = response.user!.id;
 
-        // FIX #3 — insert profiles row immediately so _loadProfile never 404s
-        await _client.from('profiles').upsert({
-          'id':      uid,
-          'name':    name,
-          'email':   email,
-          'phone':   phone,
-          'address': address,
-        });
+        // Attempt to save profile now. This may fail if Supabase RLS blocks
+        // writes for unconfirmed users — we catch it silently so it never
+        // prevents navigating to OTP. Profile will be saved after OTP.
+        try {
+          await _client.from('profiles').upsert({
+            'id':      uid,
+            'name':    name,
+            'email':   email,
+            'phone':   phone,
+            'address': address,
+          });
+        } catch (upsertErr) {
+          debugPrint('[AuthProvider] profiles upsert skipped (will retry after OTP): $upsertErr');
+        }
 
         await LocalStorage.saveUserData(
           userId:    uid,
           userName:  name,
           userEmail: email,
         );
-        state = state.copyWith(isLoading: false);
+
+        // Auth user was created — go to OTP
+        state = state.copyWith(isLoading: false, error: null);
+        return true;
       } else {
         state = state.copyWith(
           isLoading: false,
           error: 'Registration failed. Please try again.',
         );
+        return false;
       }
     } on AuthException catch (e) {
+      debugPrint('[AuthProvider] register AuthException: ${e.message}');
       state = state.copyWith(isLoading: false, error: e.message);
-    } catch (_) {
+      return false;
+    } catch (e) {
+      debugPrint('[AuthProvider] register unexpected error: $e');
       state = state.copyWith(
         isLoading: false,
         error: 'Registration failed. Please try again.',
       );
+      return false;
     }
   }
 
@@ -270,7 +283,6 @@ class AuthProvider extends StateNotifier<AuthState> {
     await _client.auth.resetPasswordForEmail(email);
   }
 
-  // FIX #2 — clearError now properly sets error to null
   void clearError() => state = state.copyWith(error: null);
 }
 
