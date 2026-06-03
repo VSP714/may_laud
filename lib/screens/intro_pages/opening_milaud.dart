@@ -1,3 +1,4 @@
+import 'package:may_laud/theme/app_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:may_laud/screens/intro_pages/intro_page_design.dart';
@@ -89,8 +90,8 @@ class _OpeningScreenState extends State<OpeningScreen>
                     begin: Alignment(-0.32, 0.14),
                     end: Alignment(1.32, 0.86),
                     colors: [
-                      Color(0xFF4C229C),
-                      Color(0xFF643EB5),
+                      AppColors.heritagePurple,
+                      AppColors.riverFlow,
                     ],
                   ),
                 ),
@@ -121,7 +122,7 @@ class _OpeningScreenState extends State<OpeningScreen>
                             'MILAUD',
                             style: TextStyle(
                               fontFamily: 'Montserrat',
-                              color: Colors.white,
+                              color: AppColors.neutralWhite,
                               fontSize: 45.sp,
                               fontWeight: FontWeight.bold,
                             ),
@@ -130,7 +131,7 @@ class _OpeningScreenState extends State<OpeningScreen>
                           Text(
                             'MILAOR, CAMARINES SUR',
                             style: TextStyle(
-                              color: Color(0xCCEADDFF),
+                              color: AppColors.neutralWhite.withValues(alpha: 0.8),
                               fontSize: 12.sp,
                               letterSpacing: 2,
                             ),
@@ -150,7 +151,7 @@ class _OpeningScreenState extends State<OpeningScreen>
                                 minHeight: 4.h,
                                 backgroundColor: Colors.white24,
                                 valueColor: const AlwaysStoppedAnimation<Color>(
-                                    Colors.white),
+                                    AppColors.neutralWhite),
                               ),
                             ),
                             SizedBox(height: 12.h),

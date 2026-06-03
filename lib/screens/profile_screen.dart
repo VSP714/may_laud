@@ -9,11 +9,11 @@ import 'package:may_laud/theme/app_colors.dart';
 import 'profile/quick_settings_sheet.dart';
 import 'profile/change_photo_sheet.dart';
 import 'profile/edit_profile_sheet.dart';
-import 'profile/change_password_sheet.dart';
 import 'profile/privacy_security_sheet.dart';
 import 'profile/notification_preferences_sheet.dart';
 import 'profile/help_support_sheet.dart';
 import 'profile/about_milaud_sheet.dart';
+import 'password/create_new_password_screen.dart';
 
 // Brand colors now sourced from AppColors — no local duplication needed.
 
@@ -185,7 +185,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
 
   Widget _buildAccountActionsCard(User? user, AppColorScheme colors) => _buildCard('Account', colors, children: [
     _actionTile(Icons.edit_outlined,     'Edit Profile',       'Update your personal information',      () => showEditProfileSheet(context, user), colors),
-    _actionTile(Icons.lock_outline,      'Change Password',    'Secure your account with a new password',() => showChangePasswordSheet(context),     colors),
+    _actionTile(Icons.lock_outline,      'Change Password',    'Secure your account with a new password',() => Navigator.push(context, MaterialPageRoute(builder: (_) => const CreateNewPasswordScreen())),     colors),
     _actionTile(Icons.security_outlined, 'Privacy & Security', 'Manage your data and account security', () => showPrivacySecuritySheet(context),    colors),
   ]);
 

@@ -1,3 +1,4 @@
+import 'package:may_laud/theme/app_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -16,17 +17,17 @@ class PrivacySecuritySheet extends ConsumerWidget {
     final isDark = theme.brightness == Brightness.dark;
     final colorScheme = theme.colorScheme;
 
-    final backgroundColor = isDark ? colorScheme.surface : Colors.white;
-    final titleColor = isDark ? colorScheme.onSurface : HomeColors.deepAnchor;
-    final subtitleColor = isDark ? colorScheme.onSurface.withOpacity(0.6) : const Color(0xFF757575);
-    final textColor = isDark ? colorScheme.onSurface : const Color(0xFF424242);
-    final handleColor = isDark ? colorScheme.onSurface.withOpacity(0.2) : Colors.grey[300]!;
-    final dividerColor = isDark ? colorScheme.onSurface.withOpacity(0.12) : const Color(0xFFE0E0E0);
-    final footnoteColor = isDark ? colorScheme.onSurface.withOpacity(0.5) : const Color(0xFF9E9E9E);
-    final chevronColor = isDark ? colorScheme.onSurface.withOpacity(0.3) : const Color(0xFFBDBDBD);
+    final backgroundColor = AppColors.of(context).surface;
+    final titleColor = AppColors.of(context).textPrimary;
+    final subtitleColor = AppColors.of(context).textMuted;
+    final textColor = AppColors.of(context).textSecondary;
+    final handleColor = AppColors.of(context).border;
+    final dividerColor = AppColors.of(context).divider;
+    final footnoteColor = AppColors.of(context).textMuted;
+    final chevronColor = AppColors.of(context).iconMuted;
     
     // Fixed purple accent – matches ProfileScreen
-    const accentColor = HomeColors.heritagePurple;
+    final accentColor = AppColors.of(context).accentPurple;
 
     return Container(
       decoration: BoxDecoration(
@@ -83,14 +84,14 @@ class PrivacySecuritySheet extends ConsumerWidget {
               contentPadding: EdgeInsets.zero,
               leading: const Icon(
                 Icons.delete_outline,
-                color: Color(0xFFD32F2F),
+                color: AppColors.errorDark,
               ),
               title: Text(
                 'Delete Account',
                 style: TextStyle(
                   fontSize: 15.sp,
                   fontWeight: FontWeight.w600,
-                  color: const Color(0xFFD32F2F),
+                  color: AppColors.errorDark,
                 ),
               ),
               subtitle: Text(
@@ -130,9 +131,9 @@ class PrivacySecuritySheet extends ConsumerWidget {
     final isDark = theme.brightness == Brightness.dark;
     final colorScheme = theme.colorScheme;
     
-    final dialogBgColor = isDark ? colorScheme.surface : Colors.white;
-    final textColor = isDark ? colorScheme.onSurface : const Color(0xFF424242);
-    final cancelTextColor = isDark ? colorScheme.onSurface.withOpacity(0.7) : const Color(0xFF757575);
+    final dialogBgColor = AppColors.of(context).surface;
+    final textColor = AppColors.of(context).textSecondary;
+    final cancelTextColor = AppColors.of(context).textMuted;
 
     showDialog(
       context: context,
@@ -146,7 +147,7 @@ class PrivacySecuritySheet extends ConsumerWidget {
           style: TextStyle(
             fontSize: 20.sp,
             fontWeight: FontWeight.w700,
-            color: const Color(0xFFD32F2F),
+            color: AppColors.errorDark,
           ),
         ),
         content: Text(
@@ -171,8 +172,8 @@ class PrivacySecuritySheet extends ConsumerWidget {
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFFD32F2F),
-              foregroundColor: Colors.white,
+              backgroundColor: AppColors.errorDark,
+              foregroundColor: AppColors.neutralWhite,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12.r),
               ),

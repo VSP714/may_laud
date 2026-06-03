@@ -10,6 +10,7 @@ import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 
 import '../../home/home.dart';
+import 'package:may_laud/theme/app_theme.dart';
 import '../../home/nav_bar_button.dart';
 import '../../../services/app_services.dart';
 import '../../../utils/guest_guard.dart'; // ✅ Import guest guard
@@ -68,9 +69,9 @@ class _CitizenReportScreenState extends ConsumerState<CitizenReportScreen> {
   Color get _cardBg      => _isDark ? _darkCard     : ReportColors.cardWhite;
   Color get _titleText   => _isDark ? Colors.white  : ReportColors.deepAnchor;
   Color get _bodyText    => _isDark ? const Color(0xFFCFCFE8) : const Color(0xFF374151);
-  Color get _mutedText   => _isDark ? Colors.white60 : Colors.grey.shade500;
+  Color get _mutedText   => _isDark ? Colors.white60 : AppColors.neutralGray500;
   Color get _inputFill   => _isDark ? _darkElevated : ReportColors.warmHearth;
-  Color get _borderColor => _isDark ? Colors.white.withValues(alpha: 0.10) : Colors.grey.shade200;
+  Color get _borderColor => _isDark ? Colors.white.withValues(alpha: 0.10) : AppColors.neutralGray200;
 
   final _formKey = GlobalKey<FormState>();
   final TextEditingController _titleController = TextEditingController();
@@ -854,7 +855,7 @@ class _CitizenReportScreenState extends ConsumerState<CitizenReportScreen> {
               width: 40.w,
               height: 4.h,
               decoration: BoxDecoration(
-                  color: _isDark ? Colors.white.withValues(alpha: 0.18) : Colors.grey[300],
+                  color: _isDark ? Colors.white.withValues(alpha: 0.18) : AppColors.neutralGray200,
                   borderRadius: BorderRadius.circular(2.r)),
             ),
             SizedBox(height: 22.h),
@@ -1070,7 +1071,7 @@ class _CitizenReportScreenState extends ConsumerState<CitizenReportScreen> {
       decoration: InputDecoration(
         hintText: hint,
         hintStyle:
-            GoogleFonts.inter(fontSize: 14.sp, color: const Color(0xFFBDBDBD)),
+            GoogleFonts.inter(fontSize: 14.sp, color: AppColors.neutralGray500),
         prefixIcon: Padding(
           padding: EdgeInsets.only(left: 4.w),
           child: Icon(icon,

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
-
+import 'package:may_laud/theme/app_theme.dart';
 import '../../../providers/content_providers.dart';
 import '../../home/home.dart';
 
@@ -509,7 +509,7 @@ class AnnouncementFeedScreen extends StatelessWidget {
               style: GoogleFonts.inter(
                 fontSize: 14.sp,
                 height: 1.75,
-                color: const Color(0xFF495057),
+                color: AppColors.neutralGray800,
               ),
             ),
           ),

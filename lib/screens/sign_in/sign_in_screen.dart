@@ -1,5 +1,5 @@
-
 import 'package:flutter/material.dart';
+import 'package:may_laud/theme/app_theme.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:may_laud/providers/auth_provider.dart';
@@ -56,25 +56,25 @@ class _WelcomeBackScreenState extends ConsumerState<WelcomeBackScreen> {
     final cs = theme.colorScheme;
 
     // Adaptive colors
-    final scaffoldBg = isDark ? cs.background : Colors.white;
-    final bubbleBg1 = isDark ? cs.primary.withOpacity(0.12) : const Color(0xFFEDE7F6);
+    final scaffoldBg = isDark ? cs.background : AppColors.neutralWhite;
+    final bubbleBg1 = isDark ? cs.primary.withOpacity(0.12) : AppColors.heritagePurple.withValues(alpha: 0.12);
     final bubbleBg2Gradient = isDark
         ? [cs.primary.withOpacity(0.10), Colors.transparent]
-        : [const Color(0xFFD1C4E9).withOpacity(0.35), Colors.transparent];
+        : [AppColors.riverFlow.withOpacity(0.35), Colors.transparent];
     final bubbleBg3Gradient = isDark
         ? [cs.primary.withOpacity(0.12), Colors.transparent]
-        : [const Color(0xFFD1C4E9).withOpacity(0.4), Colors.transparent];
-    final titleColor = isDark ? cs.onBackground : const Color(0xFF2E0C6D);
-    final subtitleColor = isDark ? cs.onBackground.withOpacity(0.6) : const Color(0xFF6E6A75);
-    final formBg = isDark ? cs.surface : const Color(0xFFF6F2FC);
-    final inputBg = isDark ? cs.background : Colors.white;
-    final inputBorder = isDark ? cs.onSurface.withOpacity(0.15) : const Color(0xFFDDDDDD);
-    final inputIconColor = isDark ? cs.onSurface.withOpacity(0.5) : const Color(0xFF666666);
-    final labelColor = isDark ? cs.onSurface.withOpacity(0.85) : const Color(0xFF555555);
-    final hintColor = isDark ? cs.onSurface.withOpacity(0.45) : const Color(0xFF888888);
-    final accentPurple = isDark ? cs.primary : const Color(0xFF4C229C);
-    final guestBg = isDark ? cs.surface : Colors.white;
-    final guestText = isDark ? cs.primary : Colors.deepPurple;
+        : [AppColors.riverFlow.withOpacity(0.4), Colors.transparent];
+    final titleColor = isDark ? cs.onBackground : AppColors.deepAnchor;
+    final subtitleColor = isDark ? cs.onBackground.withOpacity(0.6) : AppColors.neutralGray500;
+    final formBg = isDark ? cs.surface : AppColors.warmHearth;
+    final inputBg = isDark ? cs.background : AppColors.neutralWhite;
+    final inputBorder = isDark ? cs.onSurface.withOpacity(0.15) : AppColors.neutralGray200;
+    final inputIconColor = isDark ? cs.onSurface.withOpacity(0.5) : AppColors.neutralGray500;
+    final labelColor = isDark ? cs.onSurface.withOpacity(0.85) : AppColors.neutralGray800;
+    final hintColor = isDark ? cs.onSurface.withOpacity(0.45) : AppColors.neutralGray500;
+    final accentPurple = isDark ? cs.primary : AppColors.heritagePurple;
+    final guestBg = isDark ? cs.surface : AppColors.neutralWhite;
+    final guestText = isDark ? cs.primary : AppColors.heritagePurple;
     final linkColor = isDark ? cs.onBackground.withOpacity(0.6) : Colors.black54;
 
     return Scaffold(
@@ -134,7 +134,7 @@ class _WelcomeBackScreenState extends ConsumerState<WelcomeBackScreen> {
                     decoration: BoxDecoration(
                       boxShadow: [
                         BoxShadow(
-                          color: const Color(0xFF7B2CBF).withOpacity(0.18),
+                          color: AppColors.riverFlow.withOpacity(0.18),
                           blurRadius: 25.r,
                           spreadRadius: 2,
                         ),
@@ -164,7 +164,7 @@ class _WelcomeBackScreenState extends ConsumerState<WelcomeBackScreen> {
                       borderRadius: BorderRadius.circular(28.r),
                       boxShadow: [
                         BoxShadow(
-                          color: const Color(0xFF7B2CBF).withOpacity(isDark ? 0.05 : 0.08),
+                          color: AppColors.riverFlow.withOpacity(isDark ? 0.05 : 0.08),
                           blurRadius: 20.r,
                           offset: Offset(0, 8.h),
                         ),
@@ -311,13 +311,13 @@ class _WelcomeBackScreenState extends ConsumerState<WelcomeBackScreen> {
                                 borderRadius: BorderRadius.circular(40.r),
                                 gradient: const LinearGradient(
                                   colors: [
-                                    Color(0xFF4C229C),
-                                    Color(0xFF643EB5)
+                                    AppColors.heritagePurple,
+                                    AppColors.riverFlow
                                   ],
                                 ),
                                 boxShadow: [
                                   BoxShadow(
-                                    color: const Color(0xFF4C229C)
+                                    color: AppColors.heritagePurple
                                         .withOpacity(0.3),
                                     blurRadius: 12.r,
                                     offset: Offset(0, 4.h),
@@ -328,7 +328,7 @@ class _WelcomeBackScreenState extends ConsumerState<WelcomeBackScreen> {
                                 child: Text(
                                   "Sign in",
                                   style: TextStyle(
-                                      color: Colors.white,
+                                      color: AppColors.neutralWhite,
                                       fontSize: 18.sp,
                                       fontWeight: FontWeight.bold),
                                 ),
@@ -341,7 +341,7 @@ class _WelcomeBackScreenState extends ConsumerState<WelcomeBackScreen> {
                             child: Text(
                               authState.error!,
                               style: TextStyle(
-                                  color: Colors.red, fontSize: 13.sp),
+                                  color: AppColors.error, fontSize: 13.sp),
                             ),
                           ),
                         SizedBox(height: 14.h),
@@ -399,7 +399,7 @@ class _WelcomeBackScreenState extends ConsumerState<WelcomeBackScreen> {
                                   : null,
                               boxShadow: [
                                 BoxShadow(
-                                  color: const Color(0xFF4C229C)
+                                  color: AppColors.heritagePurple
                                       .withOpacity(isDark ? 0.08 : 0.15),
                                   blurRadius: 12.r,
                                   offset: Offset(0, 4.h),
@@ -440,9 +440,9 @@ class _WavePainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final fillColor =
-        isDark ? cs.primary.withOpacity(0.08) : const Color(0xFFF3F0FA);
+        isDark ? cs.primary.withOpacity(0.08) : AppColors.warmHearth;
     final strokeColor =
-        isDark ? cs.primary.withOpacity(0.25) : const Color(0xFFB39DDB);
+        isDark ? cs.primary.withOpacity(0.25) : AppColors.riverFlow;
 
     final fillWave = Paint()
       ..color = fillColor

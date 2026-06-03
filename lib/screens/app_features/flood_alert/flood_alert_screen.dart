@@ -5,7 +5,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../../../theme/app_colors.dart';
+import '../../../theme/app_theme.dart';
 
 // ─── BRAND PALETTE — delegates to AppColors (single source of truth) ───
 class FloodColors {
@@ -47,15 +47,12 @@ class _FloodAlertScreenState extends State<FloodAlertScreen> {
   bool _isDark = false;
   ColorScheme? _cs;
 
-  // Dark mode palette — matches home.dart's deep navy-purple brand tones
-  static const Color _darkSurface  = Color(0xFF0D0D1A);
-  static const Color _darkCard     = Color(0xFF1E1E2E);
-
-  Color get _scaffoldBg => _isDark ? _darkSurface : FloodColors.warmHearth;
-  Color get _cardBg     => _isDark ? _darkCard    : FloodColors.cardWhite;
-  Color get _titleText  => _isDark ? Colors.white : FloodColors.deepAnchor;
-  Color get _bodyText   => _isDark ? const Color(0xFFCFCFE8) : const Color(0xFF374151);
-  Color get _mutedText  => _isDark ? Colors.white60 : Colors.grey.shade500;
+  AppColorScheme get _colors => AppColors.of(context);
+  Color get _scaffoldBg => _isDark ? AppColors.dark.background  : AppColors.warmHearth;
+  Color get _cardBg     => _isDark ? AppColors.dark.cardSurface : AppColors.cardWhite;
+  Color get _titleText  => _colors.textPrimary;
+  Color get _bodyText   => _colors.textSecondary;
+  Color get _mutedText  => _colors.textMuted;
 
   final RefreshController _refreshController = RefreshController();
   late Map<String, dynamic> _floodData;
@@ -182,7 +179,7 @@ class _FloodAlertScreenState extends State<FloodAlertScreen> {
         onRefresh: _onRefresh,
         header: const WaterDropMaterialHeader(
           backgroundColor: FloodColors.heritagePurple,
-          color: Colors.white,
+          color: AppColors.neutralWhite,
         ),
         child: CustomScrollView(
           physics: const BouncingScrollPhysics(),
@@ -254,7 +251,7 @@ class _FloodAlertScreenState extends State<FloodAlertScreen> {
                               style: GoogleFonts.poppins(
                                 fontSize: 12.sp,
                                 fontWeight: FontWeight.w700,
-                                color: Colors.white54,
+                                color: AppColors.neutralWhite.withValues(alpha: 0.54),
                                 letterSpacing: 3,
                               ),
                             ),
@@ -263,7 +260,7 @@ class _FloodAlertScreenState extends State<FloodAlertScreen> {
                               style: GoogleFonts.poppins(
                                 fontSize: 22.sp,
                                 fontWeight: FontWeight.w700,
-                                color: Colors.white,
+                                color: AppColors.neutralWhite,
                               ),
                             ),
                           ],
@@ -381,7 +378,7 @@ class _FloodAlertScreenState extends State<FloodAlertScreen> {
                   child: CircularProgressIndicator(
                     value: percentage,
                     strokeWidth: 12.w,
-                    backgroundColor: Colors.grey[200],
+                    backgroundColor: AppColors.neutralGray200,
                     valueColor: AlwaysStoppedAnimation(statusColor),
                     strokeCap: StrokeCap.round,
                   ),
@@ -509,7 +506,7 @@ class _FloodAlertScreenState extends State<FloodAlertScreen> {
         borderRadius: BorderRadius.circular(20.r),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.04),
+            color: AppColors.neutralBlack.withValues(alpha: 0.04),
             blurRadius: 12,
             offset: const Offset(0, 4),
           ),
@@ -875,7 +872,7 @@ class _FloodAlertScreenState extends State<FloodAlertScreen> {
         borderRadius: BorderRadius.circular(20.r),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.04),
+            color: AppColors.neutralBlack.withValues(alpha: 0.04),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -1011,14 +1008,14 @@ class _FloodAlertScreenState extends State<FloodAlertScreen> {
         children: [
           Row(
             children: [
-              const Icon(Icons.bolt_rounded, color: Colors.amber, size: 24),
+              const Icon(Icons.bolt_rounded, color: AppColors.warning, size: 24),
               SizedBox(width: 8.w),
               Text(
                 'EMERGENCY ACTIONS',
                 style: GoogleFonts.poppins(
                   fontSize: 14.sp,
                   fontWeight: FontWeight.w700,
-                  color: Colors.white54,
+                  color: AppColors.neutralWhite.withValues(alpha: 0.54),
                   letterSpacing: 2,
                 ),
               ),
@@ -1030,7 +1027,7 @@ class _FloodAlertScreenState extends State<FloodAlertScreen> {
             style: GoogleFonts.poppins(
               fontSize: 22.sp,
               fontWeight: FontWeight.w700,
-              color: Colors.white,
+              color: AppColors.neutralWhite,
             ),
           ),
           SizedBox(height: 20.h),
@@ -1079,7 +1076,7 @@ class _FloodAlertScreenState extends State<FloodAlertScreen> {
     required VoidCallback onTap,
   }) {
     return Material(
-      color: Colors.white.withValues(alpha: 0.15),
+      color: AppColors.neutralWhite.withValues(alpha: 0.15),
       borderRadius: BorderRadius.circular(18.r),
       child: InkWell(
         borderRadius: BorderRadius.circular(18.r),
@@ -1088,7 +1085,7 @@ class _FloodAlertScreenState extends State<FloodAlertScreen> {
           padding: EdgeInsets.symmetric(vertical: 18.h),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(18.r),
-            border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
+            border: Border.all(color: AppColors.neutralWhite.withValues(alpha: 0.2)),
           ),
           child: Column(
             children: [
@@ -1106,7 +1103,7 @@ class _FloodAlertScreenState extends State<FloodAlertScreen> {
                     ),
                   ],
                 ),
-                child: Icon(icon, color: Colors.white, size: 22.sp),
+                child: Icon(icon, color: AppColors.neutralWhite, size: 22.sp),
               ),
               SizedBox(height: 10.h),
               Text(
@@ -1115,7 +1112,7 @@ class _FloodAlertScreenState extends State<FloodAlertScreen> {
                 style: GoogleFonts.inter(
                   fontSize: 13.sp,
                   fontWeight: FontWeight.w600,
-                  color: Colors.white,
+                  color: AppColors.neutralWhite,
                   height: 1.3,
                 ),
               ),
@@ -1152,7 +1149,7 @@ class _FloodAlertScreenState extends State<FloodAlertScreen> {
                 width: 40.w,
                 height: 4.h,
                 decoration: BoxDecoration(
-                  color: _isDark ? Colors.white.withValues(alpha: 0.18) : Colors.grey[300],
+                  color: _colors.border,
                   borderRadius: BorderRadius.circular(2.r),
                 ),
               ),
@@ -1172,7 +1169,7 @@ class _FloodAlertScreenState extends State<FloodAlertScreen> {
             _buildDetailRow(
                 'Station', alert['station'], FloodColors.heritagePurple),
             SizedBox(height: 12.h),
-            _buildDetailRow('Last Updated', alert['updated'], Colors.grey),
+            _buildDetailRow('Last Updated', alert['updated'], AppColors.neutralGray500),
             SizedBox(height: 20.h),
             Text(
               'Residents in this area are advised to monitor water levels and follow safety guidelines issued by MDRRMO.',

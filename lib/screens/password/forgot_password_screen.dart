@@ -1,6 +1,7 @@
 // ignore_for_file: deprecated_member_use
 
 import 'package:flutter/material.dart';
+import 'package:may_laud/theme/app_theme.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:may_laud/screens/otp_verification/forgot_password_otp_screen.dart';
@@ -78,18 +79,18 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
     final cs = theme.colorScheme;
 
     // Adaptive colors matching sign-in screen
-    final scaffoldBg = isDark ? cs.background : Colors.white;
-    final bubbleBg1 = isDark ? cs.primary.withOpacity(0.12) : const Color(0xFFEDE7F6);
+    final scaffoldBg = isDark ? cs.background : AppColors.neutralWhite;
+    final bubbleBg1 = isDark ? cs.primary.withOpacity(0.12) : AppColors.heritagePurple.withValues(alpha: 0.12);
     final bubbleBg2Gradient = isDark
         ? [cs.primary.withOpacity(0.10), Colors.transparent]
-        : [const Color(0xFFD1C4E9).withOpacity(0.35), Colors.transparent];
-    final titleColor = isDark ? cs.onBackground : const Color(0xFF2E0C6D);
-    final subtitleColor = isDark ? cs.onBackground.withOpacity(0.6) : const Color(0xFF6E6A75);
-    final formBg = isDark ? cs.surface : const Color(0xFFF6F2FC);
-    final inputBg = isDark ? cs.background : Colors.white;
-    final inputBorder = isDark ? cs.onSurface.withOpacity(0.15) : const Color(0xFFDDDDDD);
-    final inputIconColor = isDark ? cs.onSurface.withOpacity(0.5) : const Color(0xFF666666);
-    final labelColor = isDark ? cs.onSurface.withOpacity(0.85) : const Color(0xFF555555);
+        : [AppColors.riverFlow.withOpacity(0.35), Colors.transparent];
+    final titleColor = isDark ? cs.onBackground : AppColors.deepAnchor;
+    final subtitleColor = isDark ? cs.onBackground.withOpacity(0.6) : AppColors.neutralGray500;
+    final formBg = isDark ? cs.surface : AppColors.warmHearth;
+    final inputBg = isDark ? cs.background : AppColors.neutralWhite;
+    final inputBorder = isDark ? cs.onSurface.withOpacity(0.15) : AppColors.neutralGray200;
+    final inputIconColor = isDark ? cs.onSurface.withOpacity(0.5) : AppColors.neutralGray500;
+    final labelColor = isDark ? cs.onSurface.withOpacity(0.85) : AppColors.neutralGray800;
 
     return Scaffold(
       backgroundColor: scaffoldBg,
@@ -128,7 +129,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                 gradient: RadialGradient(
                   colors: isDark
                       ? [cs.primary.withOpacity(0.12), Colors.transparent]
-                      : [const Color(0xFFD1C4E9).withOpacity(0.4), Colors.transparent],
+                      : [AppColors.riverFlow.withOpacity(0.4), Colors.transparent],
                 ),
               ),
             ),
@@ -154,7 +155,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                     decoration: BoxDecoration(
                       boxShadow: [
                         BoxShadow(
-                          color: const Color(0xFF7B2CBF).withOpacity(0.18),
+                          color: AppColors.riverFlow.withOpacity(0.18),
                           blurRadius: 25.r,
                           spreadRadius: 2,
                         ),
@@ -188,7 +189,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                       borderRadius: BorderRadius.circular(28.r),
                       boxShadow: [
                         BoxShadow(
-                          color: const Color(0xFF7B2CBF).withOpacity(isDark ? 0.05 : 0.08),
+                          color: AppColors.riverFlow.withOpacity(isDark ? 0.05 : 0.08),
                           blurRadius: 20.r,
                           offset: Offset(0, 8.h),
                         ),
@@ -250,7 +251,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                           Text(
                             _errorMessage!,
                             style: TextStyle(
-                              color: Colors.red,
+                              color: AppColors.error,
                               fontSize: 13.sp,
                             ),
                           ),
@@ -267,15 +268,15 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                               borderRadius: BorderRadius.circular(40.r),
                               gradient: _isLoading
                                   ? LinearGradient(
-                                      colors: [Colors.grey.shade400, Colors.grey.shade500])
+                                      colors: [AppColors.neutralGray200, AppColors.neutralGray500])
                                   : const LinearGradient(
-                                      colors: [Color(0xFF4C229C), Color(0xFF643EB5)],
+                                      colors: [AppColors.heritagePurple, AppColors.riverFlow],
                                     ),
                               boxShadow: _isLoading
                                   ? []
                                   : [
                                       BoxShadow(
-                                        color: const Color(0xFF4C229C).withOpacity(0.3),
+                                        color: AppColors.heritagePurple.withOpacity(0.3),
                                         blurRadius: 12.r,
                                         offset: Offset(0, 4.h),
                                       ),
@@ -287,14 +288,14 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                                       width: 24.w,
                                       height: 24.w,
                                       child: const CircularProgressIndicator(
-                                        color: Colors.white,
+                                        color: AppColors.neutralWhite,
                                         strokeWidth: 2.5,
                                       ),
                                     )
                                   : Text(
                                       "Send Reset Code",
                                       style: TextStyle(
-                                        color: Colors.white,
+                                        color: AppColors.neutralWhite,
                                         fontSize: 18.sp,
                                         fontWeight: FontWeight.bold,
                                       ),
@@ -325,9 +326,9 @@ class _WavePainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final fillColor =
-        isDark ? cs.primary.withOpacity(0.08) : const Color(0xFFF3F0FA);
+        isDark ? cs.primary.withOpacity(0.08) : AppColors.warmHearth;
     final strokeColor =
-        isDark ? cs.primary.withOpacity(0.25) : const Color(0xFFB39DDB);
+        isDark ? cs.primary.withOpacity(0.25) : AppColors.riverFlow;
 
     final fillWave = Paint()
       ..color = fillColor

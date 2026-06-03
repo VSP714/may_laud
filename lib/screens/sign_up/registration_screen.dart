@@ -1,5 +1,6 @@
 // lib/screens/sign_up/registration_screen.dart
 import 'package:flutter/material.dart';
+import 'package:may_laud/theme/app_theme.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:may_laud/providers/auth_provider.dart';
@@ -131,6 +132,9 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
         MaterialPageRoute(
           builder: (_) => VerificationScreen(
             email: _emailController.text.trim(),
+            name: '${_firstNameController.text.trim()} ${_lastNameController.text.trim()}',
+            phone: rawPhone,
+            address: _selectedBarangay!,
           ),
         ),
       );
@@ -139,7 +143,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(authState.error ?? 'Registration failed. Please try again.'),
-          backgroundColor: Colors.red,
+          backgroundColor: AppColors.error,
         ),
       );
     }
@@ -158,7 +162,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
           builder: (ctx, setModalState) {
             return Container(
               decoration: BoxDecoration(
-                color: sheetDark ? const Color(0xFF1A1A2E) : Colors.white,
+                color: sheetDark ? AppColors.deepAnchor : AppColors.neutralWhite,
                 borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
               ),
               child: Padding(
@@ -175,7 +179,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                       width: 50.w,
                       height: 5.h,
                       decoration: BoxDecoration(
-                        color: sheetDark ? Colors.white24 : Colors.grey.shade400,
+                        color: sheetDark ? Colors.white24 : AppColors.neutralGray200,
                         borderRadius: BorderRadius.circular(10.r),
                       ),
                     ),
@@ -189,13 +193,13 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                           style: TextStyle(
                             fontSize: 20.sp,
                             fontWeight: FontWeight.bold,
-                            color: sheetDark ? const Color(0xFFB39DDB) : const Color(0xFF6A1B9A),
+                            color: sheetDark ? AppColors.riverFlow : AppColors.heritagePurple,
                           ),
                         ),
                         GestureDetector(
                           onTap: () => Navigator.pop(ctx),
                           child: Icon(Icons.close,
-                              color: sheetDark ? const Color(0xFFB39DDB) : const Color(0xFF6A1B9A)),
+                              color: sheetDark ? AppColors.riverFlow : AppColors.heritagePurple),
                         ),
                       ],
                     ),
@@ -219,18 +223,18 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                               decoration: BoxDecoration(
                                 color: _selectedBarangay == item
                                     ? (sheetDark
-                                        ? const Color(0xFF3D2070)
+                                        ? AppColors.heritagePurple.withValues(alpha: 0.5)
                                         : const Color(0xFFF3E5F5))
                                     : (sheetDark
-                                        ? const Color(0xFF252535)
-                                        : Colors.white),
+                                        ? AppColors.deepAnchor
+                                        : AppColors.neutralWhite),
                                 borderRadius: BorderRadius.circular(12.r),
                                 border: Border.all(
                                   color: _selectedBarangay == item
-                                      ? const Color(0xFF6A1B9A)
+                                      ? AppColors.heritagePurple
                                       : (sheetDark
                                           ? Colors.white12
-                                          : const Color(0xFFE0E0E0)),
+                                          : AppColors.neutralGray200),
                                   width: 1.5,
                                 ),
                               ),
@@ -245,8 +249,8 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                                       fontWeight: FontWeight.w500,
                                       color: _selectedBarangay == item
                                           ? (sheetDark
-                                              ? const Color(0xFFB39DDB)
-                                              : const Color(0xFF6A1B9A))
+                                              ? AppColors.riverFlow
+                                              : AppColors.heritagePurple)
                                           : (sheetDark
                                               ? Colors.white70
                                               : Colors.black87),
@@ -258,11 +262,11 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                                         : Icons.radio_button_unchecked,
                                     color: _selectedBarangay == item
                                         ? (sheetDark
-                                            ? const Color(0xFFB39DDB)
-                                            : const Color(0xFF6A1B9A))
+                                            ? AppColors.riverFlow
+                                            : AppColors.heritagePurple)
                                         : (sheetDark
                                             ? Colors.white38
-                                            : Colors.grey),
+                                            : AppColors.neutralGray500),
                                   ),
                                 ],
                               ),
@@ -289,35 +293,35 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     final cs = theme.colorScheme;
 
     // Same adaptive colors as sign-in screen
-    final scaffoldBg = isDark ? cs.background : Colors.white;
+    final scaffoldBg = isDark ? cs.background : AppColors.neutralWhite;
     final bubbleBg1 = isDark
         ? cs.primary.withOpacity(0.12)
-        : const Color(0xFFEDE7F6);
+        : AppColors.heritagePurple.withValues(alpha: 0.12);
     final bubbleBg2Gradient = isDark
         ? [cs.primary.withOpacity(0.10), Colors.transparent]
-        : [const Color(0xFFD1C4E9).withOpacity(0.35), Colors.transparent];
+        : [AppColors.riverFlow.withOpacity(0.35), Colors.transparent];
     final bubbleBg3Gradient = isDark
         ? [cs.primary.withOpacity(0.12), Colors.transparent]
-        : [const Color(0xFFD1C4E9).withOpacity(0.4), Colors.transparent];
+        : [AppColors.riverFlow.withOpacity(0.4), Colors.transparent];
     final titleColor =
-        isDark ? cs.onBackground : const Color(0xFF2E0C6D);
+        isDark ? cs.onBackground : AppColors.deepAnchor;
     final subtitleColor = isDark
         ? cs.onBackground.withOpacity(0.6)
-        : const Color(0xFF6E6A75);
-    final formBg = isDark ? cs.surface : const Color(0xFFF6F2FC);
-    final inputBg = isDark ? cs.background : Colors.white;
+        : AppColors.neutralGray500;
+    final formBg = isDark ? cs.surface : AppColors.warmHearth;
+    final inputBg = isDark ? cs.background : AppColors.neutralWhite;
     final inputBorder = isDark
         ? cs.onSurface.withOpacity(0.15)
-        : const Color(0xFFDDDDDD);
+        : AppColors.neutralGray200;
     final inputIconColor = isDark
         ? cs.onSurface.withOpacity(0.5)
-        : const Color(0xFF666666);
+        : AppColors.neutralGray500;
     final labelColor =
-        isDark ? cs.onSurface.withOpacity(0.85) : const Color(0xFF555555);
+        isDark ? cs.onSurface.withOpacity(0.85) : AppColors.neutralGray800;
     final hintColor =
-        isDark ? cs.onSurface.withOpacity(0.45) : const Color(0xFF888888);
+        isDark ? cs.onSurface.withOpacity(0.45) : AppColors.neutralGray500;
     final accentPurple =
-        isDark ? cs.primary : const Color(0xFF4C229C);
+        isDark ? cs.primary : AppColors.heritagePurple;
 
     return Scaffold(
       backgroundColor: scaffoldBg,
@@ -382,7 +386,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                     decoration: BoxDecoration(
                       boxShadow: [
                         BoxShadow(
-                          color: const Color(0xFF7B2CBF).withOpacity(0.18),
+                          color: AppColors.riverFlow.withOpacity(0.18),
                           blurRadius: 25.r,
                           spreadRadius: 2,
                         ),
@@ -415,7 +419,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                       borderRadius: BorderRadius.circular(28.r),
                       boxShadow: [
                         BoxShadow(
-                          color: const Color(0xFF7B2CBF)
+                          color: AppColors.riverFlow
                               .withOpacity(isDark ? 0.05 : 0.08),
                           blurRadius: 20.r,
                           offset: Offset(0, 8.h),
@@ -549,13 +553,13 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                                 borderRadius: BorderRadius.circular(40.r),
                                 gradient: const LinearGradient(
                                   colors: [
-                                    Color(0xFF4C229C),
-                                    Color(0xFF643EB5),
+                                    AppColors.heritagePurple,
+                                    AppColors.riverFlow,
                                   ],
                                 ),
                                 boxShadow: [
                                   BoxShadow(
-                                    color: const Color(0xFF4C229C)
+                                    color: AppColors.heritagePurple
                                         .withOpacity(0.3),
                                     blurRadius: 12.r,
                                     offset: Offset(0, 4.h),
@@ -566,7 +570,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                                 child: Text(
                                   "Register now",
                                   style: TextStyle(
-                                      color: Colors.white,
+                                      color: AppColors.neutralWhite,
                                       fontSize: 18.sp,
                                       fontWeight: FontWeight.bold),
                                 ),
@@ -580,7 +584,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                             child: Text(
                               authState.error!,
                               style: TextStyle(
-                                  color: Colors.red, fontSize: 13.sp),
+                                  color: AppColors.error, fontSize: 13.sp),
                             ),
                           ),
 
@@ -699,7 +703,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
         isDark ? const Color(0xFF2A2A3A) : const Color(0xFFF5F5F5);
     final prefixText =
         isDark ? Colors.white70 : const Color(0xFF333333);
-    final dividerColor = isDark ? Colors.white12 : Colors.grey.shade300;
+    final dividerColor = isDark ? Colors.white12 : AppColors.neutralGray200;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -897,10 +901,10 @@ class _WavePainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     final fillColor = isDark
         ? cs.primary.withOpacity(0.08)
-        : const Color(0xFFF3F0FA);
+        : AppColors.warmHearth;
     final strokeColor = isDark
         ? cs.primary.withOpacity(0.25)
-        : const Color(0xFFB39DDB);
+        : AppColors.riverFlow;
 
     final fillWave = Paint()
       ..color = fillColor

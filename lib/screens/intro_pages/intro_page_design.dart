@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:may_laud/theme/app_theme.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:may_laud/screens/intro_pages/intro_page1.dart';
 import 'package:may_laud/screens/intro_pages/intro_page2.dart';
@@ -68,8 +69,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                     );
                   },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.white,
-                    foregroundColor: Colors.deepPurple,
+                    backgroundColor: AppColors.neutralWhite,
+                    foregroundColor: AppColors.heritagePurple,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(30.r),
                     ),
@@ -98,7 +99,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                     child: Text(
                       'Skip',
                       style: TextStyle(
-                        color: Colors.white,
+                        color: AppColors.neutralWhite,
                         fontSize: 16.sp,
                         fontWeight: FontWeight.bold,
                       ),
@@ -108,8 +109,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                     controller: _controller,
                     count: 3,
                     effect: JumpingDotEffect(
-                      activeDotColor: Colors.white,
-                      dotColor: Colors.white54,
+                      activeDotColor: AppColors.neutralWhite,
+                      dotColor: AppColors.neutralWhite.withValues(alpha: 0.54),
                       dotHeight: 20.h,
                       dotWidth: 20.w,
                       spacing: 15.w,
@@ -126,7 +127,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                     child: Text(
                       'Next',
                       style: TextStyle(
-                        color: Colors.white,
+                        color: AppColors.neutralWhite,
                         fontSize: 16.sp,
                         fontWeight: FontWeight.bold,
                       ),
@@ -165,7 +166,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               height: 100.h,
               width: double.infinity,
               decoration: BoxDecoration(
-                color: Colors.deepPurple,
+                color: AppColors.heritagePurple,
                 borderRadius: BorderRadius.only(
                   topLeft: Radius.circular(30.r),
                   topRight: Radius.circular(30.r),
@@ -173,7 +174,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 boxShadow: [
                   BoxShadow(
                     blurRadius: 10.r,
-                    color: Colors.black26,
+                    color: AppColors.neutralBlack.withValues(alpha: 0.26),
                     offset: Offset(0, -2.h),
                   ),
                 ],

@@ -1,3 +1,4 @@
+import 'package:may_laud/theme/app_theme.dart';
 // lib/screens/success/password_reset_success_screen.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -12,14 +13,14 @@ class SuccessScreen extends StatelessWidget {
     final isDark = theme.brightness == Brightness.dark;
     final cs = theme.colorScheme;
 
-    final scaffoldBg    = isDark ? cs.background : Colors.white;
-    final bubbleBg1     = isDark ? cs.primary.withOpacity(0.12) : const Color(0xFFEDE7F6);
-    final bubble2Colors = isDark ? [cs.primary.withOpacity(0.10), Colors.transparent] : [const Color(0xFFD1C4E9).withOpacity(0.35), Colors.transparent];
-    final bubble3Colors = isDark ? [cs.primary.withOpacity(0.12), Colors.transparent] : [const Color(0xFFD1C4E9).withOpacity(0.4), Colors.transparent];
-    final titleColor    = isDark ? cs.onBackground : const Color(0xFF2E0C6D);
-    final subtitleColor = isDark ? cs.onBackground.withOpacity(0.6) : const Color(0xFF6E6E6E);
-    final accentPurple  = isDark ? cs.primary : const Color(0xFF4C229C);
-    final footerColor   = isDark ? cs.onBackground.withOpacity(0.35) : const Color(0xFF9A9A9A);
+    final scaffoldBg    = AppColors.of(context).surface;
+    final bubbleBg1     = AppColors.of(context).accentPurple.withOpacity(0.12);
+    final bubble2Colors = [AppColors.of(context).accentPurple.withOpacity(0.10), Colors.transparent];
+    final bubble3Colors = [AppColors.of(context).accentPurple.withOpacity(0.12), Colors.transparent];
+    final titleColor    = AppColors.of(context).textPrimary;
+    final subtitleColor = AppColors.of(context).textMuted;
+    final accentPurple  = AppColors.of(context).accentPurple;
+    final footerColor   = AppColors.of(context).textMuted;
 
     return Scaffold(
       backgroundColor: scaffoldBg,
@@ -56,7 +57,10 @@ class SuccessScreen extends StatelessWidget {
             alignment: Alignment.bottomCenter,
             child: SizedBox(
               height: 240.h, width: double.infinity,
-              child: CustomPaint(painter: _SuccessWavePainter(isDark: isDark, cs: cs)),
+              child: CustomPaint(painter: _SuccessWavePainter(
+                AppColors.of(context).formSurface,
+                AppColors.of(context).accentPurple.withOpacity(0.25),
+              )),
             ),
           ),
 
@@ -73,16 +77,16 @@ class SuccessScreen extends StatelessWidget {
                       width: 120.w, height: 120.w,
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
-                        gradient: const LinearGradient(colors: [Color(0xFF4C229C), Color(0xFF643EB5)]),
+                        gradient: LinearGradient(colors: [AppColors.heritagePurple, AppColors.riverFlow]),
                         boxShadow: [
                           BoxShadow(
-                            color: Color(0xFF4C229C).withOpacity(0.3),
+                            color: AppColors.heritagePurple.withOpacity(0.3),
                             blurRadius: 25.r,
                             offset: Offset(0, 10.h),
                           ),
                         ],
                       ),
-                      child: Icon(Icons.check_rounded, color: Colors.white, size: 60.sp),
+                      child: Icon(Icons.check_rounded, color: AppColors.neutralWhite, size: 60.sp),
                     ),
 
                     SizedBox(height: 35.h),
@@ -116,15 +120,15 @@ class SuccessScreen extends StatelessWidget {
                         padding: EdgeInsets.symmetric(vertical: 16.h),
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(40.r),
-                          gradient: const LinearGradient(colors: [Color(0xFF4C229C), Color(0xFF643EB5)]),
+                          gradient: LinearGradient(colors: [AppColors.heritagePurple, AppColors.riverFlow]),
                           boxShadow: [
-                            BoxShadow(color: Color(0xFF4C229C).withOpacity(0.3), blurRadius: 12.r, offset: Offset(0, 6.h)),
+                            BoxShadow(color: AppColors.heritagePurple.withOpacity(0.3), blurRadius: 12.r, offset: Offset(0, 6.h)),
                           ],
                         ),
                         child: Center(
                           child: Text(
                             "Sign in Now",
-                            style: TextStyle(fontSize: 17.sp, fontWeight: FontWeight.w600, color: Colors.white),
+                            style: TextStyle(fontSize: 17.sp, fontWeight: FontWeight.w600, color: AppColors.neutralWhite),
                           ),
                         ),
                       ),
@@ -150,14 +154,12 @@ class SuccessScreen extends StatelessWidget {
 }
 
 class _SuccessWavePainter extends CustomPainter {
-  final bool isDark;
-  final ColorScheme cs;
-  _SuccessWavePainter({required this.isDark, required this.cs});
+  final Color fillColor;
+  final Color strokeColor;
+  const _SuccessWavePainter(this.fillColor, this.strokeColor);
 
   @override
   void paint(Canvas canvas, Size size) {
-    final fillColor   = isDark ? cs.primary.withOpacity(0.08) : const Color(0xFFF3F0FA);
-    final strokeColor = isDark ? cs.primary.withOpacity(0.25) : const Color(0xFFB39DDB);
 
     final fillWave = Paint()..color = fillColor..style = PaintingStyle.fill;
     final lineWave = Paint()..color = strokeColor..style = PaintingStyle.stroke..strokeWidth = 2;
@@ -179,5 +181,6 @@ class _SuccessWavePainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(covariant _SuccessWavePainter old) => old.isDark != isDark;
+  bool shouldRepaint(covariant _SuccessWavePainter old) =>
+      old.fillColor != fillColor || old.strokeColor != strokeColor;
 }

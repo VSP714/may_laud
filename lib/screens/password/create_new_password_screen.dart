@@ -1,6 +1,7 @@
 // ignore_for_file: deprecated_member_use
 
 import 'package:flutter/material.dart';
+import 'package:may_laud/theme/app_theme.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../success/password_reset_success_screen.dart';
@@ -23,7 +24,7 @@ class _CreateNewPasswordScreenState extends State<CreateNewPasswordScreen> {
   bool _isLoading = false;
 
   String strength = "Weak";
-  Color strengthColor = Colors.red;
+  Color strengthColor = AppColors.error;
 
   String errorText = "";
 
@@ -32,10 +33,10 @@ class _CreateNewPasswordScreenState extends State<CreateNewPasswordScreen> {
   void checkStrength(String value) {
     if (value.isEmpty) {
       strength = "Weak";
-      strengthColor = Colors.red;
+      strengthColor = AppColors.error;
     } else if (value.length < 6) {
       strength = "Weak";
-      strengthColor = Colors.red;
+      strengthColor = AppColors.error;
     } else if (value.length < 10) {
       strength = "Medium";
       strengthColor = Colors.orange;
@@ -99,24 +100,20 @@ class _CreateNewPasswordScreenState extends State<CreateNewPasswordScreen> {
     final isDark = theme.brightness == Brightness.dark;
     final cs = theme.colorScheme;
 
-    // Adaptive colors (matching sign in screen)
-    final scaffoldBg = isDark ? cs.background : Colors.white;
-    final bubbleBg1 = isDark ? cs.primary.withOpacity(0.12) : const Color(0xFFEDE7F6);
-    final bubbleBg2Gradient = isDark
-        ? [cs.primary.withOpacity(0.10), Colors.transparent]
-        : [const Color(0xFFD1C4E9).withOpacity(0.35), Colors.transparent];
-    final bubbleBg3Gradient = isDark
-        ? [cs.primary.withOpacity(0.12), Colors.transparent]
-        : [const Color(0xFFD1C4E9).withOpacity(0.4), Colors.transparent];
-    final titleColor = isDark ? cs.onBackground : const Color(0xFF2E0C6D);
-    final subtitleColor = isDark ? cs.onBackground.withOpacity(0.6) : const Color(0xFF6E6A75);
-    final formBg = isDark ? cs.surface : const Color(0xFFF6F2FC);
-    final inputBg = isDark ? cs.background : Colors.white;
-    final inputBorder = isDark ? cs.onSurface.withOpacity(0.15) : const Color(0xFFDDDDDD);
-    final inputIconColor = isDark ? cs.onSurface.withOpacity(0.5) : const Color(0xFF666666);
-    final labelColor = isDark ? cs.onSurface.withOpacity(0.85) : const Color(0xFF555555);
-    final hintColor = isDark ? cs.onSurface.withOpacity(0.45) : const Color(0xFF888888);
-    final accentPurple = isDark ? cs.primary : const Color(0xFF4C229C);
+    // Adaptive colors — always use heritagePurple as accent in both modes
+    const accentPurple = AppColors.heritagePurple;
+    final scaffoldBg = isDark ? cs.background : AppColors.neutralWhite;
+    final bubbleBg1 = AppColors.heritagePurple.withOpacity(0.12);
+    final bubbleBg2Gradient = [AppColors.riverFlow.withOpacity(isDark ? 0.10 : 0.35), Colors.transparent];
+    final bubbleBg3Gradient = [AppColors.heritagePurple.withOpacity(isDark ? 0.12 : 0.4), Colors.transparent];
+    final titleColor = isDark ? cs.onBackground : AppColors.deepAnchor;
+    final subtitleColor = isDark ? cs.onBackground.withOpacity(0.6) : AppColors.neutralGray500;
+    final formBg = isDark ? cs.surface : AppColors.warmHearth;
+    final inputBg = isDark ? cs.background : AppColors.neutralWhite;
+    final inputBorder = isDark ? cs.onSurface.withOpacity(0.15) : AppColors.neutralGray200;
+    final inputIconColor = isDark ? AppColors.heritagePurple.withOpacity(0.7) : AppColors.neutralGray500;
+    final labelColor = isDark ? cs.onSurface.withOpacity(0.85) : AppColors.neutralGray800;
+    final hintColor = isDark ? cs.onSurface.withOpacity(0.45) : AppColors.neutralGray500;
     final linkColor = isDark ? cs.onBackground.withOpacity(0.6) : Colors.black54;
 
     return Scaffold(
@@ -181,7 +178,7 @@ class _CreateNewPasswordScreenState extends State<CreateNewPasswordScreen> {
                         alignment: Alignment.centerLeft,
                         child: IconButton(
                           icon: Icon(Icons.arrow_back_ios,
-                              color: isDark ? cs.primary : const Color(0xFF4C229C)),
+                              color: AppColors.heritagePurple),
                           onPressed: () => Navigator.pop(context),
                         ),
                       ),
@@ -205,7 +202,7 @@ class _CreateNewPasswordScreenState extends State<CreateNewPasswordScreen> {
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       gradient: LinearGradient(
-                        colors: [accentPurple, const Color(0xFF643EB5)],
+                        colors: [accentPurple, AppColors.riverFlow],
                       ),
                       boxShadow: [
                         BoxShadow(
@@ -218,7 +215,7 @@ class _CreateNewPasswordScreenState extends State<CreateNewPasswordScreen> {
                     child: Icon(
                       Icons.lock_reset,
                       size: 50.sp,
-                      color: Colors.white,
+                      color: AppColors.neutralWhite,
                     ),
                   ),
 
@@ -255,7 +252,7 @@ class _CreateNewPasswordScreenState extends State<CreateNewPasswordScreen> {
                       borderRadius: BorderRadius.circular(28.r),
                       boxShadow: [
                         BoxShadow(
-                          color: const Color(0xFF7B2CBF).withOpacity(isDark ? 0.05 : 0.08),
+                          color: AppColors.riverFlow.withOpacity(isDark ? 0.05 : 0.08),
                           blurRadius: 20.r,
                           offset: Offset(0, 8.h),
                         ),
@@ -392,7 +389,7 @@ class _CreateNewPasswordScreenState extends State<CreateNewPasswordScreen> {
                           Text(
                             errorText,
                             style: TextStyle(
-                                color: Colors.red, fontSize: 13.sp),
+                                color: AppColors.error, fontSize: 13.sp),
                           ),
                         ],
 
@@ -410,7 +407,7 @@ class _CreateNewPasswordScreenState extends State<CreateNewPasswordScreen> {
                               decoration: BoxDecoration(
                                 borderRadius: BorderRadius.circular(40.r),
                                 gradient: LinearGradient(
-                                  colors: [accentPurple, const Color(0xFF643EB5)],
+                                  colors: [accentPurple, AppColors.riverFlow],
                                 ),
                                 boxShadow: [
                                   BoxShadow(
@@ -424,7 +421,7 @@ class _CreateNewPasswordScreenState extends State<CreateNewPasswordScreen> {
                                 child: Text(
                                   "Reset Password",
                                   style: TextStyle(
-                                      color: Colors.white,
+                                      color: AppColors.neutralWhite,
                                       fontSize: 18.sp,
                                       fontWeight: FontWeight.bold),
                                 ),
@@ -441,13 +438,13 @@ class _CreateNewPasswordScreenState extends State<CreateNewPasswordScreen> {
                             Icon(
                               Icons.lock_outline,
                               size: 16.w,
-                              color: isDark ? cs.primary.withOpacity(0.6) : const Color(0xFF4C229C).withOpacity(0.6),
+                              color: AppColors.heritagePurple.withOpacity(0.6),
                             ),
                             SizedBox(width: 8.w),
                             Text(
                               'End-to-end encrypted',
                               style: TextStyle(
-                                color: isDark ? cs.primary.withOpacity(0.6) : const Color(0xFF4C229C).withOpacity(0.6),
+                                color: AppColors.heritagePurple.withOpacity(0.6),
                                 fontSize: 13.sp,
                                 fontWeight: FontWeight.w600,
                               ),
@@ -478,9 +475,9 @@ class _WavePainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final fillColor =
-        isDark ? cs.primary.withOpacity(0.08) : const Color(0xFFF3F0FA);
+        isDark ? AppColors.heritagePurple.withOpacity(0.08) : AppColors.warmHearth;
     final strokeColor =
-        isDark ? cs.primary.withOpacity(0.25) : const Color(0xFFB39DDB);
+        isDark ? AppColors.heritagePurple.withOpacity(0.25) : AppColors.riverFlow;
 
     final fillWave = Paint()
       ..color = fillColor

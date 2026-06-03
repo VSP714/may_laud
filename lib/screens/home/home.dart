@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:may_laud/providers/auth_provider.dart';
 import 'package:may_laud/providers/content_providers.dart';
-import 'package:may_laud/theme/app_colors.dart';
+import 'package:may_laud/theme/app_theme.dart';
 import '../app_features/announcement/announcements_list_screen.dart';
 import '../app_features/flood_alert/flood_alert_screen.dart';
 
@@ -27,8 +27,8 @@ abstract final class HomeColors {
   /// Pure white card surface (light mode cards, sheets).
   static const Color cardWhite  = AppColors.cardWhite;
 
-  /// Muted text — captions, labels, placeholders (delegates to light palette value).
-  static const Color textMuted  = Color(0xFF6C757D);
+  /// Muted text — captions, labels, placeholders (delegates to AppColors).
+  static const Color textMuted = AppColors.neutralGray500;
 
   static const LinearGradient headerGradient = AppColors.headerGradient;
   static const LinearGradient fabGradient    = AppColors.fabGradient;
@@ -101,10 +101,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         Container(
                           width: 52.w, height: 52.w,
                           decoration: BoxDecoration(
-                            color: Colors.white.withValues(alpha: .15),
+                            color: AppColors.neutralWhite.withValues(alpha: .15),
                             borderRadius: BorderRadius.circular(15.r),
                           ),
-                          child: Icon(Icons.person_rounded, size: 28.sp, color: Colors.white),
+                          child: Icon(Icons.person_rounded, size: 28.sp, color: AppColors.neutralWhite),
                         ),
                         SizedBox(width: 14.w),
                         Expanded(child: Column(
@@ -112,21 +112,21 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                           children: [
                             Text(
                               'Good ${_timeOfDay()}, ${isGuest ? 'Guest' : userName.split(' ').first}!',
-                              style: TextStyle(fontSize: 14.sp, fontWeight: FontWeight.w500, color: Colors.white70),
+                              style: TextStyle(fontSize: 14.sp, fontWeight: FontWeight.w500, color: AppColors.neutralWhite.withValues(alpha: 0.7)),
                             ),
                             SizedBox(height: 2.h),
                             Text(
                               isGuest ? 'Guest Mode' : userName,
-                              style: TextStyle(fontSize: 22.sp, fontWeight: FontWeight.w700, color: Colors.white, letterSpacing: -.3),
+                              style: TextStyle(fontSize: 22.sp, fontWeight: FontWeight.w700, color: AppColors.neutralWhite, letterSpacing: -.3),
                               maxLines: 1, overflow: TextOverflow.ellipsis,
                             ),
                           ],
                         )),
                         Container(
                           width: 44.w, height: 44.w,
-                          decoration: BoxDecoration(shape: BoxShape.circle, color: Colors.white.withValues(alpha: .15)),
+                          decoration: BoxDecoration(shape: BoxShape.circle, color: AppColors.neutralWhite.withValues(alpha: .15)),
                           child: Stack(children: [
-                            Center(child: Icon(Icons.notifications_outlined, size: 22.sp, color: Colors.white)),
+                            Center(child: Icon(Icons.notifications_outlined, size: 22.sp, color: AppColors.neutralWhite)),
                             Positioned(
                               top: 10.h, right: 10.w,
                               child: Container(
@@ -139,11 +139,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       ]),
                       SizedBox(height: 14.h),
                       Row(children: [
-                        Icon(Icons.location_on, size: 14.sp, color: Colors.white60),
+                        Icon(Icons.location_on, size: 14.sp, color: AppColors.neutralWhite.withValues(alpha: 0.6)),
                         SizedBox(width: 4.w),
                         Text('Milaor, Camarines Sur', style: TextStyle(fontSize: 12.sp, color: Colors.white60)),
                         const Spacer(),
-                        Icon(Icons.cloud_outlined, size: 14.sp, color: Colors.white60),
+                        Icon(Icons.cloud_outlined, size: 14.sp, color: AppColors.neutralWhite.withValues(alpha: 0.6)),
                         SizedBox(width: 4.w),
                         Text('32°C  •  Partly Cloudy', style: TextStyle(fontSize: 12.sp, color: Colors.white60)),
                       ]),
@@ -205,7 +205,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           color: colors.cardSurface,
           borderRadius: BorderRadius.circular(18.r),
           border: Border.all(color: colors.border),
-          boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: .03), blurRadius: 10, offset: const Offset(0, 4))],
+          boxShadow: [BoxShadow(color: AppColors.neutralBlack.withValues(alpha: .03), blurRadius: 10, offset: const Offset(0, 4))],
         ),
         child: Column(children: [
           Container(
@@ -250,18 +250,18 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         child: Row(children: [
           Container(
             width: 50.w, height: 50.w,
-            decoration: BoxDecoration(color: Colors.white.withValues(alpha: .2), borderRadius: BorderRadius.circular(16.r)),
-            child: Icon(Icons.water_drop_rounded, size: 28.sp, color: Colors.white),
+            decoration: BoxDecoration(color: AppColors.neutralWhite.withValues(alpha: .2), borderRadius: BorderRadius.circular(16.r)),
+            child: Icon(Icons.water_drop_rounded, size: 28.sp, color: AppColors.neutralWhite),
           ),
           SizedBox(width: 16.w),
           Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Text('Bicol River Status', style: TextStyle(fontSize: 11.sp, fontWeight: FontWeight.w600, color: Colors.white.withValues(alpha: .8), letterSpacing: 1.2)),
+            Text('Bicol River Status', style: TextStyle(fontSize: 11.sp, fontWeight: FontWeight.w600, color: AppColors.neutralWhite.withValues(alpha: .8), letterSpacing: 1.2)),
             SizedBox(height: 4.h),
-            Text('Normal Water Level', style: TextStyle(fontSize: 20.sp, fontWeight: FontWeight.w700, color: Colors.white)),
+            Text('Normal Water Level', style: TextStyle(fontSize: 20.sp, fontWeight: FontWeight.w700, color: AppColors.neutralWhite)),
             SizedBox(height: 4.h),
-            Text('Safely within limits • All routes clear • Updated 14m ago', style: TextStyle(fontSize: 12.sp, color: Colors.white.withValues(alpha: .8))),
+            Text('Safely within limits • All routes clear • Updated 14m ago', style: TextStyle(fontSize: 12.sp, color: AppColors.neutralWhite.withValues(alpha: .8))),
           ])),
-          Icon(Icons.arrow_forward_ios_rounded, size: 18.sp, color: Colors.white.withValues(alpha: .7)),
+          Icon(Icons.arrow_forward_ios_rounded, size: 18.sp, color: AppColors.neutralWhite.withValues(alpha: .7)),
         ]),
       ),
     );
@@ -275,7 +275,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         color: colors.cardSurface,
         borderRadius: BorderRadius.circular(20.r),
         border: Border.all(color: colors.border),
-        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: .03), blurRadius: 10, offset: const Offset(0, 4))],
+        boxShadow: [BoxShadow(color: AppColors.neutralBlack.withValues(alpha: .03), blurRadius: 10, offset: const Offset(0, 4))],
       ),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         Row(children: [
@@ -349,7 +349,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 ));
               },
               style: ElevatedButton.styleFrom(
-                backgroundColor: _Brand.heritagePurple, foregroundColor: Colors.white,
+                backgroundColor: _Brand.heritagePurple, foregroundColor: AppColors.neutralWhite,
                 padding: EdgeInsets.symmetric(vertical: 14.h),
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
                 elevation: 0,
@@ -430,7 +430,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           color: colors.cardSurface,
           borderRadius: BorderRadius.circular(18.r),
           border: Border.all(color: colors.border),
-          boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: .04), blurRadius: 12, offset: const Offset(0, 4))],
+          boxShadow: [BoxShadow(color: AppColors.neutralBlack.withValues(alpha: .04), blurRadius: 12, offset: const Offset(0, 4))],
         ),
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           ClipRRect(
@@ -445,7 +445,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               ),
               Positioned.fill(child: DecoratedBox(decoration: BoxDecoration(gradient: LinearGradient(
                 begin: Alignment.topCenter, end: Alignment.bottomCenter,
-                colors: [Colors.transparent, Colors.black.withValues(alpha: .15), Colors.black.withValues(alpha: .5)],
+                colors: [Colors.transparent, AppColors.neutralBlack.withValues(alpha: .15), AppColors.neutralBlack.withValues(alpha: .5)],
               )))),
               Positioned(left: 12.w, bottom: 12.h, child: Container(
                 padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
@@ -454,16 +454,16 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   boxShadow: [BoxShadow(color: accentColor.withValues(alpha: .4), blurRadius: 8, offset: const Offset(0, 2))],
                 ),
                 child: Row(mainAxisSize: MainAxisSize.min, children: [
-                  Icon(icon, size: 13.sp, color: Colors.white),
+                  Icon(icon, size: 13.sp, color: AppColors.neutralWhite),
                   SizedBox(width: 5.w),
-                  Text(category, style: TextStyle(fontSize: 10.sp, fontWeight: FontWeight.w800, color: Colors.white, letterSpacing: .8)),
+                  Text(category, style: TextStyle(fontSize: 10.sp, fontWeight: FontWeight.w800, color: AppColors.neutralWhite, letterSpacing: .8)),
                 ]),
               )),
               if (isUnread) Positioned(top: 12.h, right: 12.w, child: Container(
                 width: 12.w, height: 12.w,
                 decoration: BoxDecoration(
                   color: _Brand.infoBlue, shape: BoxShape.circle,
-                  border: Border.all(color: Colors.white, width: 2),
+                  border: Border.all(color: AppColors.neutralWhite, width: 2),
                   boxShadow: [BoxShadow(color: _Brand.infoBlue.withValues(alpha: .5), blurRadius: 6)],
                 ),
               )),
@@ -506,7 +506,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         begin: Alignment.topLeft, end: Alignment.bottomRight,
         colors: [accentColor.withValues(alpha: .7), accentColor.withValues(alpha: .35)],
       )),
-      child: Center(child: Icon(icon, size: 48.sp, color: Colors.white.withValues(alpha: .9))),
+      child: Center(child: Icon(icon, size: 48.sp, color: AppColors.neutralWhite.withValues(alpha: .9))),
     );
   }
 

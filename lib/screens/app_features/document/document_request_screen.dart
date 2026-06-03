@@ -1,5 +1,6 @@
 // lib/screens/app_features/document/document_request_screen.dart
 import 'package:flutter/material.dart';
+import 'package:may_laud/theme/app_theme.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:image_picker/image_picker.dart';
@@ -31,28 +32,28 @@ class _DocumentRequestScreenState
   Color get _titleText =>
       _isDark ? _cs!.onSurface : HomeColors.deepAnchor;
   Color get _bodyText =>
-      _isDark ? _cs!.onSurface.withValues(alpha: 0.65) : const Color(0xFF374151);
+      _isDark ? _cs!.onSurface.withValues(alpha: 0.65) : AppColors.neutralGray800;
   Color get _mutedText =>
-      _isDark ? _cs!.onSurface.withValues(alpha: 0.45) : const Color(0xFF9CA3AF);
+      _isDark ? _cs!.onSurface.withValues(alpha: 0.45) : AppColors.neutralGray500;
   Color get _inputFill =>
       _isDark ? _cs!.surface.withValues(alpha: 0.8) : HomeColors.warmHearth;
   Color get _borderColor =>
-      _isDark ? _cs!.onSurface.withValues(alpha: 0.15) : const Color(0xFFE5E7EB);
+      _isDark ? _cs!.onSurface.withValues(alpha: 0.15) : AppColors.neutralGray200;
   Color get _subtitleText =>
-      _isDark ? _cs!.onSurface.withValues(alpha: 0.5) : const Color(0xFF9CA3AF);
+      _isDark ? _cs!.onSurface.withValues(alpha: 0.5) : AppColors.neutralGray500;
   Color get _dragHandle =>
-      _isDark ? Colors.white24 : const Color(0xFFD1D5DB);
+      _isDark ? AppColors.neutralWhite.withValues(alpha: 0.24) : const Color(0xFFD1D5DB);
 
   // urgency backgrounds — dark mode strips the pastel tint
   Color _urgencyBg(String urgency) {
     if (_isDark) return _cs!.surface;
     switch (urgency) {
       case 'Urgent':
-        return const Color(0xFFFEF2F2);
+        return AppColors.error.withValues(alpha: 0.05);
       case 'Normal':
-        return const Color(0xFFF0FDF4);
+        return AppColors.successAlt.withValues(alpha: 0.06);
       default:
-        return const Color(0xFFFFFBEB);
+        return AppColors.warningAlt.withValues(alpha: 0.08);
     }
   }
 
@@ -60,11 +61,11 @@ class _DocumentRequestScreenState
   Color _urgencyColor(String urgency) {
     switch (urgency) {
       case 'Urgent':
-        return const Color(0xFFDC2626);
+        return AppColors.errorDark;
       case 'Normal':
-        return const Color(0xFF16A34A);
+        return AppColors.successAlt;
       default:
-        return const Color(0xFFF59E0B);
+        return AppColors.warningAlt;
     }
   }
 
@@ -117,7 +118,7 @@ class _DocumentRequestScreenState
       'icon': Icons.home_work_rounded,
       'fee': 75.0,
       'desc': 'Proof of residency within the municipality',
-      'color': const Color(0xFF22C55E),
+      'color': AppColors.successAlt,
       'available': false,
     },
     {
@@ -126,7 +127,7 @@ class _DocumentRequestScreenState
       'fee': 150.0,
       'desc':
           'Police clearance certificate for employment or travel purposes',
-      'color': const Color(0xFFF59E0B),
+      'color': AppColors.warningAlt,
       'available': false,
     },
     {
@@ -143,7 +144,7 @@ class _DocumentRequestScreenState
       'icon': Icons.map_rounded,
       'fee': 300.0,
       'desc': 'Clearance certifying property zoning compliance',
-      'color': const Color(0xFF6B7280),
+      'color': AppColors.neutralGray500,
       'available': false,
     },
     {
@@ -151,7 +152,7 @@ class _DocumentRequestScreenState
       'icon': Icons.fire_extinguisher_rounded,
       'fee': 250.0,
       'desc': 'Certificate of compliance with fire safety standards',
-      'color': const Color(0xFFDC2626),
+      'color': AppColors.errorDark,
       'available': false,
     },
     {
@@ -422,7 +423,7 @@ class _DocumentRequestScreenState
             ? (_isDark ? _cs!.background : HomeColors.warmHearth)
             : (_isDark
                 ? _cs!.background.withValues(alpha: 0.5)
-                : const Color(0xFFF5F5F5));
+                : AppColors.neutralGray200);
 
     final tileBorder = isSelected
         ? accent
@@ -435,10 +436,10 @@ class _DocumentRequestScreenState
         : available
             ? (_isDark
                 ? _cs!.onSurface.withValues(alpha: 0.08)
-                : const Color(0xFFF3F4F6))
+                : AppColors.neutralGray200)
             : (_isDark
                 ? _cs!.onSurface.withValues(alpha: 0.05)
-                : const Color(0xFFEEEEEE));
+                : AppColors.neutralGray200);
 
     return Material(
       color: Colors.transparent,
@@ -479,7 +480,7 @@ class _DocumentRequestScreenState
                       : available
                           ? (_isDark
                               ? _cs!.onSurface.withValues(alpha: 0.4)
-                              : const Color(0xFF9CA3AF))
+                              : AppColors.neutralGray500)
                           : _mutedText,
                 ),
               ),
@@ -508,20 +509,20 @@ class _DocumentRequestScreenState
                                 horizontal: 8.w, vertical: 3.h),
                             decoration: BoxDecoration(
                               color: _isDark
-                                  ? const Color(0xFFDC2626).withValues(alpha: 0.15)
-                                  : const Color(0xFFFEF2F2),
+                                  ? AppColors.errorDark.withValues(alpha: 0.15)
+                                  : AppColors.error.withValues(alpha: 0.05),
                               borderRadius: BorderRadius.circular(6.r),
                               border: Border.all(
                                   color: _isDark
-                                      ? const Color(0xFFDC2626).withValues(alpha: 0.3)
-                                      : const Color(0xFFFECACA)),
+                                      ? AppColors.errorDark.withValues(alpha: 0.3)
+                                      : AppColors.error.withValues(alpha: 0.3)),
                             ),
                             child: Text(
                               'Unavailable',
                               style: TextStyle(
                                 fontSize: 10.sp,
                                 fontWeight: FontWeight.w600,
-                                color: const Color(0xFFDC2626),
+                                color: AppColors.errorDark,
                               ),
                             ),
                           ),
@@ -536,7 +537,7 @@ class _DocumentRequestScreenState
                         fontSize: 12.sp,
                         color: available
                             ? _mutedText
-                            : const Color(0xFFDC2626),
+                            : AppColors.errorDark,
                       ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
@@ -554,7 +555,7 @@ class _DocumentRequestScreenState
                   fontWeight: FontWeight.w700,
                   color: available
                       ? (fee == 0
-                          ? const Color(0xFF16A34A)
+                          ? AppColors.successAlt
                           : accent)
                       : _mutedText,
                 ),
@@ -581,7 +582,7 @@ class _DocumentRequestScreenState
     if (!_selectedIsAvailable) {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
         content: const Text('This document type is not available.'),
-        backgroundColor: const Color(0xFFDC2626),
+        backgroundColor: AppColors.errorDark,
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(10.r)),
@@ -609,14 +610,14 @@ class _DocumentRequestScreenState
   Widget _buildSuccessDialog(
       BuildContext ctx, String refId, String urgencyLabel) {
     final tipBg =
-        _isDark ? const Color(0xFF3A2A00) : const Color(0xFFFFFBEB);
+        _isDark ? const Color(0xFF3A2A00) : AppColors.warningAlt.withValues(alpha: 0.08);
     final tipBorder =
-        _isDark ? const Color(0xFF7A5800) : const Color(0xFFFDE68A);
+        _isDark ? const Color(0xFF7A5800) : AppColors.warningAlt.withValues(alpha: 0.4);
     final tipText =
-        _isDark ? const Color(0xFFFFD97A) : const Color(0xFF92400E);
+        _isDark ? AppColors.warningAlt : AppColors.warningAlt;
     final refBg = _isDark ? _cs!.background : _scaffoldBg;
     final refBorder =
-        _isDark ? _cs!.onSurface.withValues(alpha: 0.12) : const Color(0xFFE8E0F0);
+        _isDark ? _cs!.onSurface.withValues(alpha: 0.12) : AppColors.heritagePurple.withValues(alpha: 0.12);
 
     return Dialog(
       backgroundColor: Colors.transparent,
@@ -649,14 +650,14 @@ class _DocumentRequestScreenState
                   height: 72.w,
                   decoration: BoxDecoration(
                     gradient: const LinearGradient(
-                      colors: [Color(0xFF22C55E), Color(0xFF16A34A)],
+                      colors: [Color(0xFF22C55E), AppColors.successAlt],
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
                     ),
                     borderRadius: BorderRadius.circular(20.r),
                     boxShadow: [
                       BoxShadow(
-                        color: const Color(0xFF22C55E).withValues(alpha: 0.3),
+                        color: AppColors.successAlt.withValues(alpha: 0.3),
                         blurRadius: 16,
                         offset: const Offset(0, 6),
                       ),
@@ -741,7 +742,7 @@ class _DocumentRequestScreenState
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Icon(Icons.lightbulb_outline_rounded,
-                      size: 18.sp, color: const Color(0xFFF59E0B)),
+                      size: 18.sp, color: AppColors.warningAlt),
                   SizedBox(width: 10.w),
                   Expanded(
                     child: Text(
@@ -764,7 +765,7 @@ class _DocumentRequestScreenState
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: HomeColors.heritagePurple,
-                  foregroundColor: Colors.white,
+                  foregroundColor: AppColors.neutralWhite,
                   elevation: 0,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(14.r),
@@ -890,7 +891,7 @@ class _DocumentRequestScreenState
           child: Padding(
             padding: EdgeInsets.all(8.w),
             child: Icon(Icons.arrow_back_rounded,
-                size: 20.sp, color: Colors.white),
+                size: 20.sp, color: AppColors.neutralWhite),
           ),
         ),
       ),
@@ -921,7 +922,7 @@ class _DocumentRequestScreenState
                           borderRadius: BorderRadius.circular(15.r),
                         ),
                         child: Icon(Icons.description_rounded,
-                            size: 28.sp, color: Colors.white),
+                            size: 28.sp, color: AppColors.neutralWhite),
                       ),
                       SizedBox(width: 14.w),
                       Expanded(
@@ -933,7 +934,7 @@ class _DocumentRequestScreenState
                               style: TextStyle(
                                 fontSize: 22.sp,
                                 fontWeight: FontWeight.w700,
-                                color: Colors.white,
+                                color: AppColors.neutralWhite,
                                 letterSpacing: -0.3,
                               ),
                             ),
@@ -943,7 +944,7 @@ class _DocumentRequestScreenState
                               style: TextStyle(
                                 fontSize: 14.sp,
                                 fontWeight: FontWeight.w500,
-                                color: Colors.white70,
+                                color: AppColors.neutralWhite.withValues(alpha: 0.7),
                               ),
                             ),
                           ],
@@ -956,7 +957,7 @@ class _DocumentRequestScreenState
                     'Request barangay clearances, certificates, and other official documents.',
                     style: TextStyle(
                       fontSize: 12.sp,
-                      color: Colors.white60,
+                      color: AppColors.neutralWhite.withValues(alpha: 0.6),
                       height: 1.4,
                     ),
                     maxLines: 2,
@@ -992,7 +993,7 @@ class _DocumentRequestScreenState
     final isActive = _currentStep >= step;
     final isPast = _currentStep > step;
     final inactiveCircle =
-        _isDark ? _cs!.onSurface.withValues(alpha: 0.15) : const Color(0xFFE5E7EB);
+        _isDark ? _cs!.onSurface.withValues(alpha: 0.15) : AppColors.neutralGray200;
 
     return Expanded(
       child: Column(
@@ -1018,13 +1019,13 @@ class _DocumentRequestScreenState
             child: Center(
               child: isPast
                   ? Icon(Icons.check_rounded,
-                      size: 16.sp, color: Colors.white)
+                      size: 16.sp, color: AppColors.neutralWhite)
                   : Text(
                       '${step + 1}',
                       style: TextStyle(
                         fontSize: 13.sp,
                         fontWeight: FontWeight.w700,
-                        color: isActive ? Colors.white : _mutedText,
+                        color: isActive ? AppColors.neutralWhite : _mutedText,
                       ),
                     ),
             ),
@@ -1049,7 +1050,7 @@ class _DocumentRequestScreenState
   Widget _stepLine(int fromStep) {
     final isPast = _currentStep > fromStep;
     final inactiveLine =
-        _isDark ? _cs!.onSurface.withValues(alpha: 0.12) : const Color(0xFFE5E7EB);
+        _isDark ? _cs!.onSurface.withValues(alpha: 0.12) : AppColors.neutralGray200;
     return Expanded(
       child: Padding(
         padding: EdgeInsets.only(bottom: 24.h),
@@ -1131,23 +1132,23 @@ class _DocumentRequestScreenState
                                       horizontal: 8.w, vertical: 3.h),
                                   decoration: BoxDecoration(
                                     color: _isDark
-                                        ? const Color(0xFFDC2626)
+                                        ? AppColors.errorDark
                                             .withValues(alpha: 0.15)
-                                        : const Color(0xFFFEF2F2),
+                                        : AppColors.error.withValues(alpha: 0.05),
                                     borderRadius:
                                         BorderRadius.circular(6.r),
                                     border: Border.all(
                                         color: _isDark
-                                            ? const Color(0xFFDC2626)
+                                            ? AppColors.errorDark
                                                 .withValues(alpha: 0.3)
-                                            : const Color(0xFFFECACA)),
+                                            : AppColors.error.withValues(alpha: 0.3)),
                                   ),
                                   child: Text(
                                     'Unavailable',
                                     style: TextStyle(
                                       fontSize: 10.sp,
                                       fontWeight: FontWeight.w600,
-                                      color: const Color(0xFFDC2626),
+                                      color: AppColors.errorDark,
                                     ),
                                   ),
                                 ),
@@ -1218,8 +1219,8 @@ class _DocumentRequestScreenState
             decoration: BoxDecoration(
               color: _isFree
                   ? (_isDark
-                      ? const Color(0xFF16A34A).withValues(alpha: 0.15)
-                      : const Color(0xFFF0FDF4))
+                      ? AppColors.successAlt.withValues(alpha: 0.15)
+                      : AppColors.successAlt.withValues(alpha: 0.06))
                   : HomeColors.heritagePurple.withValues(alpha: 0.08),
               borderRadius: BorderRadius.circular(14.r),
             ),
@@ -1229,7 +1230,7 @@ class _DocumentRequestScreenState
                   : Icons.receipt_long_rounded,
               size: 26.sp,
               color: _isFree
-                  ? const Color(0xFF16A34A)
+                  ? AppColors.successAlt
                   : HomeColors.heritagePurple,
             ),
           ),
@@ -1270,7 +1271,7 @@ class _DocumentRequestScreenState
                 fontSize: 24.sp,
                 fontWeight: FontWeight.w700,
                 color: _isFree
-                    ? const Color(0xFF16A34A)
+                    ? AppColors.successAlt
                     : HomeColors.heritagePurple,
               ),
             ),
@@ -1356,7 +1357,7 @@ class _DocumentRequestScreenState
             final icon = _urgencyIcon(urgency['icon']!);
             final inactiveIconBg = _isDark
                 ? _cs!.onSurface.withValues(alpha: 0.08)
-                : const Color(0xFFF3F4F6);
+                : AppColors.neutralGray200;
 
             return Padding(
               padding: EdgeInsets.only(bottom: 8.h),
@@ -1594,12 +1595,12 @@ class _DocumentRequestScreenState
                 height: 38.w,
                 decoration: BoxDecoration(
                   color: _isDark
-                      ? const Color(0xFFDC2626).withValues(alpha: 0.15)
-                      : const Color(0xFFFEF2F2),
+                      ? AppColors.errorDark.withValues(alpha: 0.15)
+                      : AppColors.error.withValues(alpha: 0.05),
                   borderRadius: BorderRadius.circular(10.r),
                 ),
                 child: Icon(Icons.picture_as_pdf_rounded,
-                    size: 20.sp, color: const Color(0xFFDC2626)),
+                    size: 20.sp, color: AppColors.errorDark),
               ),
               SizedBox(height: 8.h),
               Text(fileName,
@@ -1627,12 +1628,12 @@ class _DocumentRequestScreenState
               height: 24.w,
               decoration: BoxDecoration(
                 color: _isDark
-                    ? Colors.white24
-                    : const Color(0xFF374151).withValues(alpha: 0.85),
+                    ? AppColors.neutralWhite.withValues(alpha: 0.24)
+                    : AppColors.neutralGray800.withValues(alpha: 0.85),
                 shape: BoxShape.circle,
               ),
               child: Icon(Icons.close_rounded,
-                  size: 14.sp, color: Colors.white),
+                  size: 14.sp, color: AppColors.neutralWhite),
             ),
           ),
         ),
@@ -1681,10 +1682,10 @@ class _DocumentRequestScreenState
         onPressed: canSubmit ? _submitRequest : null,
         style: ElevatedButton.styleFrom(
           backgroundColor: HomeColors.heritagePurple,
-          foregroundColor: Colors.white,
+          foregroundColor: AppColors.neutralWhite,
           disabledBackgroundColor:
               HomeColors.heritagePurple.withValues(alpha: 0.5),
-          disabledForegroundColor: Colors.white70,
+          disabledForegroundColor: AppColors.neutralWhite.withValues(alpha: 0.7),
           elevation: 0,
           shadowColor: Colors.transparent,
           shape: RoundedRectangleBorder(
@@ -1700,7 +1701,7 @@ class _DocumentRequestScreenState
                   child: const CircularProgressIndicator(
                     strokeWidth: 2.5,
                     valueColor:
-                        AlwaysStoppedAnimation<Color>(Colors.white70),
+                        AlwaysStoppedAnimation<Color>(Color(0xB3FFFFFF)),
                   ),
                 )
               : Row(
@@ -1728,7 +1729,7 @@ class _DocumentRequestScreenState
   Widget _buildInfoBanner() {
     final bannerBorder = _isDark
         ? _cs!.onSurface.withValues(alpha: 0.12)
-        : const Color(0xFFE8E0F0);
+        : AppColors.heritagePurple.withValues(alpha: 0.12);
 
     return Container(
       padding: EdgeInsets.all(16.w),
@@ -1828,17 +1829,17 @@ class _DocumentRequestScreenState
       errorBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(14.r),
         borderSide:
-            const BorderSide(color: Color(0xFFDC2626), width: 1),
+            const BorderSide(color: AppColors.errorDark, width: 1),
       ),
       focusedErrorBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(14.r),
         borderSide:
-            const BorderSide(color: Color(0xFFDC2626), width: 1.5),
+            const BorderSide(color: AppColors.errorDark, width: 1.5),
       ),
       contentPadding:
           EdgeInsets.symmetric(horizontal: 16.w, vertical: 16.h),
       errorStyle:
-          TextStyle(fontSize: 12.sp, color: const Color(0xFFDC2626)),
+          TextStyle(fontSize: 12.sp, color: AppColors.errorDark),
     );
   }
 

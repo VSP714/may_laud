@@ -2,6 +2,7 @@
 
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:may_laud/theme/app_theme.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -78,7 +79,7 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Code resent to ${widget.email}'),
-            backgroundColor: const Color(0xFF4C229C),
+            backgroundColor: AppColors.heritagePurple,
             behavior: SnackBarBehavior.floating,
           ),
         );
@@ -168,35 +169,35 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
           style: TextStyle(
             fontSize: 24.sp,
             fontWeight: FontWeight.w600,
-            color: const Color(0xFF2E0C6D),
+            color: AppColors.deepAnchor,
           ),
           decoration: InputDecoration(
             counterText: '',
             filled: true,
-            fillColor: Colors.white,
+            fillColor: AppColors.neutralWhite,
             contentPadding: EdgeInsets.zero,
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12.r),
               borderSide: BorderSide(
                 color: _errorMessage != null
-                    ? Colors.red.shade300
+                    ? AppColors.error
                     : focusNodes[index].hasFocus
-                        ? const Color(0xFF4C229C)
-                        : const Color(0xFFE0E0E0),
+                        ? AppColors.heritagePurple
+                        : AppColors.neutralGray200,
                 width: focusNodes[index].hasFocus ? 2 : 1.5,
               ),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12.r),
               borderSide: const BorderSide(
-                color: Color(0xFF4C229C),
+                color: AppColors.heritagePurple,
                 width: 2,
               ),
             ),
             errorBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12.r),
               borderSide: BorderSide(
-                color: Colors.red.shade300,
+                color: AppColors.error,
                 width: 1.5,
               ),
             ),
@@ -213,17 +214,17 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
     final isDark = theme.brightness == Brightness.dark;
     final cs = theme.colorScheme;
 
-    final scaffoldBg = isDark ? cs.background : Colors.white;
-    final bubbleBg1 = isDark ? cs.primary.withOpacity(0.12) : const Color(0xFFEDE7F6);
+    final scaffoldBg = isDark ? cs.background : AppColors.neutralWhite;
+    final bubbleBg1 = isDark ? cs.primary.withOpacity(0.12) : AppColors.heritagePurple.withValues(alpha: 0.12);
     final bubbleBg2Gradient = isDark
         ? [cs.primary.withOpacity(0.10), Colors.transparent]
-        : [const Color(0xFFD1C4E9).withOpacity(0.35), Colors.transparent];
+        : [AppColors.riverFlow.withOpacity(0.35), Colors.transparent];
     final bubbleBg3Gradient = isDark
         ? [cs.primary.withOpacity(0.12), Colors.transparent]
-        : [const Color(0xFFD1C4E9).withOpacity(0.4), Colors.transparent];
-    final titleColor = isDark ? cs.onBackground : const Color(0xFF2E0C6D);
-    final subtitleColor = isDark ? cs.onBackground.withOpacity(0.6) : const Color(0xFF6E6A75);
-    final formBg = isDark ? cs.surface : const Color(0xFFF6F2FC);
+        : [AppColors.riverFlow.withOpacity(0.4), Colors.transparent];
+    final titleColor = isDark ? cs.onBackground : AppColors.deepAnchor;
+    final subtitleColor = isDark ? cs.onBackground.withOpacity(0.6) : AppColors.neutralGray500;
+    final formBg = isDark ? cs.surface : AppColors.warmHearth;
     final linkColor = isDark ? cs.onBackground.withOpacity(0.6) : Colors.black54;
 
     return Scaffold(
@@ -288,7 +289,7 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
                         alignment: Alignment.centerLeft,
                         child: IconButton(
                           icon: Icon(Icons.arrow_back_ios,
-                              color: isDark ? cs.primary : const Color(0xFF4C229C)),
+                              color: isDark ? cs.primary : AppColors.heritagePurple),
                           onPressed: () => Navigator.pop(context),
                         ),
                       ),
@@ -312,11 +313,11 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       gradient: const LinearGradient(
-                        colors: [Color(0xFF4C229C), Color(0xFF643EB5)],
+                        colors: [AppColors.heritagePurple, AppColors.riverFlow],
                       ),
                       boxShadow: [
                         BoxShadow(
-                          color: const Color(0xFF4C229C).withOpacity(0.3),
+                          color: AppColors.heritagePurple.withOpacity(0.3),
                           blurRadius: 20.r,
                           offset: Offset(0, 8.h),
                         ),
@@ -325,7 +326,7 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
                     child: Icon(
                       Icons.lock_open_outlined,
                       size: 40.sp,
-                      color: Colors.white,
+                      color: AppColors.neutralWhite,
                     ),
                   ),
 
@@ -356,7 +357,7 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
                           text: widget.email,
                           style: TextStyle(
                             fontWeight: FontWeight.w700,
-                            color: isDark ? cs.primary : const Color(0xFF4C229C),
+                            color: isDark ? cs.primary : AppColors.heritagePurple,
                           ),
                         ),
                       ],
@@ -373,7 +374,7 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
                       borderRadius: BorderRadius.circular(28.r),
                       boxShadow: [
                         BoxShadow(
-                          color: const Color(0xFF7B2CBF).withOpacity(isDark ? 0.05 : 0.08),
+                          color: AppColors.riverFlow.withOpacity(isDark ? 0.05 : 0.08),
                           blurRadius: 20.r,
                           offset: Offset(0, 8.h),
                         ),
@@ -391,7 +392,7 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
                           Text(
                             _errorMessage!,
                             style: TextStyle(
-                              color: Colors.red.shade600,
+                              color: AppColors.errorDark,
                               fontSize: 12.sp,
                               fontWeight: FontWeight.w500,
                             ),
@@ -413,11 +414,11 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
                               decoration: BoxDecoration(
                                 borderRadius: BorderRadius.circular(40.r),
                                 gradient: const LinearGradient(
-                                  colors: [Color(0xFF4C229C), Color(0xFF643EB5)],
+                                  colors: [AppColors.heritagePurple, AppColors.riverFlow],
                                 ),
                                 boxShadow: [
                                   BoxShadow(
-                                    color: const Color(0xFF4C229C).withOpacity(0.3),
+                                    color: AppColors.heritagePurple.withOpacity(0.3),
                                     blurRadius: 12.r,
                                     offset: Offset(0, 4.h),
                                   ),
@@ -427,7 +428,7 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
                                 child: Text(
                                   "Verify & Continue",
                                   style: TextStyle(
-                                    color: Colors.white,
+                                    color: AppColors.neutralWhite,
                                     fontSize: 16.sp,
                                     fontWeight: FontWeight.bold,
                                   ),
@@ -454,7 +455,7 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
                                 ? Text(
                                     'Resend in 00:${secondsRemaining.toString().padLeft(2, '0')}',
                                     style: TextStyle(
-                                      color: isDark ? cs.primary : const Color(0xFF4C229C),
+                                      color: isDark ? cs.primary : AppColors.heritagePurple,
                                       fontWeight: FontWeight.w600,
                                       fontSize: 13.sp,
                                     ),
@@ -464,7 +465,7 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
                                     child: Text(
                                       'Resend now',
                                       style: TextStyle(
-                                        color: isDark ? cs.primary : const Color(0xFF4C229C),
+                                        color: isDark ? cs.primary : AppColors.heritagePurple,
                                         fontWeight: FontWeight.w600,
                                         fontSize: 13.sp,
                                         decoration: TextDecoration.underline,
@@ -483,13 +484,13 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
                             Icon(
                               Icons.lock_outline,
                               size: 14.w,
-                              color: isDark ? cs.primary.withOpacity(0.6) : const Color(0xFF4C229C).withOpacity(0.6),
+                              color: isDark ? cs.primary.withOpacity(0.6) : AppColors.heritagePurple.withOpacity(0.6),
                             ),
                             SizedBox(width: 6.w),
                             Text(
                               'End-to-end encrypted',
                               style: TextStyle(
-                                color: isDark ? cs.primary.withOpacity(0.6) : const Color(0xFF4C229C).withOpacity(0.6),
+                                color: isDark ? cs.primary.withOpacity(0.6) : AppColors.heritagePurple.withOpacity(0.6),
                                 fontSize: 12.sp,
                                 fontWeight: FontWeight.w600,
                               ),
@@ -520,9 +521,9 @@ class _WavePainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final fillColor =
-        isDark ? cs.primary.withOpacity(0.08) : const Color(0xFFF3F0FA);
+        isDark ? cs.primary.withOpacity(0.08) : AppColors.warmHearth;
     final strokeColor =
-        isDark ? cs.primary.withOpacity(0.25) : const Color(0xFFB39DDB);
+        isDark ? cs.primary.withOpacity(0.25) : AppColors.riverFlow;
 
     final fillWave = Paint()
       ..color = fillColor

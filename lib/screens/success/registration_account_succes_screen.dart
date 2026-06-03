@@ -1,3 +1,4 @@
+import 'package:may_laud/theme/app_theme.dart';
 // lib/screens/success/registration_account_succes_screen.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -14,15 +15,15 @@ class VerifiedSuccessScreen extends StatelessWidget {
     final isDark = theme.brightness == Brightness.dark;
     final cs = theme.colorScheme;
 
-    final scaffoldBg    = isDark ? cs.background : Colors.white;
-    final bubbleBg1     = isDark ? cs.primary.withOpacity(0.12) : const Color(0xFFEDE7F6);
-    final bubble2Colors = isDark ? [cs.primary.withOpacity(0.10), Colors.transparent] : [const Color(0xFFD1C4E9).withOpacity(0.35), Colors.transparent];
-    final bubble3Colors = isDark ? [cs.primary.withOpacity(0.12), Colors.transparent] : [const Color(0xFFD1C4E9).withOpacity(0.4), Colors.transparent];
-    final titleColor    = isDark ? cs.onBackground : const Color(0xFF2E0C6D);
-    final subtitleColor = isDark ? cs.onBackground.withOpacity(0.6) : const Color(0xFF6E6A75);
-    final accentPurple  = isDark ? cs.primary : const Color(0xFF4C229C);
-    final iconBg        = isDark ? cs.surface : const Color(0xFFE6E1F3);
-    final footerColor   = isDark ? cs.onBackground.withOpacity(0.3) : Colors.black38;
+    final scaffoldBg    = AppColors.of(context).surface;
+    final bubbleBg1     = AppColors.of(context).accentPurple.withOpacity(0.12);
+    final bubble2Colors = [AppColors.of(context).accentPurple.withOpacity(0.10), Colors.transparent];
+    final bubble3Colors = [AppColors.of(context).accentPurple.withOpacity(0.12), Colors.transparent];
+    final titleColor    = AppColors.of(context).textPrimary;
+    final subtitleColor = AppColors.of(context).textMuted;
+    final accentPurple  = AppColors.of(context).accentPurple;
+    final iconBg        = AppColors.of(context).formSurface;
+    final footerColor   = AppColors.of(context).textMuted;
 
     return Scaffold(
       backgroundColor: scaffoldBg,
@@ -59,7 +60,10 @@ class VerifiedSuccessScreen extends StatelessWidget {
             alignment: Alignment.bottomCenter,
             child: SizedBox(
               height: 240.h, width: double.infinity,
-              child: CustomPaint(painter: _SuccessWavePainter(isDark: isDark, cs: cs)),
+              child: CustomPaint(painter: _SuccessWavePainter(
+                AppColors.of(context).formSurface,
+                AppColors.of(context).accentPurple.withOpacity(0.25),
+              )),
             ),
           ),
 
@@ -85,7 +89,7 @@ class VerifiedSuccessScreen extends StatelessWidget {
                         width: 90.w, height: 90.w,
                         decoration: BoxDecoration(
                           gradient: LinearGradient(
-                            colors: [accentPurple, const Color(0xFF643EB5)],
+                            colors: [accentPurple, AppColors.riverFlow],
                           ),
                           shape: BoxShape.circle,
                           boxShadow: [
@@ -96,17 +100,17 @@ class VerifiedSuccessScreen extends StatelessWidget {
                             ),
                           ],
                         ),
-                        child: Icon(Icons.check_rounded, color: Colors.white, size: 44.sp),
+                        child: Icon(Icons.check_rounded, color: AppColors.neutralWhite, size: 44.sp),
                       ),
                       Positioned(
                         right: 0, top: 0,
                         child: Container(
                           width: 45.w, height: 45.w,
                           decoration: BoxDecoration(
-                            color: isDark ? cs.primary.withOpacity(0.7) : const Color(0xFF8E7BEF),
+                            color: AppColors.riverFlow,
                             shape: BoxShape.circle,
                           ),
-                          child: Icon(Icons.graphic_eq, color: Colors.white, size: 20.sp),
+                          child: Icon(Icons.graphic_eq, color: AppColors.neutralWhite, size: 20.sp),
                         ),
                       ),
                     ],
@@ -155,7 +159,7 @@ class VerifiedSuccessScreen extends StatelessWidget {
                       padding: EdgeInsets.symmetric(vertical: 16.h),
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(40.r),
-                        gradient: LinearGradient(colors: [accentPurple, const Color(0xFF643EB5)]),
+                        gradient: LinearGradient(colors: [accentPurple, AppColors.riverFlow]),
                         boxShadow: [
                           BoxShadow(color: accentPurple.withOpacity(0.3), blurRadius: 12.r, offset: Offset(0, 4.h)),
                         ],
@@ -163,7 +167,7 @@ class VerifiedSuccessScreen extends StatelessWidget {
                       child: Center(
                         child: Text(
                           "Get Started",
-                          style: TextStyle(color: Colors.white, fontSize: 18.sp, fontWeight: FontWeight.bold),
+                          style: TextStyle(color: AppColors.neutralWhite, fontSize: 18.sp, fontWeight: FontWeight.bold),
                         ),
                       ),
                     ),
@@ -185,12 +189,12 @@ class VerifiedSuccessScreen extends StatelessWidget {
                       child: Container(
                         padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 10.h),
                         decoration: BoxDecoration(
-                          color: (isDark ? Colors.black : Colors.white).withOpacity(0.8),
+                          color: AppColors.of(context).surface.withOpacity(0.8),
                           borderRadius: BorderRadius.circular(30.r),
                         ),
                         child: Text(
                           "MEMBER SINCE 2026",
-                          style: TextStyle(fontWeight: FontWeight.bold, color: isDark ? Colors.white70 : Colors.black54),
+                          style: TextStyle(fontWeight: FontWeight.bold, color: AppColors.of(context).textMuted),
                         ),
                       ),
                     ),
@@ -215,14 +219,12 @@ class VerifiedSuccessScreen extends StatelessWidget {
 }
 
 class _SuccessWavePainter extends CustomPainter {
-  final bool isDark;
-  final ColorScheme cs;
-  _SuccessWavePainter({required this.isDark, required this.cs});
+  final Color fillColor;
+  final Color strokeColor;
+  const _SuccessWavePainter(this.fillColor, this.strokeColor);
 
   @override
   void paint(Canvas canvas, Size size) {
-    final fillColor   = isDark ? cs.primary.withOpacity(0.08) : const Color(0xFFF3F0FA);
-    final strokeColor = isDark ? cs.primary.withOpacity(0.25) : const Color(0xFFB39DDB);
 
     final fillWave = Paint()..color = fillColor..style = PaintingStyle.fill;
     final lineWave = Paint()..color = strokeColor..style = PaintingStyle.stroke..strokeWidth = 2;
@@ -244,5 +246,6 @@ class _SuccessWavePainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(covariant _SuccessWavePainter old) => old.isDark != isDark;
+  bool shouldRepaint(covariant _SuccessWavePainter old) =>
+      old.fillColor != fillColor || old.strokeColor != strokeColor;
 }

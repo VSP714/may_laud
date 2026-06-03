@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:may_laud/theme/app_theme.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../home/home.dart';
@@ -69,17 +70,18 @@ class _AnnouncementsListScreenState
     final announcements = ref.watch(announcementsProvider);
     final filtered = _filtered(announcements);
 
+    // Use AppColors.of(context) — same as NotificationsScreen
+    final colors = AppColors.of(context);
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
     final cs = theme.colorScheme;
 
-    final scaffoldBg = isDark ? cs.background : const Color(0xFFF5F0F8);
-    final accentPurple = const Color(0xFF4C229C); // heritagePurple — fixed, was cs.primary in dark
-    final titleColor = isDark ? cs.onSurface : const Color(0xFF311B6B);
-    final searchFill = isDark ? cs.surface : Colors.white;
+    final accentPurple = colors.accentPurple;
+    final titleColor = colors.textPrimary;
+    final searchFill = colors.surface;
 
     return Scaffold(
-      backgroundColor: scaffoldBg,
+      backgroundColor: colors.background, // ← matches NotificationsScreen
       body: SafeArea(
         child: Column(
           children: [
@@ -88,7 +90,7 @@ class _AnnouncementsListScreenState
               padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
               child: Row(
                 children: [
-                  Icon(Icons.campaign, size: 30.sp, color: accentPurple),
+                  Icon(Icons.campaign, size: 30.sp, color: AppColors.heritagePurple),
                   SizedBox(width: 12.w),
                   Expanded(
                     child: Text(
@@ -104,7 +106,7 @@ class _AnnouncementsListScreenState
                     onPressed: () => ref
                         .read(announcementsProvider.notifier)
                         .fetchAnnouncements(),
-                    icon: Icon(Icons.refresh, size: 26.sp, color: accentPurple),
+                    icon: Icon(Icons.refresh, size: 26.sp, color: AppColors.heritagePurple),
                     tooltip: 'Refresh',
                   ),
                 ],
@@ -148,13 +150,13 @@ class _AnnouncementsListScreenState
                       selected: selected,
                       onSelected: (_) =>
                           setState(() => _selectedCategory = cat),
-                      selectedColor: accentPurple,
+                      selectedColor: AppColors.heritagePurple,
                       backgroundColor: isDark ? cs.surface : null,
                       labelStyle: TextStyle(
                         fontSize: 14.sp,
                         color: selected
                             ? Colors.white
-                            : (isDark ? cs.onSurface : Colors.black),
+                            : (isDark ? cs.onSurface : AppColors.neutralBlack),
                       ),
                     ),
                   );
@@ -173,14 +175,14 @@ class _AnnouncementsListScreenState
                         setState(() => _showImportantOnly = !_showImportantOnly),
                     avatar: Icon(Icons.priority_high,
                         size: 18.sp,
-                        color: _showImportantOnly ? Colors.white : Colors.red),
-                    selectedColor: Colors.red.shade700,
+                        color: _showImportantOnly ? Colors.white : AppColors.errorAlt),
+                    selectedColor: AppColors.errorAlt,
                     backgroundColor: isDark ? cs.surface : null,
                     labelStyle: TextStyle(
                       fontSize: 14.sp,
                       color: _showImportantOnly
                           ? Colors.white
-                          : (isDark ? cs.onSurface : Colors.black),
+                          : (isDark ? cs.onSurface : AppColors.neutralBlack),
                     ),
                   ),
                   SizedBox(width: 12.w),
@@ -188,9 +190,7 @@ class _AnnouncementsListScreenState
                     '${filtered.length} announcement${filtered.length == 1 ? '' : 's'}',
                     style: TextStyle(
                         fontSize: 14.sp,
-                        color: isDark
-                            ? cs.onSurface.withValues(alpha: 0.6)
-                            : Colors.grey.shade600),
+                        color: colors.textMuted),
                   ),
                 ],
               ),
@@ -210,9 +210,7 @@ class _AnnouncementsListScreenState
                             'No announcements yet',
                             style: TextStyle(
                                 fontSize: 16.sp,
-                                color: isDark
-                                    ? cs.onSurface.withValues(alpha: 0.5)
-                                    : Colors.grey.shade500),
+                                color: colors.textMuted),
                           ),
                         ],
                       ),
@@ -223,16 +221,14 @@ class _AnnouncementsListScreenState
                             'No results for your filters.',
                             style: TextStyle(
                                 fontSize: 14.sp,
-                                color: isDark
-                                    ? cs.onSurface.withValues(alpha: 0.5)
-                                    : Colors.grey.shade500),
+                                color: colors.textMuted),
                           ),
                         )
                       : ListView.builder(
                           padding: EdgeInsets.all(16.w),
                           itemCount: filtered.length,
                           itemBuilder: (_, i) =>
-                              _buildCard(filtered[i], isDark, cs),
+                              _buildCard(filtered[i], isDark, cs, colors),
                         ),
             ),
           ],
@@ -241,11 +237,11 @@ class _AnnouncementsListScreenState
     );
   }
 
-  Widget _buildCard(Announcement a, bool isDark, ColorScheme cs) {
-    final accentPurple = const Color(0xFF4C229C); // heritagePurple — fixed, was cs.primary in dark
-    final categoryBg = isDark ? const Color(0xFF4C229C).withValues(alpha: 0.18) : const Color(0xFFEADCFB);
-    final titleColor = isDark ? cs.onSurface : const Color(0xFF2E2438);
-    final bodyColor = isDark ? cs.onSurface.withValues(alpha: 0.65) : const Color(0xFF6F6878);
+  Widget _buildCard(Announcement a, bool isDark, ColorScheme cs, AppColorScheme colors) {
+    final accentPurple = colors.accentPurple;
+    final categoryBg = colors.formSurface;
+    final titleColor = colors.textPrimary;
+    final bodyColor = colors.textSecondary;
 
     return Card(
       margin: EdgeInsets.only(bottom: 16.h),
@@ -273,9 +269,9 @@ class _AnnouncementsListScreenState
                           width: double.infinity,
                           fit: BoxFit.cover,
                           errorBuilder: (_, __, ___) =>
-                              _imageFallback(a, isDark, cs),
+                              _imageFallback(a, colors),
                         )
-                      : _imageFallback(a, isDark, cs),
+                      : _imageFallback(a, colors),
                   if (a.isImportant)
                     Positioned(
                       top: 12.h,
@@ -284,20 +280,20 @@ class _AnnouncementsListScreenState
                         padding: EdgeInsets.symmetric(
                             horizontal: 12.w, vertical: 6.h),
                         decoration: BoxDecoration(
-                          color: Colors.red.shade700,
+                          color: AppColors.errorAlt,
                           borderRadius: BorderRadius.circular(20.r),
                         ),
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             Icon(Icons.priority_high,
-                                size: 14.sp, color: Colors.white),
+                                size: 14.sp, color: AppColors.neutralWhite),
                             SizedBox(width: 4.w),
                             Text('IMPORTANT',
                                 style: TextStyle(
                                     fontSize: 12.sp,
                                     fontWeight: FontWeight.bold,
-                                    color: Colors.white)),
+                                    color: AppColors.neutralWhite)),
                           ],
                         ),
                       ),
@@ -334,7 +330,7 @@ class _AnnouncementsListScreenState
                           width: 10.w,
                           height: 10.h,
                           decoration: const BoxDecoration(
-                              color: Colors.blue,
+                              color: AppColors.infoAlt,
                               shape: BoxShape.circle),
                         ),
                     ],
@@ -389,9 +385,9 @@ class _AnnouncementsListScreenState
     );
   }
 
-  Widget _imageFallback(Announcement a, bool isDark, ColorScheme cs) {
-    final fallbackBg = isDark ? const Color(0xFF4C229C).withValues(alpha: 0.15) : const Color(0xFFEADCFB);
-    final fallbackIcon = const Color(0xFF4C229C).withValues(alpha: 0.4);
+  Widget _imageFallback(Announcement a, AppColorScheme colors) {
+    final fallbackBg = colors.formSurface;
+    final fallbackIcon = AppColors.heritagePurple.withValues(alpha: 0.4);
     return Container(
       height: 180.h,
       width: double.infinity,
@@ -414,21 +410,19 @@ class AnnouncementDetailScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
-    final cs = theme.colorScheme;
+    // Use AppColors.of(context) — same as NotificationsScreen
+    final colors = AppColors.of(context);
 
-    final scaffoldBg = isDark ? cs.background : HomeColors.warmHearth;
-    final accentPurple = const Color(0xFF4C229C); // heritagePurple — fixed, was cs.primary in dark
-    final categoryBg = isDark ? const Color(0xFF4C229C).withValues(alpha: 0.18) : const Color(0xFFEADCFB);
-    final imageFallbackBg = isDark ? cs.surface : const Color(0xFFEADCFB);
-    final backBtnBg = isDark ? cs.surface.withValues(alpha: 0.9) : Colors.white.withValues(alpha: 0.9);
-    final titleColor = isDark ? cs.onSurface : const Color(0xFF2E2438);
-    final metaColor = isDark ? cs.onSurface.withValues(alpha: 0.55) : const Color(0xFF6F6878);
-    final bodyColor = isDark ? cs.onSurface.withValues(alpha: 0.85) : const Color(0xFF3D3549);
+    final accentPurple = colors.accentPurple;
+    final categoryBg = colors.formSurface;
+    final imageFallbackBg = colors.formSurface;
+    final backBtnBg = colors.surface.withValues(alpha: 0.9);
+    final titleColor = colors.textPrimary;
+    final metaColor = colors.textMuted;
+    final bodyColor = colors.textSecondary;
 
     return Scaffold(
-      backgroundColor: scaffoldBg,
+      backgroundColor: colors.background, // ← matches NotificationsScreen
       body: SingleChildScrollView(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -476,20 +470,20 @@ class AnnouncementDetailScreen extends StatelessWidget {
                       padding: EdgeInsets.symmetric(
                           horizontal: 12.w, vertical: 6.h),
                       decoration: BoxDecoration(
-                        color: Colors.red.shade700,
+                        color: AppColors.errorAlt,
                         borderRadius: BorderRadius.circular(20.r),
                       ),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           Icon(Icons.priority_high,
-                              size: 14.sp, color: Colors.white),
+                              size: 14.sp, color: AppColors.neutralWhite),
                           SizedBox(width: 4.w),
                           Text('IMPORTANT',
                               style: TextStyle(
                                   fontSize: 12.sp,
                                   fontWeight: FontWeight.bold,
-                                  color: Colors.white)),
+                                  color: AppColors.neutralWhite)),
                         ],
                       ),
                     ),

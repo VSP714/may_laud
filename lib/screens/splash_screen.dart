@@ -126,7 +126,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
                     width: 150.w,
                     height: 150.h,
                     decoration: BoxDecoration(
-                      color: Colors.white,
+                      color: AppColors.neutralWhite,
                       borderRadius: BorderRadius.circular(30.r),
                       boxShadow: [
                         BoxShadow(
@@ -158,7 +158,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
                       style: TextStyle(
                         fontSize: 42.sp,
                         fontWeight: FontWeight.w800,
-                        color: Colors.white,
+                        color: AppColors.neutralWhite,
                         letterSpacing: 2.w,
                         shadows: [
                           Shadow(

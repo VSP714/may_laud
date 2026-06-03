@@ -93,7 +93,7 @@ class EmergencyContact {
       case ContactType.health:
         return HotlineColors.medicalGreenBorder;
       case ContactType.government:
-        return const Color(0xFFD4C4F0); // purple-200 equivalent
+        return AppColors.heritagePurple.withValues(alpha: 0.3);
       case ContactType.services:
       case ContactType.utilities:
         return HotlineColors.utilitySlateBorder;
@@ -132,7 +132,7 @@ class _HotlinesScreenState extends State<HotlinesScreen> {
   ColorScheme? _cs;
   Color get _scaffoldBg => _isDark ? _cs!.surface : HotlineColors.warmHearth;
   Color get _cardBg => _isDark ? _cs!.surface : HotlineColors.cardWhite;
-  Color get _titleText => _isDark ? _cs!.onSurface : HotlineColors.deepAnchor;
+  Color get _titleText => AppColors.of(context).textPrimary;
   Color get _bodyText => _isDark ? _cs!.onSurface.withValues(alpha: 0.65) : AppTheme.neutralGray800;
   Color get _mutedText => _isDark ? _cs!.onSurface.withValues(alpha: 0.45) : AppTheme.neutralGray500;
   Color get _dividerColor => _isDark ? _cs!.onSurface.withValues(alpha: 0.12) : AppTheme.neutralGray200;
@@ -321,7 +321,7 @@ class _HotlinesScreenState extends State<HotlinesScreen> {
         decoration: const BoxDecoration(gradient: HotlineColors.headerGradient),
       ),
       leading: IconButton(
-        icon: const Icon(Icons.arrow_back_rounded, color: Colors.white),
+        icon: const Icon(Icons.arrow_back_rounded, color: AppColors.neutralWhite),
         onPressed: () => Navigator.pop(context),
       ),
       title: Text(
@@ -329,7 +329,7 @@ class _HotlinesScreenState extends State<HotlinesScreen> {
         style: GoogleFonts.poppins(
           fontSize: 18.sp,
           fontWeight: FontWeight.w700,
-          color: Colors.white,
+          color: AppColors.neutralWhite,
         ),
       ),
       centerTitle: false,
@@ -346,14 +346,14 @@ class _HotlinesScreenState extends State<HotlinesScreen> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 const Icon(Icons.emergency_rounded,
-                    color: Colors.white, size: 16),
+                    color: AppColors.neutralWhite, size: 16),
                 SizedBox(width: 4.w),
                 Text(
                   '$_emergencyCount',
                   style: GoogleFonts.inter(
                     fontSize: 13.sp,
                     fontWeight: FontWeight.w700,
-                    color: Colors.white,
+                    color: AppColors.neutralWhite,
                   ),
                 ),
               ],
@@ -455,7 +455,7 @@ class _HotlinesScreenState extends State<HotlinesScreen> {
               ),
               style: ElevatedButton.styleFrom(
                 backgroundColor: HotlineColors.emergencyRed,
-                foregroundColor: Colors.white,
+                foregroundColor: AppColors.neutralWhite,
                 elevation: 0,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(AppTheme.borderRadiusLg),
@@ -519,7 +519,7 @@ class _HotlinesScreenState extends State<HotlinesScreen> {
                         fontSize: 13.sp,
                         fontWeight: FontWeight.w600,
                         color:
-                            isSelected ? Colors.white : _mutedText,
+                            isSelected ? AppColors.neutralWhite : _mutedText,
                       ),
                     ),
                   ),
@@ -658,7 +658,7 @@ class _HotlinesScreenState extends State<HotlinesScreen> {
                         ),
                         child: const Icon(
                           Icons.phone_rounded,
-                          color: Colors.white,
+                          color: AppColors.neutralWhite,
                           size: 18,
                         ),
                       ),
@@ -773,7 +773,7 @@ class _ContactDetailSheet extends StatelessWidget {
               width: 36.w,
               height: 4.h,
               decoration: BoxDecoration(
-                color: cardBg == Colors.white ? AppTheme.neutralGray200 : Colors.white24,
+                color: AppColors.of(context).border,
                 borderRadius: BorderRadius.circular(2.r),
               ),
             ),
@@ -831,7 +831,7 @@ class _ContactDetailSheet extends StatelessWidget {
             contact.description,
             style: GoogleFonts.inter(
               fontSize: 14.sp,
-              color: cardBg == Colors.white ? AppTheme.neutralGray500 : Colors.white60,
+              color: AppColors.of(context).textMuted,
               height: 1.6,
             ),
           ),
@@ -872,7 +872,7 @@ class _ContactDetailSheet extends StatelessWidget {
               ),
               style: ElevatedButton.styleFrom(
                 backgroundColor: color,
-                foregroundColor: Colors.white,
+                foregroundColor: AppColors.neutralWhite,
                 elevation: 0,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(AppTheme.borderRadiusLg),

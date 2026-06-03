@@ -2,8 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:may_laud/theme/app_colors.dart';
 
-const _kPurple  = Color(0xFF4C229C);
-const _kPurple2 = Color(0xFF643EB5);
+// _kPurple / _kPurple2 removed — use AppColors.heritagePurple / AppColors.riverFlow
 
 class NotificationsScreen extends StatefulWidget {
   const NotificationsScreen({super.key});
@@ -47,7 +46,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
               PopupMenuItem(value: 'unread', child: Text('Unread Only')),
               PopupMenuItem(value: 'alerts', child: Text('Alerts Only')),
             ],
-            icon: Icon(Icons.filter_list, size: 28.sp, color: _kPurple),
+            icon: Icon(Icons.filter_list, size: 28.sp, color: AppColors.heritagePurple),
           ),
           SizedBox(width: 12.w),
         ],
@@ -58,10 +57,10 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
           color: colors.surface,
           child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
             Text('${_notifications.where((n) => !n.isRead).length} Unread',
-                style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.w600, color: _kPurple)),
+                style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.w600, color: AppColors.heritagePurple)),
             TextButton(
               onPressed: () => setState(() { for (var n in _notifications) n.isRead = true; }),
-              child: Text('Mark All as Read', style: TextStyle(fontSize: 14.sp, color: _kPurple2, fontWeight: FontWeight.w600)),
+              child: Text('Mark All as Read', style: TextStyle(fontSize: 14.sp, color: AppColors.riverFlow, fontWeight: FontWeight.w600)),
             ),
           ]),
         ),
@@ -89,18 +88,18 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
 
   Widget _buildItem(NotificationItem n, AppColorScheme colors) {
     final (icon, iconColor) = switch (n.type) {
-      'alert'    => (Icons.warning,          const Color(0xFFF44336)),
-      'event'    => (Icons.event,            const Color(0xFF2196F3)),
-      'health'   => (Icons.medical_services, const Color(0xFF4CAF50)),
-      'reminder' => (Icons.notifications,    const Color(0xFFFF9800)),
-      _          => (Icons.info,             _kPurple),
+      'alert'    => (Icons.warning,          AppColors.error),
+      'event'    => (Icons.event,            AppColors.infoAlt),
+      'health'   => (Icons.medical_services, AppColors.success),
+      'reminder' => (Icons.notifications,    AppColors.warning),
+      _          => (Icons.info,             AppColors.heritagePurple),
     };
 
     return InkWell(
       onTap: () { setState(() => n.isRead = true); _showDetails(n); },
       child: Container(
         padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 16.h),
-        color: n.isRead ? colors.surface : _kPurple.withValues(alpha: .06),
+        color: n.isRead ? colors.surface : AppColors.heritagePurple.withValues(alpha: .06),
         child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
           Container(
             width: 44.w, height: 44.w,
@@ -114,7 +113,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                   style: TextStyle(fontSize: 18.sp, fontWeight: FontWeight.w600, color: colors.textPrimary),
                   maxLines: 1, overflow: TextOverflow.ellipsis)),
               if (!n.isRead)
-                Container(width: 10.w, height: 10.w, decoration: const BoxDecoration(color: _kPurple, shape: BoxShape.circle)),
+                Container(width: 10.w, height: 10.w, decoration: const BoxDecoration(color: AppColors.heritagePurple, shape: BoxShape.circle)),
             ]),
             SizedBox(height: 4.h),
             Text(n.message, style: TextStyle(fontSize: 14.sp, color: colors.textSecondary, height: 1.4), maxLines: 2, overflow: TextOverflow.ellipsis),
@@ -141,7 +140,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
       content: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
         Text(n.message, style: const TextStyle(fontSize: 16)),
         SizedBox(height: 16.h),
-        Text('Received: ${_timeAgo(n.timestamp)}', style: TextStyle(fontSize: 14.sp, color: Colors.grey[600])),
+        Text('Received: ${_timeAgo(n.timestamp)}', style: TextStyle(fontSize: 14.sp, color: AppColors.neutralGray500)),
       ]),
       actions: [TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Close'))],
     ));
