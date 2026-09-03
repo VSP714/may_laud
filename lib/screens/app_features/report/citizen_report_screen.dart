@@ -70,6 +70,16 @@ class _CitizenReportScreenState extends ConsumerState<CitizenReportScreen> {
   Color get _titleText   => _isDark ? Colors.white  : ReportColors.deepAnchor;
   Color get _bodyText    => _isDark ? const Color(0xFFCFCFE8) : const Color(0xFF374151);
   Color get _mutedText   => _isDark ? Colors.white60 : AppColors.neutralGray500;
+
+  // Text/icon color for content sitting on the SliverAppBar's purple
+  // gradient specifically — that gradient is the same in both light
+  // and dark mode (an intentional brand element, same pattern as the
+  // home/profile headers), so this must NOT use the theme-adaptive
+  // _titleText above. Light mode's _titleText resolves to
+  // ReportColors.deepAnchor, which is literally one of the two colors
+  // in headerGradient — using it here is what made "Report an Issue"
+  // nearly invisible against its own background.
+  static const Color _headerText = Colors.white;
   Color get _inputFill   => _isDark ? _darkElevated : ReportColors.warmHearth;
   Color get _borderColor => _isDark ? Colors.white.withValues(alpha: 0.10) : AppColors.neutralGray200;
 
@@ -380,7 +390,7 @@ class _CitizenReportScreenState extends ConsumerState<CitizenReportScreen> {
                           borderRadius: BorderRadius.circular(16.r),
                         ),
                         child: Icon(Icons.report_problem_rounded,
-                            color: _titleText, size: 26),
+                            color: _headerText, size: 26),
                       ),
                       SizedBox(width: 14.w),
                       Expanded(
@@ -402,7 +412,7 @@ class _CitizenReportScreenState extends ConsumerState<CitizenReportScreen> {
                               style: GoogleFonts.poppins(
                                 fontSize: 22.sp,
                                 fontWeight: FontWeight.w700,
-                                color: _titleText,
+                                color: _headerText,
                               ),
                             ),
                           ],

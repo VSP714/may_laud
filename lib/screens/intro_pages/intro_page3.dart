@@ -31,7 +31,12 @@ class IntroPage3 extends StatelessWidget {
           ),
           Expanded(
             child: SingleChildScrollView(
-              padding: EdgeInsets.symmetric(horizontal: 24.w),
+              // Bottom padding reserves room for the purple Skip/Next/
+              // Get Started bar that intro_page_design.dart overlays on
+              // top of this page via a Stack — without it, the slogan
+              // line gets physically covered by that bar (this is the
+              // page where it was happening).
+              padding: EdgeInsets.fromLTRB(24.w, 0, 24.w, 120.h),
               child: Column(
                 children: [
                   SizedBox(height: 20.h),

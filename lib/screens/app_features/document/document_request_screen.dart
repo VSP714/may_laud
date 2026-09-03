@@ -9,6 +9,7 @@ import 'dart:io';
 import '../../home/home.dart';
 import '../../home/nav_bar_button.dart';
 import '../../../utils/guest_guard.dart';
+import '../../../providers/content_providers.dart';
 
 class DocumentRequestScreen extends ConsumerStatefulWidget {
   const DocumentRequestScreen({super.key});
@@ -590,7 +591,15 @@ class _DocumentRequestScreenState
       return;
     }
     setState(() => _isSubmitting = true);
-    await Future.delayed(const Duration(milliseconds: 800));
+    // Persist the request so it shows up in the user's real
+    // Total/Approved/Pending stats on the Profile screen instead of
+    // being a purely cosmetic success dialog.
+    await ref.read(documentRequestsProvider.notifier).submitRequest(
+          documentType: _selectedDocumentType,
+          purpose: _purposeController.text.trim(),
+          urgency: _selectedUrgency,
+          fee: '₱${(_selectedDocMeta['fee'] as double).toStringAsFixed(2)}',
+        );
     if (!mounted) return;
     setState(() => _isSubmitting = false);
     _showSuccessScreen();

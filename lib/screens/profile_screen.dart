@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:may_laud/providers/auth_provider.dart';
 import 'package:may_laud/providers/app_providers.dart';
+import 'package:may_laud/providers/content_providers.dart';
 import 'package:may_laud/core/local_storage.dart';
 import 'package:may_laud/theme/app_colors.dart';
 
@@ -24,7 +25,6 @@ class ProfileScreen extends ConsumerStatefulWidget {
 }
 
 class _ProfileScreenState extends ConsumerState<ProfileScreen> {
-  final Map<String, int> _docStats = {'total': 12, 'approved': 8, 'pending': 3};
   bool _isEditing = false;
 
   @override
@@ -123,13 +123,16 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     );
   }
 
-  Widget _buildStatsRow(AppColorScheme colors) => Row(children: [
-    _statCard(Icons.description_outlined, '${_docStats['total']}', 'Total\nRequests', AppColors.heritagePurple, colors),
-    SizedBox(width: 12.w),
-    _statCard(Icons.check_circle_outline, '${_docStats['approved']}', 'Approved', AppColors.successAlt, colors),
-    SizedBox(width: 12.w),
-    _statCard(Icons.hourglass_bottom_outlined, '${_docStats['pending']}', 'Pending', AppColors.warningAlt, colors),
-  ]);
+  Widget _buildStatsRow(AppColorScheme colors) {
+    final docStats = ref.watch(documentRequestStatsProvider);
+    return Row(children: [
+      _statCard(Icons.description_outlined, '${docStats['total']}', 'Total\nRequests', AppColors.heritagePurple, colors),
+      SizedBox(width: 12.w),
+      _statCard(Icons.check_circle_outline, '${docStats['approved']}', 'Approved', AppColors.successAlt, colors),
+      SizedBox(width: 12.w),
+      _statCard(Icons.hourglass_bottom_outlined, '${docStats['pending']}', 'Pending', AppColors.warningAlt, colors),
+    ]);
+  }
 
   Widget _statCard(IconData icon, String value, String label, Color color, AppColorScheme colors) {
     return Expanded(child: Container(

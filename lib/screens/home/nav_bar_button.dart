@@ -67,25 +67,32 @@ class _MainAppState extends State<MainApp> {
 
   Widget _buildBottomNav(AppColorScheme colors) {
     return Container(
-      height: 100.h,
       decoration: BoxDecoration(
         color: colors.surface,
         boxShadow: [BoxShadow(color: AppColors.heritagePurple.withValues(alpha: .08), blurRadius: 24, offset: const Offset(0, -6))],
       ),
-      child: BottomAppBar(
-        color: Colors.transparent, elevation: 0,
-        shape: const CircularNotchedRectangle(), notchMargin: 8,
-        child: Padding(
-          padding: EdgeInsets.symmetric(horizontal: 8.w),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              _navItem(Icons.home_rounded,              'Home',          0, colors),
-              _navItem(Icons.campaign_outlined,         'Announcements', 1, colors),
-              SizedBox(width: 44.w),
-              _navItem(Icons.notifications_outlined,    'Notifications', 2, colors),
-              _navItem(Icons.person_outline_rounded,    'Profile',       3, colors),
-            ],
+      child: SafeArea(
+        top: false,
+        bottom: false,
+        child: SizedBox(
+          height: 100.h,
+          child: BottomAppBar(
+            color: Colors.transparent, elevation: 0,
+            shape: const CircularNotchedRectangle(), notchMargin: 8,
+            padding: EdgeInsets.zero,
+            child: Padding(
+              padding: EdgeInsets.symmetric(horizontal: 8.w),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: [
+                  _navItem(Icons.home_rounded,              'Home',          0, colors),
+                  _navItem(Icons.campaign_outlined,         'Announcements', 1, colors),
+                  SizedBox(width: 44.w),
+                  _navItem(Icons.notifications_outlined,    'Notifications', 2, colors),
+                  _navItem(Icons.person_outline_rounded,    'Profile',       3, colors),
+                ],
+              ),
+            ),
           ),
         ),
       ),

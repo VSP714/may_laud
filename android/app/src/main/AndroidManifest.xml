@@ -1,4 +1,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Required on Android 13+ (API 33) to show notifications, including FCM push -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
+
     <application
         android:label="may_laud"
         android:name="${applicationName}"
@@ -30,6 +33,20 @@
         <meta-data
             android:name="flutterEmbedding"
             android:value="2" />
+
+        <!-- Default small icon FCM uses for notifications built by the OS
+             when the app is backgrounded/killed. Points at the launcher
+             icon so it works out of the box — swap for a dedicated
+             monochrome notification icon (res/drawable/ic_notification)
+             for a proper Android look. -->
+        <meta-data
+            android:name="com.google.firebase.messaging.default_notification_icon"
+            android:resource="@mipmap/ic_launcher" />
+        <!-- Default notification channel id used by flutter_local_notifications
+             for foreground messages — must match PushNotificationService. -->
+        <meta-data
+            android:name="com.google.firebase.messaging.default_notification_channel_id"
+            android:value="milaud_default_channel" />
     </application>
     <!-- Required to query activities that can process text, see:
          https://developer.android.com/training/package-visibility and

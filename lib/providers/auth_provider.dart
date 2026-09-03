@@ -1,8 +1,11 @@
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' hide LocalStorage;
 import 'package:may_laud/core/local_storage.dart';
 import 'package:may_laud/services/supabase_service.dart';
+import 'package:may_laud/services/push_notification_service.dart';
 
 class User {
   final String id;
@@ -116,6 +119,12 @@ class AuthProvider extends StateNotifier<AuthState> {
         userName:  user.name,
         userEmail: user.email,
       );
+
+      // Register this device's FCM token against the now-known profile
+      // so pushes (announcements, doc-request status changes, etc.) can
+      // be targeted at it. Covers both a fresh login and session restore
+      // on cold start.
+      unawaited(PushNotificationService.instance.syncTokenWithSupabase());
     } catch (_) {
       state = state.copyWith(isAuthenticated: false, isLoading: false);
     }
@@ -216,6 +225,9 @@ class AuthProvider extends StateNotifier<AuthState> {
         'phone':   phone,
         'address': address,
       }).eq('id', uid);
+      // First time this brand-new profile row is guaranteed to exist —
+      // safe point to attach this device's push token to it.
+      unawaited(PushNotificationService.instance.syncTokenWithSupabase());
     } catch (_) {}
   }
 
@@ -238,6 +250,10 @@ class AuthProvider extends StateNotifier<AuthState> {
   Future<void> logout() async {
     state = state.copyWith(isLoading: true);
     if (!state.isGuest) {
+      // Detach this device's push token from the profile *before*
+      // signing out — clearTokenOnLogout needs the still-valid session
+      // to know whose profile row to update.
+      await PushNotificationService.instance.clearTokenOnLogout();
       await _client.auth.signOut();
     }
     await LocalStorage.clearAll();

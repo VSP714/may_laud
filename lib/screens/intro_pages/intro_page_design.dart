@@ -142,7 +142,14 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Stack(
+      // SafeArea(bottom: true) keeps the "Skip/Next" bar above the
+      // system gesture nav bar — without it, Align(0, 1) below sits
+      // flush against the physical screen edge and gets clipped on
+      // devices with a gesture bar (top stays false so the page-view
+      // artwork can still bleed to the very top of the screen).
+      body: SafeArea(
+        top: false,
+        child: Stack(
         children: [
           // PAGE VIEW
           PageView(
@@ -185,6 +192,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
             ),
           ),
         ],
+        ),
       ),
     );
   }

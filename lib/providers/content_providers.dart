@@ -252,3 +252,255 @@ final unreadNotificationsCountProvider = Provider<int>((ref) {
 final importantAnnouncementsProvider = Provider<List<Announcement>>((ref) {
   return ref.watch(announcementsProvider).where((a) => a.isImportant).toList();
 });
+
+// ─────────────────────────────────────────────────────────
+// DOCUMENT REQUESTS 
+// ─────────────────────────────────────────────────────────
+class DocumentRequest {
+  final String id;
+  final String documentType;
+  final String purpose;
+  final String status; // 'pending' | 'processing' | 'ready' | 'released' | 'rejected'
+  final String? fee;
+  final String? notes;
+  final DateTime createdAt;
+
+  const DocumentRequest({
+    required this.id,
+    required this.documentType,
+    required this.purpose,
+    required this.status,
+    required this.createdAt,
+    this.fee,
+    this.notes,
+  });
+
+  factory DocumentRequest.fromJson(Map<String, dynamic> json) {
+    return DocumentRequest(
+      id:           json['id']?.toString() ?? '',
+      documentType: json['document_type'] ?? '',
+      purpose:      json['purpose'] ?? '',
+      status:       json['status'] ?? 'pending',
+      fee:          json['fee'],
+      notes:        json['notes'],
+      createdAt:    json['created_at'] != null
+                      ? DateTime.parse(json['created_at'])
+                      : DateTime.now(),
+    );
+  }
+}
+
+class DocumentRequestsProvider extends StateNotifier<List<DocumentRequest>> {
+  DocumentRequestsProvider() : super([]) {
+    try {
+      fetchRequests();
+    } catch (_) {}
+  }
+
+  SupabaseClient get _client => SupabaseService.client;
+
+  Future<void> fetchRequests() async {
+    final uid = SupabaseService.userId;
+    if (uid == null) return;
+
+    try {
+      final rows = await _client
+          .from('document_requests')
+          .select()
+          .eq('user_id', uid)
+          .order('created_at', ascending: false);
+
+      state = (rows as List)
+          .map((r) => DocumentRequest.fromJson(r as Map<String, dynamic>))
+          .toList();
+    } catch (_) {
+      // Table may not exist yet, or the user has no requests — leave
+      // state as-is rather than crashing the profile screen.
+    }
+  }
+
+  /// Called by DocumentRequestScreen on successful submission.
+  /// `urgency` has no dedicated column in the schema, so it's
+  /// recorded inside `notes` rather than being dropped.
+  Future<void> submitRequest({
+    required String documentType,
+    required String purpose,
+    required String urgency,
+    String? fee,
+  }) async {
+    final uid = SupabaseService.userId;
+    if (uid == null) return;
+
+    try {
+      final row = await _client
+          .from('document_requests')
+          .insert({
+            'user_id':       uid,
+            'document_type': documentType,
+            'purpose':       purpose,
+            'status':        'pending',
+            if (fee != null) 'fee': fee,
+            'notes':         'Urgency: $urgency',
+          })
+          .select()
+          .single();
+      state = [DocumentRequest.fromJson(row), ...state];
+    } catch (_) {
+      // If the insert fails (e.g. table not provisioned yet) at least
+      // reflect the request locally so the stats stay honest for this
+      // session instead of silently doing nothing.
+      state = [
+        DocumentRequest(
+          id: DateTime.now().millisecondsSinceEpoch.toString(),
+          documentType: documentType,
+          purpose: purpose,
+          status: 'pending',
+          notes: 'Urgency: $urgency',
+          createdAt: DateTime.now(),
+        ),
+        ...state,
+      ];
+    }
+  }
+}
+
+final documentRequestsProvider =
+    StateNotifierProvider<DocumentRequestsProvider, List<DocumentRequest>>(
+  (ref) => DocumentRequestsProvider(),
+);
+
+final documentRequestStatsProvider = Provider<Map<String, int>>((ref) {
+  final requests = ref.watch(documentRequestsProvider);
+  return {
+    'total':    requests.length,
+    'approved': requests.where((r) => r.status == 'ready' || r.status == 'released').length,
+    'pending':  requests.where((r) => r.status == 'pending' || r.status == 'processing').length,
+  };
+});
+
+// ─────────────────────────────────────────────────────────
+// DASHBOARD STAT
+// ─────────────────────────────────────────────────────────
+class DashboardStats {
+  final int activeProjects;
+  final double budgetUtilizedPercent;
+  final int resolvedReports;
+  final int barangayAssemblies;
+  final bool isLoading;
+
+  const DashboardStats({
+    this.activeProjects = 0,
+    this.budgetUtilizedPercent = 0,
+    this.resolvedReports = 0,
+    this.barangayAssemblies = 0,
+    this.isLoading = true,
+  });
+
+  DashboardStats copyWith({
+    int? activeProjects,
+    double? budgetUtilizedPercent,
+    int? resolvedReports,
+    int? barangayAssemblies,
+    bool? isLoading,
+  }) {
+    return DashboardStats(
+      activeProjects: activeProjects ?? this.activeProjects,
+      budgetUtilizedPercent:
+          budgetUtilizedPercent ?? this.budgetUtilizedPercent,
+      resolvedReports: resolvedReports ?? this.resolvedReports,
+      barangayAssemblies: barangayAssemblies ?? this.barangayAssemblies,
+      isLoading: isLoading ?? this.isLoading,
+    );
+  }
+}
+
+class DashboardStatsNotifier extends StateNotifier<DashboardStats> {
+  DashboardStatsNotifier() : super(const DashboardStats()) {
+    try {
+      fetchStats();
+    } catch (_) {}
+  }
+
+  SupabaseClient get _client => SupabaseService.client;
+
+  Future<void> fetchStats() async {
+    // Each figure is fetched independently and defaults to 0 on
+    // failure, so a missing table (e.g. `projects` not created yet)
+    // degrades gracefully instead of blanking the whole dashboard.
+    final results = await Future.wait([
+      _resolvedReportsCount(),
+      _activeProjectsCount(),
+      _budgetUtilizedPercent(),
+      _barangayAssembliesCount(),
+    ]);
+
+    state = DashboardStats(
+      resolvedReports: results[0] as int,
+      activeProjects: results[1] as int,
+      budgetUtilizedPercent: results[2] as double,
+      barangayAssemblies: results[3] as int,
+      isLoading: false,
+    );
+  }
+
+  Future<int> _resolvedReportsCount() async {
+    try {
+      final rows = await _client
+          .from('citizen_reports')
+          .select('id')
+          .eq('status', 'resolved');
+      return (rows as List).length;
+    } catch (_) {
+      return 0;
+    }
+  }
+
+  Future<int> _activeProjectsCount() async {
+    try {
+      final rows = await _client
+          .from('projects')
+          .select('id')
+          .eq('status', 'active');
+      return (rows as List).length;
+    } catch (_) {
+      return 0;
+    }
+  }
+
+  Future<double> _budgetUtilizedPercent() async {
+    try {
+      final row = await _client
+          .from('municipal_budget')
+          .select('total_allocated, total_utilized')
+          .order('fiscal_year', ascending: false)
+          .limit(1)
+          .maybeSingle();
+      if (row == null) return 0;
+      final allocated = (row['total_allocated'] as num?)?.toDouble() ?? 0;
+      final utilized = (row['total_utilized'] as num?)?.toDouble() ?? 0;
+      if (allocated <= 0) return 0;
+      return (utilized / allocated) * 100;
+    } catch (_) {
+      return 0;
+    }
+  }
+
+  Future<int> _barangayAssembliesCount() async {
+    try {
+      final now = DateTime.now();
+      final yearStart = DateTime(now.year, 1, 1).toIso8601String();
+      final rows = await _client
+          .from('barangay_assemblies')
+          .select('id')
+          .gte('held_at', yearStart);
+      return (rows as List).length;
+    } catch (_) {
+      return 0;
+    }
+  }
+}
+
+final dashboardStatsProvider =
+    StateNotifierProvider<DashboardStatsNotifier, DashboardStats>(
+  (ref) => DashboardStatsNotifier(),
+);

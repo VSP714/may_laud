@@ -156,7 +156,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         ),
 
         SliverPadding(
-          padding: EdgeInsets.only(left: 20.w, right: 20.w, top: 24.h, bottom: 130.h),
+          // Scaffold already keeps this CustomScrollView's body above
+          // the bottomNavigationBar automatically — this padding was
+          // reserving a *second*, redundant chunk of clearance on top
+          // of that, which is what left a large dead gap of empty
+          // white space after the last card.
+          padding: EdgeInsets.only(left: 20.w, right: 20.w, top: 24.h, bottom: 24.h),
           sliver: SliverList(delegate: SliverChildListDelegate([
             _buildDashboardStats(colors),
             SizedBox(height: 28.h),
@@ -186,18 +191,28 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   // ─── DASHBOARD STATS ─────────────────────────────────
   Widget _buildDashboardStats(AppColorScheme colors) {
+    final stats = ref.watch(dashboardStatsProvider);
+    final loading = stats.isLoading;
     return Row(children: [
-      _statCard('Active\nProjects',  '12',  Icons.engineering_rounded,       _Brand.heritagePurple, colors),
+      _statCard('Active\nProjects', loading ? null : '${stats.activeProjects}',
+          Icons.engineering_rounded, _Brand.heritagePurple, colors),
       SizedBox(width: 12.w),
-      _statCard('Budget\nUtilized', '78%', Icons.account_balance_wallet_rounded, _Brand.successGreen, colors),
+      _statCard('Budget\nUtilized',
+          loading ? null : '${stats.budgetUtilizedPercent.round()}%',
+          Icons.account_balance_wallet_rounded, _Brand.successGreen, colors),
       SizedBox(width: 12.w),
-      _statCard('Resolved\nReports','243', Icons.feedback_rounded,          _Brand.infoBlue,       colors),
+      _statCard('Resolved\nReports', loading ? null : '${stats.resolvedReports}',
+          Icons.feedback_rounded, _Brand.infoBlue, colors),
       SizedBox(width: 12.w),
-      _statCard('Barangay\nAssemblies','18',Icons.groups_rounded,           _Brand.warningAmber,   colors),
+      _statCard('Barangay\nAssemblies',
+          loading ? null : '${stats.barangayAssemblies}',
+          Icons.groups_rounded, _Brand.warningAmber, colors),
     ]);
   }
 
-  Widget _statCard(String label, String value, IconData icon, Color color, AppColorScheme colors) {
+  /// [value] is null while the figures are still loading — a small
+  /// shimmer placeholder is shown instead of a fake number.
+  Widget _statCard(String label, String? value, IconData icon, Color color, AppColorScheme colors) {
     return Expanded(
       child: Container(
         padding: EdgeInsets.symmetric(vertical: 16.h, horizontal: 10.w),
@@ -214,7 +229,15 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             child: Icon(icon, size: 20.sp, color: color),
           ),
           SizedBox(height: 10.h),
-          Text(value, style: TextStyle(fontSize: 20.sp, fontWeight: FontWeight.w800, color: colors.textPrimary, height: 1)),
+          value == null
+              ? SizedBox(
+                  width: 28.w, height: 18.h,
+                  child: Center(child: SizedBox(
+                    width: 14.w, height: 14.w,
+                    child: CircularProgressIndicator(strokeWidth: 2, color: color.withValues(alpha: .5)),
+                  )),
+                )
+              : Text(value, style: TextStyle(fontSize: 20.sp, fontWeight: FontWeight.w800, color: colors.textPrimary, height: 1)),
           SizedBox(height: 4.h),
           Text(label, textAlign: TextAlign.center,
               style: TextStyle(fontSize: 10.sp, fontWeight: FontWeight.w500, color: colors.textMuted, height: 1.3)),
@@ -397,7 +420,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         if (i > 0) SizedBox(height: 16.h),
         _buildAnnouncementCard(
           category:    preview[i].category.toUpperCase(),
-          accentColor: preview[i].isImportant ? _Brand.dangerRed : _Brand.heritagePurple,
+          // Was hard-coded to _Brand.heritagePurple, which is a deep
+          // saturated purple tuned for light backgrounds. At low alpha
+          // over the dark card surface it washed out to near-black —
+          // colors.accentPurple resolves to a lighter lavender in dark
+          // mode so the cover art, badge, and "Read More" pill stay
+          // visible in both themes.
+          accentColor: preview[i].isImportant ? _Brand.dangerRed : colors.accentPurple,
           icon:        preview[i].isImportant ? Icons.priority_high_rounded : Icons.campaign_rounded,
           title:       preview[i].title,
           excerpt:     preview[i].description,
