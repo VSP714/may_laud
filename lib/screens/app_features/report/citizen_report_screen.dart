@@ -7,6 +7,8 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:geolocator/geolocator.dart';
+import 'package:geocoding/geocoding.dart';
 import 'dart:io';
 
 import '../../home/home.dart';
@@ -93,6 +95,7 @@ class _CitizenReportScreenState extends ConsumerState<CitizenReportScreen> {
   final List<File> _attachedPhotos = [];
   final ImagePicker _picker = ImagePicker();
   bool _isSubmitting = false;
+  bool _isFetchingLocation = false;
 
   final CitizenReportService _reportService = CitizenReportService();
 
@@ -184,6 +187,81 @@ class _CitizenReportScreenState extends ConsumerState<CitizenReportScreen> {
   void _removePhoto(int index) =>
       setState(() => _attachedPhotos.removeAt(index));
 
+  // ─── GET CURRENT GPS LOCATION ────────────────────────
+  // FIX — the pin button used to just show a "Getting current
+  // location..." snackbar and never actually fetched anything, so the
+  // field always had to be typed by hand. This now reads the device GPS,
+  // reverse-geocodes it to a readable street/barangay address, and fills
+  // the Location field with it.
+  Future<void> _useCurrentLocation() async {
+    if (_isFetchingLocation) return;
+    setState(() => _isFetchingLocation = true);
+
+    try {
+      // 1. Make sure location services are actually on.
+      final serviceEnabled = await Geolocator.isLocationServiceEnabled();
+      if (!serviceEnabled) {
+        if (!mounted) return;
+        _showSnack('Turn on location services to use this.');
+        return;
+      }
+
+      // 2. Check / request permission.
+      var permission = await Geolocator.checkPermission();
+      if (permission == LocationPermission.denied) {
+        permission = await Geolocator.requestPermission();
+        if (permission == LocationPermission.denied) {
+          if (!mounted) return;
+          _showSnack('Location permission was denied.');
+          return;
+        }
+      }
+      if (permission == LocationPermission.deniedForever) {
+        if (!mounted) return;
+        _showSnack(
+            'Location permission is permanently denied. Enable it from app settings.');
+        return;
+      }
+
+      // 3. Fetch the current position.
+      final position = await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.high,
+        timeLimit: const Duration(seconds: 12),
+      );
+
+      // 4. Reverse-geocode to a human-readable address so the field matches
+      // the "Street, Barangay, or Landmark" hint instead of showing raw
+      // coordinates.
+      String address =
+          '${position.latitude.toStringAsFixed(5)}, ${position.longitude.toStringAsFixed(5)}';
+      try {
+        final placemarks = await placemarkFromCoordinates(
+            position.latitude, position.longitude);
+        if (placemarks.isNotEmpty) {
+          final p = placemarks.first;
+          final parts = [
+            p.street,
+            p.subLocality, // barangay, in PH addresses
+            p.locality, // municipality/city
+          ].where((s) => s != null && s.trim().isNotEmpty).toSet().toList();
+          if (parts.isNotEmpty) address = parts.join(', ');
+        }
+      } catch (_) {
+        // Reverse geocoding can fail (no network, no geocoder on device).
+        // Fall back to the raw coordinates already set above rather than
+        // blocking the resident from submitting the report.
+      }
+
+      if (!mounted) return;
+      setState(() => _locationController.text = address);
+    } catch (e) {
+      if (!mounted) return;
+      _showSnack('Could not get your location. Please enter it manually.');
+    } finally {
+      if (mounted) setState(() => _isFetchingLocation = false);
+    }
+  }
+
   // ─── SUBMIT REPORT WITH GUEST CHECK ──────────────────
   Future<void> _submitReport() async {
     // ✅ Guest restriction: guests cannot submit reports
@@ -197,7 +275,7 @@ class _CitizenReportScreenState extends ConsumerState<CitizenReportScreen> {
 
     try {
       final result = await _reportService.submitReport(
-        categoryId: _selectedCategory,
+        category: _selectedCategory,
         subcategory: _titleController.text.trim(),
         description: _descriptionController.text.trim(),
         location: _locationController.text.trim(),
@@ -212,10 +290,33 @@ class _CitizenReportScreenState extends ConsumerState<CitizenReportScreen> {
       );
     } catch (e) {
       if (!mounted) return;
-      _showSnack('Something went wrong. Please try again.');
+      // FIX — surface the real reason instead of a generic message, so a
+      // storage/RLS/network failure is diagnosable instead of a guess.
+      // Common causes: the `report-photos` storage bucket doesn't exist
+      // yet, or its policies don't allow the signed-in resident to upload.
+      debugPrint('Citizen report submission failed: $e');
+      _showSnack(_friendlyErrorMessage(e));
     } finally {
       if (mounted) setState(() => _isSubmitting = false);
     }
+  }
+
+  String _friendlyErrorMessage(Object e) {
+    final msg = e.toString().toLowerCase();
+    if (msg.contains('bucket not found') || msg.contains('report-photos')) {
+      return 'Could not upload your photo (storage isn\'t set up yet). '
+          'Try submitting without a photo, or contact support.';
+    }
+    if (msg.contains('row-level security') || msg.contains('policy')) {
+      return 'You don\'t have permission to submit this report right now. '
+          'Please contact support.';
+    }
+    if (msg.contains('socketexception') ||
+        msg.contains('failed host lookup') ||
+        msg.contains('network')) {
+      return 'No internet connection. Please check your network and try again.';
+    }
+    return 'Something went wrong. Please try again.';
   }
 
   void _showSuccessDialog({
@@ -669,7 +770,7 @@ class _CitizenReportScreenState extends ConsumerState<CitizenReportScreen> {
               ),
               SizedBox(width: 12.w),
               GestureDetector(
-                onTap: () => _showSnack('Getting current location...'),
+                onTap: _isFetchingLocation ? null : _useCurrentLocation,
                 child: Container(
                   width: 52.w,
                   height: 52.w,
@@ -679,8 +780,17 @@ class _CitizenReportScreenState extends ConsumerState<CitizenReportScreen> {
                     border: Border.all(
                         color: ReportColors.heritagePurple.withValues(alpha: 0.15)),
                   ),
-                  child: Icon(Icons.my_location_rounded,
-                      size: 22.sp, color: ReportColors.heritagePurple),
+                  child: _isFetchingLocation
+                      ? Padding(
+                          padding: EdgeInsets.all(14.w),
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            valueColor: const AlwaysStoppedAnimation<Color>(
+                                ReportColors.heritagePurple),
+                          ),
+                        )
+                      : Icon(Icons.my_location_rounded,
+                          size: 22.sp, color: ReportColors.heritagePurple),
                 ),
               ),
             ],

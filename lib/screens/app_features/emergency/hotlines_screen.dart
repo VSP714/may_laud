@@ -9,6 +9,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../theme/app_theme.dart';
 import '../../../theme/app_colors.dart';
+import '../../../services/app_services.dart';
 
 // ─── BRAND PALETTE — delegates to AppColors (single source of truth) ───
 class HotlineColors {
@@ -116,6 +117,45 @@ class EmergencyContact {
   }
 }
 
+// ─── SUPABASE ROW MAPPING ───────────────────────────────
+// The web admin panel's Emergency Hotline page writes rows to the
+// `hotlines` table with a `type` of General/Police/Fire/Medical/
+// Disaster/Social. Map that onto this screen's ContactType (used for
+// color grouping) and an icon.
+ContactType _contactTypeFor(String? type) {
+  switch (type) {
+    case 'Police':
+    case 'Fire':
+    case 'Disaster':
+      return ContactType.emergency;
+    case 'Medical':
+      return ContactType.health;
+    case 'Social':
+      return ContactType.services;
+    case 'General':
+    default:
+      return ContactType.government;
+  }
+}
+
+IconData _iconFor(String? type) {
+  switch (type) {
+    case 'Police':
+      return Icons.local_police_rounded;
+    case 'Fire':
+      return Icons.fire_truck_rounded;
+    case 'Medical':
+      return Icons.medical_services_rounded;
+    case 'Disaster':
+      return Icons.shield_rounded;
+    case 'Social':
+      return Icons.home_work_rounded;
+    case 'General':
+    default:
+      return Icons.account_balance_rounded;
+  }
+}
+
 // ─── SCREEN ────────────────────────────────────────────
 class HotlinesScreen extends StatefulWidget {
   const HotlinesScreen({super.key});
@@ -138,85 +178,20 @@ class _HotlinesScreenState extends State<HotlinesScreen> {
   Color get _dividerColor => _isDark ? _cs!.onSurface.withValues(alpha: 0.12) : AppTheme.neutralGray200;
   Color get _chipBorder => _isDark ? _cs!.onSurface.withValues(alpha: 0.2) : AppTheme.neutralGray200;
 
-  late final List<EmergencyContact> _contacts;
+  // FIX — this used to be a `late final` list of hardcoded contacts and
+  // never touched Supabase, so hotlines added/edited/removed from the web
+  // admin panel never showed up here. It's now fetched live from the same
+  // `hotlines` table the web panel writes to.
+  final HotlineService _hotlineService = HotlineService();
+  List<EmergencyContact> _contacts = [];
+  bool _loading = true;
+  String? _error;
+
   late final List<Map<String, dynamic>> _filterOptions;
 
   @override
   void initState() {
     super.initState();
-    _contacts = [
-      const EmergencyContact(
-        name: 'Police Station',
-        number: '911',
-        description: '24/7 emergency police assistance and rapid response',
-        type: ContactType.emergency,
-        icon: Icons.local_police_rounded,
-      ),
-      const EmergencyContact(
-        name: 'Fire Department',
-        number: '912',
-        description: 'Fire suppression, rescue and disaster response',
-        type: ContactType.emergency,
-        icon: Icons.fire_truck_rounded,
-      ),
-      const EmergencyContact(
-        name: 'Ambulance / EMS',
-        number: '913',
-        description: 'Emergency medical services and patient transport',
-        type: ContactType.emergency,
-        icon: Icons.medical_services_rounded,
-      ),
-      const EmergencyContact(
-        name: 'MDRRMO',
-        number: '(054) 555-9012',
-        description: 'Disaster Risk Reduction and Management Office',
-        type: ContactType.emergency,
-        icon: Icons.shield_rounded,
-      ),
-      const EmergencyContact(
-        name: 'Milaor Municipal Hall',
-        number: '(054) 555-1234',
-        description: 'Local government administration and services',
-        type: ContactType.government,
-        icon: Icons.account_balance_rounded,
-      ),
-      const EmergencyContact(
-        name: 'Barangay Hall',
-        number: '(054) 555-5678',
-        description: 'Barangay services, clearance and community concerns',
-        type: ContactType.government,
-        icon: Icons.home_work_rounded,
-      ),
-      const EmergencyContact(
-        name: 'Health Center',
-        number: '(054) 555-3456',
-        description: 'Community health, checkups and medical services',
-        type: ContactType.health,
-        icon: Icons.local_hospital_rounded,
-      ),
-      const EmergencyContact(
-        name: 'Public Works',
-        number: '(054) 555-7890',
-        description: 'Roads, drainage and public infrastructure',
-        type: ContactType.services,
-        icon: Icons.engineering_rounded,
-      ),
-      const EmergencyContact(
-        name: 'Water District',
-        number: '(054) 555-2345',
-        description: 'Water supply concerns and service interruptions',
-        type: ContactType.utilities,
-        icon: Icons.water_drop_rounded,
-      ),
-      const EmergencyContact(
-        name: 'Electric Cooperative',
-        number: '(054) 555-6789',
-        description: 'Power outages and electrical service concerns',
-        type: ContactType.utilities,
-        icon: Icons.electrical_services_rounded,
-      ),
-    ];
-
     _filterOptions = [
       {'label': 'All', 'type': null},
       {'label': 'Emergency', 'type': ContactType.emergency},
@@ -225,6 +200,41 @@ class _HotlinesScreenState extends State<HotlinesScreen> {
       {'label': 'Services', 'type': ContactType.services},
       {'label': 'Utilities', 'type': ContactType.utilities},
     ];
+    _fetchHotlines();
+  }
+
+  Future<void> _fetchHotlines() async {
+    setState(() {
+      _loading = true;
+      _error = null;
+    });
+    try {
+      final rows = await _hotlineService.fetchHotlines();
+      if (!mounted) return;
+      setState(() {
+        _contacts = rows.map((row) {
+          final type = row['type'] as String?;
+          final name = (row['name'] as String?)?.trim();
+          final number = (row['number'] ?? row['phone'])?.toString().trim();
+          return EmergencyContact(
+            name: (name == null || name.isEmpty) ? 'Hotline' : name,
+            number: (number == null || number.isEmpty) ? '—' : number,
+            description: (row['description'] as String?) ??
+                (row['category'] as String?) ??
+                (type ?? ''),
+            type: _contactTypeFor(type),
+            icon: _iconFor(type),
+          );
+        }).toList();
+        _loading = false;
+      });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _error = 'Could not load hotlines. Pull down to try again.';
+        _loading = false;
+      });
+    }
   }
 
   List<EmergencyContact> get _filtered => _selectedType == null
@@ -278,35 +288,53 @@ class _HotlinesScreenState extends State<HotlinesScreen> {
     _cs = theme.colorScheme;
     return Scaffold(
       backgroundColor: _scaffoldBg,
-      body: CustomScrollView(
-        physics: const BouncingScrollPhysics(),
-        slivers: [
-          _buildAppBar(),
-          SliverPadding(
-            padding: EdgeInsets.fromLTRB(20.w, 16.h, 20.w, 40.h),
-            sliver: SliverList(
-              delegate: SliverChildListDelegate([
-                _buildEmergencyBanner(),
-                SizedBox(height: 24.h),
-                _buildFilterChips(),
-                SizedBox(height: 24.h),
-                _buildSectionLabel('Contact Directory', _filtered.length),
-                SizedBox(height: 12.h),
-                if (_filtered.isNotEmpty)
-                  ...List.generate(_filtered.length, (i) {
-                    return _buildContactRow(_filtered[i])
-                        .animate()
-                        .fadeIn(duration: 350.ms, delay: (70 * i).ms)
-                        .slideY(begin: 0.06, end: 0, duration: 350.ms);
-                  })
-                else
-                  _buildEmptyState(),
-                SizedBox(height: 32.h),
-                _buildFooterTip(),
-              ]),
+      body: RefreshIndicator(
+        onRefresh: _fetchHotlines,
+        child: CustomScrollView(
+          physics: const AlwaysScrollableScrollPhysics(
+              parent: BouncingScrollPhysics()),
+          slivers: [
+            _buildAppBar(),
+            SliverPadding(
+              padding: EdgeInsets.fromLTRB(20.w, 16.h, 20.w, 40.h),
+              sliver: SliverList(
+                delegate: SliverChildListDelegate([
+                  _buildEmergencyBanner(),
+                  SizedBox(height: 24.h),
+                  _buildFilterChips(),
+                  SizedBox(height: 24.h),
+                  _buildSectionLabel('Contact Directory', _filtered.length),
+                  SizedBox(height: 12.h),
+                  if (_loading)
+                    Padding(
+                      padding: EdgeInsets.symmetric(vertical: 32.h),
+                      child: Center(
+                        child: CircularProgressIndicator(
+                            color: HotlineColors.heritagePurple),
+                      ),
+                    )
+                  else if (_error != null)
+                    _buildMessageState(_error!, icon: Icons.wifi_off_rounded)
+                  else if (_filtered.isNotEmpty)
+                    ...List.generate(_filtered.length, (i) {
+                      return _buildContactRow(_filtered[i])
+                          .animate()
+                          .fadeIn(duration: 350.ms, delay: (70 * i).ms)
+                          .slideY(begin: 0.06, end: 0, duration: 350.ms);
+                    })
+                  else if (_contacts.isEmpty)
+                    _buildMessageState(
+                        'No hotlines have been added yet.',
+                        icon: Icons.campaign_outlined)
+                  else
+                    _buildEmptyState(),
+                  SizedBox(height: 32.h),
+                  _buildFooterTip(),
+                ]),
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -334,6 +362,11 @@ class _HotlinesScreenState extends State<HotlinesScreen> {
       ),
       centerTitle: false,
       actions: [
+        IconButton(
+          onPressed: _loading ? null : _fetchHotlines,
+          icon: const Icon(Icons.refresh_rounded, color: AppColors.neutralWhite),
+          tooltip: 'Refresh',
+        ),
         Padding(
           padding: EdgeInsets.only(right: 16.w),
           child: Container(
@@ -669,6 +702,30 @@ class _HotlinesScreenState extends State<HotlinesScreen> {
             ),
           ),
         ),
+      ),
+    );
+  }
+
+  // ─── LOADING-ERROR / EMPTY-DIRECTORY STATE ───────────
+  // Used both when the fetch itself failed and when it succeeded but the
+  // admin simply hasn't added any hotlines yet — distinct from
+  // _buildEmptyState() below, which is for "no results for this filter".
+  Widget _buildMessageState(String message, {required IconData icon}) {
+    return Padding(
+      padding: EdgeInsets.symmetric(vertical: 48.h),
+      child: Column(
+        children: [
+          Icon(icon, size: 48.sp, color: _dividerColor),
+          SizedBox(height: 12.h),
+          Text(
+            message,
+            textAlign: TextAlign.center,
+            style: GoogleFonts.inter(
+              fontSize: 14.sp,
+              color: _mutedText,
+            ),
+          ),
+        ],
       ),
     );
   }

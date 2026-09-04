@@ -117,9 +117,70 @@ class AnnouncementsProvider extends StateNotifier<List<Announcement>> {
     try {
       fetchAnnouncements();
     } catch (_) {}
+    _subscribeToRealtimeChanges();
   }
 
   SupabaseClient get _client => SupabaseService.client;
+
+  // FIX — live updates: without this the provider only ever fetches once,
+  // on construction, so a new row inserted in Supabase never shows up
+  // until the whole app is restarted (which recreates the provider).
+  // Subscribing to Postgres Changes on the `announcements` table means
+  // new/edited/deleted announcements reach the app immediately, no
+  // manual reload or app restart required.
+  RealtimeChannel? _channel;
+
+  void _subscribeToRealtimeChanges() {
+    try {
+      _channel = _client
+          .channel('public:announcements')
+          .onPostgresChanges(
+            event: PostgresChangeEvent.all,
+            schema: 'public',
+            table: 'announcements',
+            callback: (payload) => _handleRealtimeChange(payload),
+          )
+          .subscribe();
+    } catch (_) {
+      // Realtime may be unavailable (e.g. offline) — the manual
+      // refresh button / pull-to-refresh still works as a fallback.
+    }
+  }
+
+  void _handleRealtimeChange(PostgresChangePayload payload) {
+    switch (payload.eventType) {
+      case PostgresChangeEvent.insert:
+        final a = Announcement.fromJson(payload.newRecord);
+        // Guard against duplicates if a manual fetch raced the event.
+        if (state.any((e) => e.id == a.id)) return;
+        state = [a, ...state]
+          ..sort((x, y) => y.date.compareTo(x.date));
+        break;
+      case PostgresChangeEvent.update:
+        final updated = Announcement.fromJson(payload.newRecord);
+        state = state.map((a) {
+          if (a.id != updated.id) return a;
+          // Preserve the locally-known read status; it isn't part of
+          // the `announcements` row itself (it lives in
+          // `announcement_reads`), so don't let the update clobber it.
+          return updated.copyWith(isRead: a.isRead);
+        }).toList();
+        break;
+      case PostgresChangeEvent.delete:
+        final oldId = payload.oldRecord['id'] as String?;
+        if (oldId == null) return;
+        state = state.where((a) => a.id != oldId).toList();
+        break;
+      default:
+        break;
+    }
+  }
+
+  @override
+  void dispose() {
+    _channel?.unsubscribe();
+    super.dispose();
+  }
 
   Future<void> fetchAnnouncements() async {
     try {

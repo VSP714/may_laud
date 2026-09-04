@@ -227,8 +227,18 @@ class CitizenReportService {
     ];
   }
 
+  // FIX — `category` is now the category's display name directly (e.g.
+  // "Infrastructure"), not an id to look up. The old version took a
+  // `categoryId` and matched it against fetchReportCategories()' ids
+  // ('1'..'6'), but the caller (citizen_report_screen.dart) was actually
+  // passing the category's *name*, which never matched any id — every
+  // report silently got saved with category "Other" regardless of what
+  // the resident picked. Passing the name straight through avoids that
+  // indirection entirely (the screen's own category list doesn't even
+  // match fetchReportCategories()' set, so the id lookup was never going
+  // to be reliable).
   Future<Map<String, dynamic>> submitReport({
-    required String categoryId,
+    required String category,
     required String subcategory,
     required String description,
     required String location,
@@ -252,17 +262,11 @@ class CitizenReportService {
       }
     }
 
-    final categories = await fetchReportCategories();
-    final cat = categories.firstWhere(
-      (c) => c['id'] == categoryId,
-      orElse: () => {'name': 'Other'},
-    );
-
     final row = await SupabaseService.client
         .from('citizen_reports')
         .insert({
           'user_id':     uid,
-          'category':    cat['name'],
+          'category':    category,
           'subcategory': subcategory,
           'description': description,
           'location':    location,
@@ -276,6 +280,15 @@ class CitizenReportService {
       'reportId':            row['id'],
       'status':              'received',
       'submittedAt':         row['created_at'],
+      // FIX — the caller reads `result['assignedTo']` to show which
+      // department the report went to. That key never existed here, so
+      // `result['assignedTo'] as String` threw a null-cast TypeError on
+      // *every* successful submission, which the screen's catch block
+      // then showed to the resident as "Something went wrong. Please try
+      // again." — even though the report had already been saved. Residents
+      // saw a failure message every time and had no way to know the
+      // report actually went through.
+      'assignedTo':          '$category Department',
       'estimatedResolution': '3-5 business days',
       'message':             'Thank you! Your report has been received.',
     };

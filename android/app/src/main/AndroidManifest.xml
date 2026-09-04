@@ -2,6 +2,13 @@
     <!-- Required on Android 13+ (API 33) to show notifications, including FCM push -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
 
+    <!-- Required for the citizen report screen's "use my current location"
+         button (Geolocator). FINE is the precise GPS permission; COARSE is
+         included as a fallback the OS can grant instead if the user
+         declines precise location. -->
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
+
     <application
         android:label="may_laud"
         android:name="${applicationName}"

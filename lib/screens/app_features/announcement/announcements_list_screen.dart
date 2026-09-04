@@ -197,39 +197,64 @@ class _AnnouncementsListScreenState
             ),
             // List
             Expanded(
-              child: announcements.isEmpty
-                  ? Center(
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
+              child: RefreshIndicator(
+                // FIX — pull-to-refresh: manual fallback for pulling in new
+                // announcements immediately, in addition to the realtime
+                // subscription in AnnouncementsProvider.
+                onRefresh: () => ref
+                    .read(announcementsProvider.notifier)
+                    .fetchAnnouncements(),
+                child: announcements.isEmpty
+                    ? ListView(
+                        // Wrapped in a scrollable ListView (rather than a bare
+                        // Center) so RefreshIndicator's pull gesture still
+                        // works when there's nothing to show yet.
+                        physics: const AlwaysScrollableScrollPhysics(),
                         children: [
-                          Icon(Icons.campaign_outlined,
-                              size: 56.sp,
-                              color: accentPurple.withValues(alpha: 0.3)),
-                          SizedBox(height: 16.h),
-                          Text(
-                            'No announcements yet',
-                            style: TextStyle(
-                                fontSize: 16.sp,
-                                color: colors.textMuted),
+                          SizedBox(height: 120.h),
+                          Center(
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(Icons.campaign_outlined,
+                                    size: 56.sp,
+                                    color:
+                                        accentPurple.withValues(alpha: 0.3)),
+                                SizedBox(height: 16.h),
+                                Text(
+                                  'No announcements yet',
+                                  style: TextStyle(
+                                      fontSize: 16.sp,
+                                      color: colors.textMuted),
+                                ),
+                              ],
+                            ),
                           ),
                         ],
-                      ),
-                    )
-                  : filtered.isEmpty
-                      ? Center(
-                          child: Text(
-                            'No results for your filters.',
-                            style: TextStyle(
-                                fontSize: 14.sp,
-                                color: colors.textMuted),
+                      )
+                    : filtered.isEmpty
+                        ? ListView(
+                            physics: const AlwaysScrollableScrollPhysics(),
+                            children: [
+                              SizedBox(height: 120.h),
+                              Center(
+                                child: Text(
+                                  'No results for your filters.',
+                                  style: TextStyle(
+                                      fontSize: 14.sp,
+                                      color: colors.textMuted),
+                                ),
+                              ),
+                            ],
+                          )
+                        : ListView.builder(
+                            physics: const AlwaysScrollableScrollPhysics(),
+                            padding: EdgeInsets.all(16.w),
+                            itemCount: filtered.length,
+                            itemBuilder: (_, i) =>
+                                _buildCard(filtered[i], isDark, cs, colors),
                           ),
-                        )
-                      : ListView.builder(
-                          padding: EdgeInsets.all(16.w),
-                          itemCount: filtered.length,
-                          itemBuilder: (_, i) =>
-                              _buildCard(filtered[i], isDark, cs, colors),
-                        ),
+              ),
             ),
           ],
         ),
