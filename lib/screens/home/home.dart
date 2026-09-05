@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:may_laud/providers/app_providers.dart';
 import 'package:may_laud/providers/auth_provider.dart';
 import 'package:may_laud/providers/content_providers.dart';
 import 'package:may_laud/theme/app_theme.dart';
@@ -122,20 +123,48 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                             ),
                           ],
                         )),
-                        Container(
-                          width: 44.w, height: 44.w,
-                          decoration: BoxDecoration(shape: BoxShape.circle, color: AppColors.neutralWhite.withValues(alpha: .15)),
-                          child: Stack(children: [
-                            Center(child: Icon(Icons.notifications_outlined, size: 22.sp, color: AppColors.neutralWhite)),
-                            Positioned(
-                              top: 10.h, right: 10.w,
-                              child: Container(
-                                width: 9.w, height: 9.w,
-                                decoration: const BoxDecoration(shape: BoxShape.circle, color: _Brand.dangerRed),
-                              ),
+                        // FIX — this bell used to be purely decorative: a
+                        // static red dot that showed regardless of whether
+                        // there was anything unread, and tapping it did
+                        // nothing. It now reflects the real count from
+                        // `unreadNotificationsCountProvider` (which watches
+                        // the same Supabase-backed, realtime-updated
+                        // `notificationsProvider` the Notifications tab
+                        // uses) and jumps straight to that tab on tap.
+                        Builder(builder: (context) {
+                          final unread = ref.watch(unreadNotificationsCountProvider);
+                          return InkWell(
+                            borderRadius: BorderRadius.circular(22.r),
+                            onTap: () => ref.read(bottomNavProvider.notifier).state = 2,
+                            child: Container(
+                              width: 44.w, height: 44.w,
+                              decoration: BoxDecoration(shape: BoxShape.circle, color: AppColors.neutralWhite.withValues(alpha: .15)),
+                              child: Stack(children: [
+                                Center(child: Icon(Icons.notifications_outlined, size: 22.sp, color: AppColors.neutralWhite)),
+                                if (unread > 0)
+                                  Positioned(
+                                    top: 6.h, right: 6.w,
+                                    child: Container(
+                                      padding: EdgeInsets.symmetric(horizontal: unread > 9 ? 4.w : 0),
+                                      width: unread > 9 ? null : 16.w,
+                                      height: 16.w,
+                                      alignment: Alignment.center,
+                                      decoration: BoxDecoration(
+                                        shape: unread > 9 ? BoxShape.rectangle : BoxShape.circle,
+                                        borderRadius: unread > 9 ? BorderRadius.circular(8.r) : null,
+                                        color: _Brand.dangerRed,
+                                        border: Border.all(color: _Brand.deepAnchor, width: 1.5),
+                                      ),
+                                      child: Text(
+                                        unread > 9 ? '9+' : '$unread',
+                                        style: TextStyle(fontSize: 9.sp, fontWeight: FontWeight.w700, color: Colors.white, height: 1),
+                                      ),
+                                    ),
+                                  ),
+                              ]),
                             ),
-                          ]),
-                        ),
+                          );
+                        }),
                       ]),
                       SizedBox(height: 14.h),
                       Row(children: [

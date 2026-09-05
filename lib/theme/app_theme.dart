@@ -1,6 +1,6 @@
 // ============================================================
 //  app_theme.dart
-//  Milaud Design System — Barrel & Shared Design Tokens
+//  Maylaud Design System — Barrel & Shared Design Tokens
 //
 //  This file is the SINGLE import most widgets need:
 //    import 'package:may_laud/theme/app_theme.dart';

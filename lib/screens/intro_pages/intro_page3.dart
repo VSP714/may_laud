@@ -41,7 +41,7 @@ class IntroPage3 extends StatelessWidget {
                 children: [
                   SizedBox(height: 20.h),
                   Text(
-                    "Your Milaud\nCommunity Assistant",
+                    "Your Maylaud\nCommunity Assistant",
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       fontFamily: 'Montserrat',

@@ -145,7 +145,7 @@ class _WelcomeBackScreenState extends ConsumerState<WelcomeBackScreen> {
                   ),
                   SizedBox(height: 15.h),
                   Text(
-                    "Welcome to MiLaud",
+                    "Welcome to Maylaud",
                     style: TextStyle(
                         fontSize: 32.sp,
                         fontWeight: FontWeight.w700,

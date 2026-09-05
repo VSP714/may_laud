@@ -214,7 +214,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         ),
       ])),
       _actionTile(Icons.help_outline, 'Help & Support', 'FAQs, guides, and contact support', () => showHelpSupportSheet(context), colors),
-      _actionTile(Icons.info_outline, 'About Milaud', 'App version, terms, and privacy policy', () => showAboutMilaudSheet(context), colors,
+      _actionTile(Icons.info_outline, 'About Maylaud', 'App version, terms, and privacy policy', () => showAboutMilaudSheet(context), colors,
           trailing: Container(
             padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
             decoration: BoxDecoration(color: AppColors.heritagePurple.withValues(alpha: .08), borderRadius: BorderRadius.circular(8.r)),

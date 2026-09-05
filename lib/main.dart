@@ -92,7 +92,7 @@ class _MyAppState extends ConsumerState<MyApp> {
         return MaterialApp(
           navigatorKey: navigatorKey,
           debugShowCheckedModeBanner: false,
-          title: 'Milaud - Participatory Governance',
+          title: 'Maylaud - Participatory Governance',
           theme: AppTheme.lightTheme(),
           darkTheme: AppTheme.darkTheme(),
           themeMode: isDarkMode ? ThemeMode.dark : ThemeMode.light,

@@ -1,31 +1,45 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:may_laud/theme/app_colors.dart';
+import 'package:may_laud/providers/content_providers.dart';
+import 'package:may_laud/services/app_services.dart';
 
-// _kPurple / _kPurple2 removed — use AppColors.heritagePurple / AppColors.riverFlow
-
-class NotificationsScreen extends StatefulWidget {
+// FIX — this screen used to render a `_notifications` list that was
+// hardcoded in the widget's state (6 fake entries, seeded once from
+// `DateTime.now()`), so nothing an admin did on the web dashboard (e.g.
+// changing a citizen report's status to "resolved") ever showed up here.
+// It's now backed by `notificationsProvider`, which is the same
+// Supabase-backed provider PushNotificationService refreshes whenever a
+// push arrives — and which itself listens for realtime Postgres changes
+// on the `notifications` table, so a status change made on the web
+// appears here immediately, with or without a push actually landing.
+class NotificationsScreen extends ConsumerStatefulWidget {
   const NotificationsScreen({super.key});
   @override
-  State<NotificationsScreen> createState() => _NotificationsScreenState();
+  ConsumerState<NotificationsScreen> createState() => _NotificationsScreenState();
 }
 
-class _NotificationsScreenState extends State<NotificationsScreen> {
-  final List<NotificationItem> _notifications = [
-    NotificationItem(id:'1', title:'Water Interruption Notice', message:'Water supply will be interrupted tomorrow from 8 AM to 4 PM for maintenance.', timestamp:DateTime.now().subtract(const Duration(hours:2)), type:'alert', isRead:false),
-    NotificationItem(id:'2', title:'Document Request Approved', message:'Your Barangay Clearance request has been approved. You can now claim it at the barangay hall.', timestamp:DateTime.now().subtract(const Duration(days:1)), type:'update', isRead:true),
-    NotificationItem(id:'3', title:'Community Town Hall', message:'Join the community town hall meeting this Saturday at 3 PM at the barangay hall.', timestamp:DateTime.now().subtract(const Duration(days:2)), type:'event', isRead:true),
-    NotificationItem(id:'4', title:'Flood Alert Update', message:'Bicol River water level is rising. Residents near the river are advised to prepare.', timestamp:DateTime.now().subtract(const Duration(days:3)), type:'alert', isRead:false),
-    NotificationItem(id:'5', title:'Tax Payment Reminder', message:'Last day for real property tax payment is on December 15, 2024.', timestamp:DateTime.now().subtract(const Duration(days:4)), type:'reminder', isRead:true),
-    NotificationItem(id:'6', title:'Vaccination Schedule', message:'Free flu vaccination for seniors will be available next week at the health center.', timestamp:DateTime.now().subtract(const Duration(days:5)), type:'health', isRead:true),
-  ];
-
+class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
   String _filter = 'all';
+  bool _isRefreshing = false;
+
+  Future<void> _refresh() async {
+    setState(() => _isRefreshing = true);
+    try {
+      await ref.read(notificationServiceProvider).fetchNotifications();
+    } finally {
+      if (mounted) setState(() => _isRefreshing = false);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     final colors = AppColors.of(context);
-    final filtered = _notifications.where((n) {
+    final notifications = ref.watch(notificationsProvider);
+    final unreadCount = notifications.where((n) => !n.isRead).length;
+
+    final filtered = notifications.where((n) {
       if (_filter == 'unread') return !n.isRead;
       if (_filter == 'alerts') return n.type == 'alert';
       return true;
@@ -51,52 +65,78 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
           SizedBox(width: 12.w),
         ],
       ),
-      body: Column(children: [
-        Container(
-          padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 12.h),
-          color: colors.surface,
-          child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-            Text('${_notifications.where((n) => !n.isRead).length} Unread',
-                style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.w600, color: AppColors.heritagePurple)),
-            TextButton(
-              onPressed: () => setState(() { for (var n in _notifications) n.isRead = true; }),
-              child: Text('Mark All as Read', style: TextStyle(fontSize: 14.sp, color: AppColors.riverFlow, fontWeight: FontWeight.w600)),
-            ),
-          ]),
-        ),
-        SizedBox(height: 8.h),
-        Expanded(
-          child: filtered.isEmpty
-              ? Center(child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-                  Icon(Icons.notifications_none, size: 64.sp, color: colors.iconMuted),
-                  SizedBox(height: 16.h),
-                  Text('No notifications', style: TextStyle(fontSize: 20.sp, fontWeight: FontWeight.w600, color: colors.textSecondary)),
-                  SizedBox(height: 8.h),
-                  Text(_filter == 'unread' ? 'You have no unread notifications' : _filter == 'alerts' ? 'No alert notifications' : 'All notifications are cleared',
-                      style: TextStyle(fontSize: 14.sp, color: colors.textMuted)),
-                ]))
-              : ListView.separated(
-                  padding: EdgeInsets.symmetric(vertical: 8.h),
-                  itemCount: filtered.length,
-                  separatorBuilder: (_, __) => Divider(height: 1, color: colors.divider),
-                  itemBuilder: (_, i) => _buildItem(filtered[i], colors),
-                ),
-        ),
-      ]),
+      body: RefreshIndicator(
+        onRefresh: _refresh,
+        color: AppColors.heritagePurple,
+        child: Column(children: [
+          Container(
+            padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 12.h),
+            color: colors.surface,
+            child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+              Text('$unreadCount Unread',
+                  style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.w600, color: AppColors.heritagePurple)),
+              TextButton(
+                onPressed: unreadCount == 0
+                    ? null
+                    : () => ref.read(notificationServiceProvider).markAllAsRead(),
+                child: Text('Mark All as Read', style: TextStyle(fontSize: 14.sp, color: AppColors.riverFlow, fontWeight: FontWeight.w600)),
+              ),
+            ]),
+          ),
+          SizedBox(height: 8.h),
+          if (_isRefreshing) const LinearProgressIndicator(minHeight: 2),
+          Expanded(
+            child: filtered.isEmpty
+                ? ListView(
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    children: [
+                      SizedBox(height: 120.h),
+                      Icon(Icons.notifications_none, size: 64.sp, color: colors.iconMuted),
+                      SizedBox(height: 16.h),
+                      Center(child: Text('No notifications', style: TextStyle(fontSize: 20.sp, fontWeight: FontWeight.w600, color: colors.textSecondary))),
+                      SizedBox(height: 8.h),
+                      Center(
+                        child: Text(
+                          _filter == 'unread'
+                              ? 'You have no unread notifications'
+                              : _filter == 'alerts'
+                                  ? 'No alert notifications'
+                                  : 'You have no notifications yet',
+                          style: TextStyle(fontSize: 14.sp, color: colors.textMuted),
+                        ),
+                      ),
+                    ],
+                  )
+                : ListView.separated(
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    padding: EdgeInsets.symmetric(vertical: 8.h),
+                    itemCount: filtered.length,
+                    separatorBuilder: (_, __) => Divider(height: 1, color: colors.divider),
+                    itemBuilder: (_, i) => _buildItem(filtered[i], colors),
+                  ),
+          ),
+        ]),
+      ),
     );
   }
 
-  Widget _buildItem(NotificationItem n, AppColorScheme colors) {
+  Widget _buildItem(AppNotification n, AppColorScheme colors) {
     final (icon, iconColor) = switch (n.type) {
-      'alert'    => (Icons.warning,          AppColors.error),
-      'event'    => (Icons.event,            AppColors.infoAlt),
-      'health'   => (Icons.medical_services, AppColors.success),
-      'reminder' => (Icons.notifications,    AppColors.warning),
-      _          => (Icons.info,             AppColors.heritagePurple),
+      'alert'        => (Icons.warning,          AppColors.error),
+      'event'        => (Icons.event,            AppColors.infoAlt),
+      'health'       => (Icons.medical_services, AppColors.success),
+      'reminder'     => (Icons.notifications,    AppColors.warning),
+      'report'       => (Icons.report_problem,   AppColors.warningAlt),
+      'document'     => (Icons.description,      AppColors.infoAlt),
+      'announcement' => (Icons.campaign,         AppColors.heritagePurple),
+      _              => (Icons.info,             AppColors.heritagePurple),
     };
 
     return InkWell(
-      onTap: () { setState(() => n.isRead = true); _showDetails(n); },
+      onTap: () {
+        if (!n.isRead) ref.read(notificationServiceProvider).markAsRead(n.id);
+        _showDetails(n);
+      },
       child: Container(
         padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 16.h),
         color: n.isRead ? colors.surface : AppColors.heritagePurple.withValues(alpha: .06),
@@ -118,36 +158,22 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
             SizedBox(height: 4.h),
             Text(n.message, style: TextStyle(fontSize: 14.sp, color: colors.textSecondary, height: 1.4), maxLines: 2, overflow: TextOverflow.ellipsis),
             SizedBox(height: 8.h),
-            Text(_timeAgo(n.timestamp), style: TextStyle(fontSize: 12.sp, color: colors.textMuted)),
+            Text(n.formattedTime, style: TextStyle(fontSize: 12.sp, color: colors.textMuted)),
           ])),
         ]),
       ),
     );
   }
 
-  String _timeAgo(DateTime t) {
-    final d = DateTime.now().difference(t);
-    if (d.inMinutes < 1) return 'Just now';
-    if (d.inHours < 1)   return '${d.inMinutes}m ago';
-    if (d.inDays < 1)    return '${d.inHours}h ago';
-    if (d.inDays < 7)    return '${d.inDays}d ago';
-    return '${t.day}/${t.month}/${t.year}';
-  }
-
-  void _showDetails(NotificationItem n) {
+  void _showDetails(AppNotification n) {
     showDialog(context: context, builder: (ctx) => AlertDialog(
       title: Text(n.title),
       content: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
         Text(n.message, style: const TextStyle(fontSize: 16)),
         SizedBox(height: 16.h),
-        Text('Received: ${_timeAgo(n.timestamp)}', style: TextStyle(fontSize: 14.sp, color: AppColors.neutralGray500)),
+        Text('Received: ${n.formattedTime}', style: TextStyle(fontSize: 14.sp, color: AppColors.neutralGray500)),
       ]),
       actions: [TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Close'))],
     ));
   }
-}
-
-class NotificationItem {
-  final String id, title, message, type; final DateTime timestamp; bool isRead;
-  NotificationItem({required this.id, required this.title, required this.message, required this.timestamp, required this.type, required this.isRead});
 }

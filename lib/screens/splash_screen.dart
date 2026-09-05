@@ -154,7 +154,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
                   child: FadeTransition(
                     opacity: _fadeAnimation,
                     child: Text(
-                      'MILAUD',
+                      'MAYLAUD',
                       style: TextStyle(
                         fontSize: 42.sp,
                         fontWeight: FontWeight.w800,

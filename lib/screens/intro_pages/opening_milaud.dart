@@ -119,7 +119,7 @@ class _OpeningScreenState extends State<OpeningScreen>
 
                           // TEXT
                           Text(
-                            'MILAUD',
+                            'MAYLAUD',
                             style: TextStyle(
                               fontFamily: 'Montserrat',
                               color: AppColors.neutralWhite,

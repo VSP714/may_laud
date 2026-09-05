@@ -1,6 +1,6 @@
 // ============================================================
 //  dark_theme.dart
-//  Milaud Design System — Dark ThemeData
+//  Maylaud Design System — Dark ThemeData
 //
 //  Import via app_theme.dart (barrel) or directly:
 //    import 'package:may_laud/theme/dark_theme.dart';

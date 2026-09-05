@@ -143,7 +143,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   SizedBox(height: 15.h),
 
                   Text(
-                    "Welcome to MiLaud",
+                    "Welcome to Maylaud",
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       fontSize: 32.sp,
@@ -300,7 +300,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   ),
                   SizedBox(height: 10.h),
                   Text(
-                    "© 2026 MiLaud Municipality. All rights reserved.",
+                    "© 2026 Maylaud Municipality. All rights reserved.",
                     style:
                         TextStyle(color: footerColor, fontSize: 12.sp),
                   ),

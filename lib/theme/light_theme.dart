@@ -1,6 +1,6 @@
 // ============================================================
 //  light_theme.dart
-//  Milaud Design System — Light ThemeData
+//  Maylaud Design System — Light ThemeData
 //
 //  Import via app_theme.dart (barrel) or directly:
 //    import 'package:may_laud/theme/light_theme.dart';

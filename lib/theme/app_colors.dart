@@ -1,6 +1,6 @@
 // ============================================================
 //  app_colors.dart
-//  Milaud Design System — Single source of truth for every
+//  Maylaud Design System — Single source of truth for every
 //  color and font-color token used across the app.
 //
 //  Usage:

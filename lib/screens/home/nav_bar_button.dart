@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:may_laud/providers/app_providers.dart';
 import 'package:may_laud/theme/app_colors.dart';
 import 'home.dart';
 import '../app_features/announcement/announcements_list_screen.dart';
@@ -10,14 +12,20 @@ import '../app_features/document/document_request_screen.dart';
 import '../notifications_screen.dart';
 import '../profile_screen.dart';
 
-class MainApp extends StatefulWidget {
+class MainApp extends ConsumerStatefulWidget {
   const MainApp({super.key});
   @override
-  State<MainApp> createState() => _MainAppState();
+  ConsumerState<MainApp> createState() => _MainAppState();
 }
 
-class _MainAppState extends State<MainApp> {
-  int _selectedIndex = 0;
+class _MainAppState extends ConsumerState<MainApp> {
+  // FIX — this used to be private widget state (`_selectedIndex`), so
+  // nothing outside MainApp could switch tabs. The home screen's bell
+  // icon needs to jump straight to the Notifications tab, so the
+  // selected index now lives in `bottomNavProvider` (already declared
+  // in app_providers.dart, but previously unused) — any screen can read
+  // or set it via `ref`.
+  int get _selectedIndex => ref.watch(bottomNavProvider);
 
   late final List<Widget> _screens = [
     const HomeScreen(),
@@ -33,7 +41,7 @@ class _MainAppState extends State<MainApp> {
     _QuickService(Icons.description_rounded,     'Document Request', 'Barangay clearance, permits',  DocumentRequestScreen()),
   ];
 
-  void _onItemTapped(int i) => setState(() => _selectedIndex = i);
+  void _onItemTapped(int i) => ref.read(bottomNavProvider.notifier).state = i;
 
   void _openService(BuildContext ctx, _QuickService s) {
     Navigator.pop(ctx);

@@ -99,7 +99,7 @@ class VerifiedSuccessScreen extends StatelessWidget {
                   SizedBox(height: 12.h),
 
                   Text(
-                    "Your phone number has been successfully verified.\nYou can now proceed to use Milaud services.",
+                    "Your phone number has been successfully verified.\nYou can now proceed to use Maylaud services.",
                     textAlign: TextAlign.center,
                     style: TextStyle(fontSize: 15.sp, color: subtitleColor, height: 1.5),
                   ),
@@ -133,7 +133,7 @@ class VerifiedSuccessScreen extends StatelessWidget {
                   SizedBox(height: 30.h),
 
                   Text(
-                    "Welcome to Milaud • Milaor Camarines Sur",
+                    "Welcome to Maylaud • Milaor Camarines Sur",
                     style: TextStyle(fontSize: 12.sp, color: footerColor),
                   ),
                 ],

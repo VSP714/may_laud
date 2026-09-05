@@ -19,6 +19,7 @@
 // Supabase Edge Function example that ships alongside this file.
 
 import 'dart:async';
+import 'dart:ui' show Color;
 
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
@@ -106,7 +107,20 @@ class PushNotificationService {
   }
 
   Future<void> _setUpLocalNotifications() async {
-    const androidInit = AndroidInitializationSettings('@mipmap/ic_launcher');
+    // FIX — was '@mipmap/ic_launcher': the full-color app launcher icon.
+    // Android's status bar refuses to render a color icon like that — on
+    // Android 5-7 it silently falls back to a plain white/gray square,
+    // and even on newer versions it looks wrong next to every other
+    // app's monochrome status-bar icon. The fix is a dedicated small
+    // white-silhouette-on-transparent PNG per density, placed at
+    // android/app/src/main/res/mipmap-*/ic_stat_notification.png (a
+    // ready-made set is provided alongside this change — see
+    // notification_icon_android_res.zip), referenced here by name
+    // without the extension. `color:` below is what actually tints the
+    // silhouette so it matches the brand instead of coming out flat
+    // white/gray, which is the other half of "the icon doesn't work" —
+    // a bare white silhouette with no color still looks broken.
+    const androidInit = AndroidInitializationSettings('ic_stat_notification');
     const iosInit = DarwinInitializationSettings();
 
     await _localNotifications.initialize(
@@ -140,7 +154,12 @@ class PushNotificationService {
             channelDescription: _channel.description,
             importance: Importance.high,
             priority: Priority.high,
-            icon: '@mipmap/ic_launcher',
+            icon: 'ic_stat_notification',
+            // Brand purple — matches the header gradient used everywhere
+            // else in the app (see AppColors.heritagePurple). Without an
+            // explicit color, a monochrome status-bar icon renders flat
+            // white/gray, which reads as broken.
+            color: const Color(0xFF4C229C),
           ),
           iOS: const DarwinNotificationDetails(
             presentAlert: true,

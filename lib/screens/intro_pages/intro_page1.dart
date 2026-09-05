@@ -39,7 +39,7 @@ class IntroPage1 extends StatelessWidget {
                 children: [
                   SizedBox(height: 20.h),
                   Text(
-                    "Welcome to Milaud",
+                    "Welcome to Maylaud",
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       fontFamily: 'Montserrat',

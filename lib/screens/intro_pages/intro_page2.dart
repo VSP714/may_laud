@@ -51,7 +51,7 @@ class IntroPage2 extends StatelessWidget {
                   SizedBox(height: 20.h),
                   Text(
                     "Get real-time announcements emergency alerts,\n"
-                    "local events and important barangay updates anytime anywhere with milaud.\n",
+                    "local events and important barangay updates anytime anywhere with Maylaud.\n",
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       fontSize: 16.sp,

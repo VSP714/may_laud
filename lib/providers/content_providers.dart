@@ -246,13 +246,94 @@ class NotificationsProvider extends StateNotifier<List<AppNotification>> {
     try {
       fetchNotifications();
     } catch (_) {}
+    _subscribeToRealtimeChanges();
   }
 
   SupabaseClient get _client => SupabaseService.client;
 
+  // FIX — live updates: previously this only ever fetched once, on
+  // construction. When the web admin changes a citizen_report's status
+  // (or any other server-side flow inserts a row into `notifications`
+  // for this user), the resident wouldn't see it until they force-closed
+  // and reopened the app. Subscribing to Postgres Changes on the
+  // `notifications` table means a new row — e.g. "Your report was
+  // marked resolved" — reaches the app immediately and updates the
+  // unread badge/list in real time, the same way FCM push does when the
+  // app is backgrounded. This also covers the case where a push is
+  // missed (permission denied, offline at delivery time, etc.) since
+  // Supabase stays the source of truth.
+  RealtimeChannel? _channel;
+  String? _subscribedUid;
+
+  void _subscribeToRealtimeChanges() {
+    final uid = SupabaseService.userId;
+    if (uid == null) return;
+    if (_channel != null && _subscribedUid == uid) return;
+    // A different user signed in on this device than the one the
+    // channel was opened for (or none at all yet) — drop the stale
+    // subscription before opening a fresh, correctly-filtered one.
+    _channel?.unsubscribe();
+    _subscribedUid = uid;
+    try {
+      _channel = _client
+          .channel('public:notifications:user_id=eq.$uid')
+          .onPostgresChanges(
+            event: PostgresChangeEvent.all,
+            schema: 'public',
+            table: 'notifications',
+            filter: PostgresChangeFilter(
+              type: PostgresChangeFilterType.eq,
+              column: 'user_id',
+              value: uid,
+            ),
+            callback: (payload) => _handleRealtimeChange(payload),
+          )
+          .subscribe();
+    } catch (_) {
+      // Realtime may be unavailable (e.g. offline) — pull-to-refresh on
+      // NotificationsScreen and the FCM-triggered refresh still work.
+    }
+  }
+
+  void _handleRealtimeChange(PostgresChangePayload payload) {
+    switch (payload.eventType) {
+      case PostgresChangeEvent.insert:
+        final n = AppNotification.fromJson(payload.newRecord);
+        if (state.any((e) => e.id == n.id)) return;
+        state = [n, ...state];
+        break;
+      case PostgresChangeEvent.update:
+        final updated = AppNotification.fromJson(payload.newRecord);
+        state = state.map((n) => n.id == updated.id ? updated : n).toList();
+        break;
+      case PostgresChangeEvent.delete:
+        final oldId = payload.oldRecord['id'] as String?;
+        if (oldId == null) return;
+        state = state.where((n) => n.id != oldId).toList();
+        break;
+      default:
+        break;
+    }
+  }
+
+  @override
+  void dispose() {
+    _channel?.unsubscribe();
+    super.dispose();
+  }
+
   Future<void> fetchNotifications() async {
     final uid = SupabaseService.userId;
     if (uid == null) return;
+
+    // The provider is constructed once, at app start, when there may be
+    // no signed-in user yet (guest mode, session still restoring) — so
+    // the realtime channel from the constructor never attached. Every
+    // later call to fetchNotifications() (pull-to-refresh, opening the
+    // screen, a push arriving) is a safe point to (re)attach it for
+    // whoever is currently signed in, without needing auth_provider to
+    // know about this provider at all.
+    _subscribeToRealtimeChanges();
 
     try {
       final rows = await _client

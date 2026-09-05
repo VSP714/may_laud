@@ -58,7 +58,7 @@ class AboutMilaudSheet extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Milaud',
+                      'Maylaud',
                       style: TextStyle(
                         fontSize: 22.sp,
                         fontWeight: FontWeight.w700,
@@ -79,7 +79,7 @@ class AboutMilaudSheet extends StatelessWidget {
 
             SizedBox(height: 20.h),
             Text(
-              'Milaud is a participatory governance mobile application designed for Milaor, Camarines Sur residents. It provides real-time announcements, citizen reporting, emergency alerts, document requests, and AI-powered assistance — all in one platform.',
+              'Maylaud is a participatory governance mobile application designed for Milaor, Camarines Sur residents. It provides real-time announcements, citizen reporting, emergency alerts, document requests, and AI-powered assistance — all in one platform.',
               style: TextStyle(
                 fontSize: 13.sp,
                 color: bodyTextColor,
