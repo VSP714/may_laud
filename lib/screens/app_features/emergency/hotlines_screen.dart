@@ -132,6 +132,8 @@ ContactType _contactTypeFor(String? type) {
       return ContactType.health;
     case 'Social':
       return ContactType.services;
+    case 'Utility':                          
+      return ContactType.utilities;
     case 'General':
     default:
       return ContactType.government;
@@ -150,6 +152,8 @@ IconData _iconFor(String? type) {
       return Icons.shield_rounded;
     case 'Social':
       return Icons.home_work_rounded;
+    case 'Utility':                                   
+      return Icons.electrical_services_rounded; 
     case 'General':
     default:
       return Icons.account_balance_rounded;
