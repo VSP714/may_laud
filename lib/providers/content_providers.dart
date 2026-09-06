@@ -349,10 +349,22 @@ class NotificationsProvider extends StateNotifier<List<AppNotification>> {
   }
 
   Future<void> markAsRead(String id) async {
+    final uid = SupabaseService.userId;
+    if (uid == null) return;
+
+    // FIX — scope the update to the signed-in user as well as the row id.
+    // Filtering by `id` alone means the *client* trusts that `id` always
+    // belongs to the current user; it's only true today because the UI
+    // never shows anyone else's notification. Adding `user_id = uid` here
+    // is defense-in-depth for the app, but it is NOT what actually keeps
+    // one resident from reading/marking another resident's notifications —
+    // that has to be enforced by a Row Level Security policy on the
+    // `notifications` table in Supabase (see notes below).
     await _client
         .from('notifications')
         .update({'is_read': true})
-        .eq('id', id);
+        .eq('id', id)
+        .eq('user_id', uid);
 
     // FIX #1 — use copyWith instead of mutating n.isRead directly
     state = state.map((n) => n.id == id ? n.copyWith(isRead: true) : n).toList();

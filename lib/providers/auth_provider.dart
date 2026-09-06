@@ -6,6 +6,7 @@ import 'package:supabase_flutter/supabase_flutter.dart' hide LocalStorage;
 import 'package:may_laud/core/local_storage.dart';
 import 'package:may_laud/services/supabase_service.dart';
 import 'package:may_laud/services/push_notification_service.dart';
+import 'package:may_laud/providers/content_providers.dart';
 
 class User {
   final String id;
@@ -86,11 +87,28 @@ class AuthState {
 }
 
 class AuthProvider extends StateNotifier<AuthState> {
-  AuthProvider() : super(const AuthState()) {
+  AuthProvider(this._ref) : super(const AuthState()) {
     _checkAuthStatus();
   }
 
+  final Ref _ref;
+
   SupabaseClient get _client => SupabaseService.client;
+
+  // FIX — notificationsProvider/announcementsProvider are global providers
+  // that stay alive (and keep their in-memory `state`) for the whole app
+  // session. Without this, switching accounts on the same device without
+  // a full app restart (log out as A, log in as B) left B looking at A's
+  // last-fetched notification list until something happened to trigger a
+  // manual refetch — the two accounts appeared to "share" notifications
+  // even though the backend query itself was correctly scoped by user_id.
+  // Invalidating here disposes that stale state and forces the provider's
+  // constructor (and its fetchNotifications() call) to run again fresh,
+  // scoped to whichever uid is signed in at that moment.
+  void _resetPerUserProviders() {
+    _ref.invalidate(notificationsProvider);
+    _ref.invalidate(announcementsProvider);
+  }
 
   Future<void> _checkAuthStatus() async {
     try {
@@ -113,6 +131,11 @@ class AuthProvider extends StateNotifier<AuthState> {
 
       final user = User.fromJson({...data, 'email': email});
       state = state.copyWith(user: user, isAuthenticated: true, isLoading: false);
+
+      // Fresh sign-in or session restore — make sure notifications /
+      // announcements reflect THIS uid, not whatever was left over from
+      // a previous account in this same app session.
+      _resetPerUserProviders();
 
       await LocalStorage.saveUserData(
         userId:    user.id,
@@ -257,6 +280,10 @@ class AuthProvider extends StateNotifier<AuthState> {
       await _client.auth.signOut();
     }
     await LocalStorage.clearAll();
+    // Drop the outgoing user's cached notifications/announcements state so
+    // whoever logs in next (or the guest/login screen in between) never
+    // sees a flash of the previous account's data.
+    _resetPerUserProviders();
     state = const AuthState(isLoading: false);
   }
 
@@ -303,5 +330,5 @@ class AuthProvider extends StateNotifier<AuthState> {
 }
 
 final authProvider = StateNotifierProvider<AuthProvider, AuthState>(
-  (ref) => AuthProvider(),
+  (ref) => AuthProvider(ref),
 );
