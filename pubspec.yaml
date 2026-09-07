@@ -93,6 +93,7 @@ dev_dependencies:
   
   # Mocking for tests
   mockito: ^5.4.4
+  flutter_launcher_icons: ^0.14.4
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
@@ -141,3 +142,11 @@ flutter:
   #
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/to/font-from-package
+
+flutter_launcher_icons:
+  android: true
+  ios: false
+  image_path: "assets/images/milaudlogo.png"
+  adaptive_icon_background: "#4C229C"
+  adaptive_icon_foreground: "assets/images/milaudlogo.png"
+  min_sdk_android: 21
