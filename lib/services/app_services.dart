@@ -52,6 +52,9 @@ class NotificationService {
   Future<void> markAllAsRead() async =>
       ref.read(notificationsProvider.notifier).markAllAsRead();
 
+  Future<void> deleteNotification(String id) async =>
+      ref.read(notificationsProvider.notifier).deleteNotification(id);
+
   Future<void> sendNotification({
     required String title,
     required String message,

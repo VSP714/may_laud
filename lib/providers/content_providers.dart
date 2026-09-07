@@ -33,8 +33,15 @@ class Announcement {
       title:       json['title'] ?? '',
       description: json['description'] ?? '',
       category:    json['category'] ?? 'General',
+      // FIX — Supabase returns created_at in UTC (e.g. "...T07:00:00Z").
+      // DateTime.parse keeps that as a UTC-flagged DateTime, and
+      // formatting it directly shows the raw UTC clock time instead of
+      // the resident's local time — an announcement posted at 3:00 PM
+      // Philippine time (UTC+8) was showing as 7:00 AM in the app.
+      // .toLocal() converts it to the device's local timezone before
+      // it's ever formatted.
       date:        json['created_at'] != null
-                     ? DateTime.parse(json['created_at'])
+                     ? DateTime.parse(json['created_at']).toLocal()
                      : DateTime.now(),
       imageUrl:    json['image_url'],
       isImportant: json['is_important'] ?? false,
@@ -384,8 +391,25 @@ class NotificationsProvider extends StateNotifier<List<AppNotification>> {
   }
 
   void addNotification(AppNotification n) => state = [n, ...state];
-  void deleteNotification(String id) =>
-      state = state.where((n) => n.id != id).toList();
+
+  // FIX — this used to only drop the item from local `state`, so the row
+  // never actually left Supabase: it would silently reappear the next
+  // time fetchNotifications() ran (pull-to-refresh, app relaunch, a push
+  // triggering a refresh). Deleting server-side first, then updating
+  // local state on success, is what makes the delete actually stick.
+  Future<void> deleteNotification(String id) async {
+    final uid = SupabaseService.userId;
+    if (uid == null) return;
+
+    await _client
+        .from('notifications')
+        .delete()
+        .eq('id', id)
+        .eq('user_id', uid);
+
+    state = state.where((n) => n.id != id).toList();
+  }
+
   int get unreadCount => state.where((n) => !n.isRead).length;
 }
 

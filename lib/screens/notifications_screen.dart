@@ -132,35 +132,75 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
       _              => (Icons.info,             AppColors.heritagePurple),
     };
 
-    return InkWell(
-      onTap: () {
-        if (!n.isRead) ref.read(notificationServiceProvider).markAsRead(n.id);
-        _showDetails(n);
-      },
-      child: Container(
-        padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 16.h),
-        color: n.isRead ? colors.surface : AppColors.heritagePurple.withValues(alpha: .06),
-        child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Container(
-            width: 44.w, height: 44.w,
-            decoration: BoxDecoration(color: iconColor.withOpacity(.1), shape: BoxShape.circle),
-            child: Icon(icon, size: 22.sp, color: iconColor),
+    return Dismissible(
+      key: ValueKey(n.id),
+      direction: DismissDirection.endToStart,
+      background: Container(
+        alignment: Alignment.centerRight,
+        padding: EdgeInsets.symmetric(horizontal: 24.w),
+        color: AppColors.error,
+        child: Icon(Icons.delete_outline, color: Colors.white, size: 26.sp),
+      ),
+      confirmDismiss: (_) => _confirmDelete(n),
+      onDismissed: (_) => ref.read(notificationServiceProvider).deleteNotification(n.id),
+      child: InkWell(
+        onTap: () {
+          if (!n.isRead) ref.read(notificationServiceProvider).markAsRead(n.id);
+          _showDetails(n);
+        },
+        child: Container(
+          padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 16.h),
+          color: n.isRead ? colors.surface : AppColors.heritagePurple.withValues(alpha: .06),
+          child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Container(
+              width: 44.w, height: 44.w,
+              decoration: BoxDecoration(color: iconColor.withOpacity(.1), shape: BoxShape.circle),
+              child: Icon(icon, size: 22.sp, color: iconColor),
+            ),
+            SizedBox(width: 16.w),
+            Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+                Expanded(child: Text(n.title,
+                    style: TextStyle(fontSize: 18.sp, fontWeight: FontWeight.w600, color: colors.textPrimary),
+                    maxLines: 1, overflow: TextOverflow.ellipsis)),
+                if (!n.isRead)
+                  Container(width: 10.w, height: 10.w, decoration: const BoxDecoration(color: AppColors.heritagePurple, shape: BoxShape.circle)),
+              ]),
+              SizedBox(height: 4.h),
+              Text(n.message, style: TextStyle(fontSize: 14.sp, color: colors.textSecondary, height: 1.4), maxLines: 2, overflow: TextOverflow.ellipsis),
+              SizedBox(height: 8.h),
+              Text(n.formattedTime, style: TextStyle(fontSize: 12.sp, color: colors.textMuted)),
+            ])),
+            SizedBox(width: 4.w),
+            IconButton(
+              icon: Icon(Icons.delete_outline, size: 20.sp, color: colors.iconMuted),
+              padding: EdgeInsets.zero,
+              constraints: const BoxConstraints(),
+              onPressed: () async {
+                if (await _confirmDelete(n) == true) {
+                  ref.read(notificationServiceProvider).deleteNotification(n.id);
+                }
+              },
+            ),
+          ]),
+        ),
+      ),
+    );
+  }
+
+  Future<bool?> _confirmDelete(AppNotification n) {
+    return showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Delete notification?'),
+        content: Text('This will remove "${n.title}". This can\'t be undone.'),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancel')),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: Text('Delete', style: TextStyle(color: AppColors.error)),
           ),
-          SizedBox(width: 16.w),
-          Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-              Expanded(child: Text(n.title,
-                  style: TextStyle(fontSize: 18.sp, fontWeight: FontWeight.w600, color: colors.textPrimary),
-                  maxLines: 1, overflow: TextOverflow.ellipsis)),
-              if (!n.isRead)
-                Container(width: 10.w, height: 10.w, decoration: const BoxDecoration(color: AppColors.heritagePurple, shape: BoxShape.circle)),
-            ]),
-            SizedBox(height: 4.h),
-            Text(n.message, style: TextStyle(fontSize: 14.sp, color: colors.textSecondary, height: 1.4), maxLines: 2, overflow: TextOverflow.ellipsis),
-            SizedBox(height: 8.h),
-            Text(n.formattedTime, style: TextStyle(fontSize: 12.sp, color: colors.textMuted)),
-          ])),
-        ]),
+        ],
       ),
     );
   }
